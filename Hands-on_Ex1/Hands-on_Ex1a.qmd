@@ -1,5 +1,6 @@
 ---
 title: "Hands-on Exercise 1A: Geospatial Data Wrangling with R"
+author: "Goh Si Hui"
 date: 2023/11/13
 date-format: long
 ---
@@ -12,7 +13,7 @@ In this hands-on exercise, I will be sharing how to import and wrangle geospatia
 
 ### Packages 
 
-The code chunk below installs and loads sf and tidyverse packages into R environment.
+For this exercise, we will be using [`sf`](https://r-spatial.github.io/sf/ "Package sf: Simple Features for R") and [`tidyverse`](https://www.tidyverse.org/ "Tidyverse: collection of R packages designed for data science") packages. The code chunk below installs and loads `sf` and `tidyverse` packages into R environment.
 
 ```{r}
 pacman::p_load(sf, tidyverse)
@@ -23,9 +24,13 @@ pacman::p_load(sf, tidyverse)
 
 The datasets we are using are downloaded from the following sources:
 
+#to insert the data sources
+
 ## Importing Geospatial Data
 
 ### Importing polygon feature data
+
+The code chunk below uses st_read() function of sf package to import the planning subzones, which is a polygon feature data frame.
 
 ```{r}
 mpsz <- st_read(dsn = "data/geospatial", layer = "MP14_SUBZONE_WEB_PL")
@@ -34,7 +39,7 @@ mpsz <- st_read(dsn = "data/geospatial", layer = "MP14_SUBZONE_WEB_PL")
 
 ### Importing polyline feature data in shapefile form
 
-The code chunk below uses st_read() function of sf package to import CyclingPath shape file into R as line feature data frame.
+The code chunk below uses st_read() function of `sf` package to import CyclingPath shape file into R as line feature data frame.
 
 ```{r}
 cyclingpath = st_read(dsn = "data/geospatial", layer = "CyclingPathGazette")
@@ -46,4 +51,183 @@ We will also use st_read to import GIS data in kml format:
 
 ```{r}
 preschool = st_read("data/geospatial/PreSchoolsLocation.kml")
+```
+
+## Checking the Content of A Simple Feature Data Frame
+
+### Working with st_geometry()
+
+```{r}
+st_geometry(mpsz)
+
+```
+
+### Working with glimpse()
+
+```{r}
+glimpse(mpsz)
+
+```
+
+### Working with head()
+
+```{r}
+head(mpsz, n=5)
+
+```
+
+## Plotting Geospatial Data 
+
+```{r}
+plot(mpsz)
+
+```
+
+```{r}
+plot(st_geometry(mpsz))
+
+```
+
+```{r}
+plot(mpsz["PLN_AREA_N"])
+
+```
+
+## Working with Projection
+
+### Assigning EPSG code to a simple feature data frame
+
+```{r}
+st_crs(mpsz)
+
+```
+
+```{r}
+mpsz3414 <- st_set_crs(mpsz, 3414)
+```
+
+```{r}
+st_crs(mpsz3414)
+```
+
+### Transforming the projection of preschool from wgs84 to svy21
+
+```{r}
+st_crs(preschool)
+
+```
+
+```{r}
+preschool3414 <- st_transform(preschool, crs = 3414)
+
+```
+
+```{r}
+st_crs(preschool3414)
+
+```
+
+## Importing and Converting an Aspatial Data
+
+### Importing the aspatial data 
+
+```{r}
+listings <- read_csv("data/aspatial/listings.csv")
+
+```
+
+```{r}
+list(listings)
+```
+
+### Creating a simple feature data frame from an aspatial
+
+```{r}
+listings_sf <- st_as_sf(listings, coords = c("longitude", "latitude"), crs=4326) %>%
+  st_transform(crs = 3414)
+
+```
+
+```{r}
+glimpse(listings_sf)
+```
+
+## Geoprocessing with sf package 
+
+### Buffering 
+
+```{r}
+buffer_cycling <- st_buffer(cyclingpath, dist = 5, nQuadSegs = 30)
+
+```
+
+```{r}
+buffer_cycling$AREA <- st_area(buffer_cycling)
+
+```
+
+```{r}
+sum(buffer_cycling$AREA)
+```
+
+### Point-in-polygon Count 
+
+Calculating the number of preschools in each subzone
+
+```{r}
+mpsz3414$'PreSch Count' <- lengths(st_intersects(mpsz3414, preschool3414))
+
+```
+
+```{r}
+summary(mpsz3414$'PreSch Count')
+```
+
+```{r}
+top_n(mpsz3414, 1, 'PreSch Count')
+
+```
+
+Calculating the density of pre-school by planning subzone
+
+```{r}
+mpsz3414$Area <- mpsz3414 %>% 
+  st_area()
+
+```
+
+```{r}
+
+mpsz3414 <- mpsz3414 %>% 
+    mutate(`PreSch Density` = `PreSch Count`/Area * 1000000)
+```
+
+## Exploratory Data Analysis
+
+```{r}
+hist(mpsz3414$`PreSch Density`)
+```
+
+```{r}
+ggplot(data = mpsz3414,
+       aes(x = as.numeric(`PreSch Density`))) + 
+  geom_histogram(bins = 20,
+                 color = "black",
+                fill = "light blue") + 
+  labs(title = "Are Pre-Schools Evenly Distributed in Singapore?",
+       subtitle = "There are many planning subszones with a single pre-school, on the other hand, \nthere are two planning subszones with at least 20 preschools",
+       x = "PreSchool Density (per km sq)",
+       y = "Frequency")
+```
+
+```{r}
+ggplot(data = mpsz3414,
+       aes(y = `PreSch Count`,
+         x = as.numeric(`PreSch Density`))) +
+  geom_point(color = "blue") + 
+  xlim(0, 40) + 
+  ylim(0, 40) + 
+  labs(title = "Scatter Plot of PreSchool Density and PreSchool Count", 
+       x = "PreSchool Density (per km sq)", 
+       y = "PreSchool Count")
 ```

@@ -1,0 +1,49 @@
+---
+title: "Hands-on Exercise 1A: Geospatial Data Wrangling with R"
+date: 2023/11/13
+date-format: long
+---
+
+## Overview
+
+In this hands-on exercise, I will be sharing how to import and wrangle geospatial data using appropriate R packages.
+
+## Getting Started
+
+### Packages 
+
+The code chunk below installs and loads sf and tidyverse packages into R environment.
+
+```{r}
+pacman::p_load(sf, tidyverse)
+
+```
+
+### Data Acquisition
+
+The datasets we are using are downloaded from the following sources:
+
+## Importing Geospatial Data
+
+### Importing polygon feature data
+
+```{r}
+mpsz <- st_read(dsn = "data/geospatial", layer = "MP14_SUBZONE_WEB_PL")
+
+```
+
+### Importing polyline feature data in shapefile form
+
+The code chunk below uses st_read() function of sf package to import CyclingPath shape file into R as line feature data frame.
+
+```{r}
+cyclingpath = st_read(dsn = "data/geospatial", layer = "CyclingPathGazette")
+```
+
+### Importing GIS data in kml format 
+
+We will also use st_read to import GIS data in kml format:
+
+```{r}
+preschool = st_read("data/geospatial/PreSchoolsLocation.kml")
+```

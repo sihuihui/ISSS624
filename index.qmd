@@ -5,7 +5,3 @@ title: "ISSS624"
 Welcome to ISSS624 Geospatial Analytics and Applications
 
 In this webpage, I am going to share with you my learning journey on geospatial analytics.
-
-```{r}
-1 + 1
-```

@@ -1,5 +1,5 @@
 ---
-title: "Hands-On Exercise 1"
+title: "Hands-On Exercise 1: Geospatial Data Wrangling with R and Choropleth"
 author: "Goh Si Hui"
 ---
 

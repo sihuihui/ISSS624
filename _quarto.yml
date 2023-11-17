@@ -9,16 +9,16 @@ website:
         menu: 
           - text: Hands-on Exercise 1A
             href: Hands-on_Ex1/Hands-on_Ex1a.qmd
-          - text: Hands-on Exercuse 1b 
+          - text: Hands-on Exercuse 1B 
             #href: Hands-on_Ex1/Hands-on_Ex1b.qmd
     right:
       - href: index.qmd
         text: Home
-      - about.qmd
+      #- about.qmd
 
 format:
   html:
-    theme: cosmo
+    theme: sandstone
     css: styles.css
     toc: true
 

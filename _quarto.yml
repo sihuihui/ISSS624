@@ -21,6 +21,8 @@ format:
     theme: sandstone
     css: styles.css
     toc: true
+    toc-title: "On this page"
+    number-sections: true 
 
 editor: visual
 

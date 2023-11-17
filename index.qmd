@@ -5,3 +5,5 @@ title: "ISSS624"
 Welcome to ISSS624 Geospatial Analytics and Applications
 
 In this webpage, I am going to share with you my learning journey on geospatial analytics.
+
+[![Image by rawpixel.com on Freepik](images/GIS.jpg){fig-align="center"}](https://www.freepik.com/)

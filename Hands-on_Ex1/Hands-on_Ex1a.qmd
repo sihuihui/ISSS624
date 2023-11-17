@@ -1,7 +1,7 @@
 ---
 title: "Hands-on Exercise 1A: Geospatial Data Wrangling with R"
 author: "Goh Si Hui"
-date: 2023/11/13
+date: 2023/11/16
 date-format: long
 ---
 

@@ -17,9 +17,9 @@ editor: visual
 
 We will first load the necessary packages using the following code chunk:
 
--   tmap: for thematic mapping
--   sf: for geospatial data handling
--   tidyverse: for non-spatial data handling
+-   **tmap**: for thematic mapping
+-   **sf**: for geospatial data handling
+-   **tidyverse**: for non-spatial data handling
 
 ```{r}
 pacman::p_load(tmap, sf, tidyverse)
@@ -27,16 +27,23 @@ pacman::p_load(tmap, sf, tidyverse)
 
 ## Preparing the Flow Data
 
-### Importing the OD data
+### Importing the Origin Destination (OD) data
 
-We will import the *Passenger Volume by Origin Destination Bus Stops* data set downloaded from [LTA DataMall](https://datamall.lta.gov.sg/content/datamall/en.html "LTA DataMall") by using *read_csv()* of **readr** package.
+We will import the `Passenger Volume by Origin Destination Bus Stops` data set downloaded from [LTA DataMall](https://datamall.lta.gov.sg/content/datamall/en.html "LTA DataMall") by using `read_csv()` of **readr** package, which is part of **tidyverse** package.
 
 ```{r}
 #| eval: false
 odbus <- read_csv("data/aspatial/origin_destination_bus_202308.csv")
 ```
 
-We convert the chr data type to categories using *as.factor()*.
+We use the following code chunk to take a peek at the imported `odbus` data:
+
+```{r}
+
+glimpse(odbus)
+```
+
+From the above, we see that **ORIGIN_PT_CODE** and **DESTINATION_PT_CODE** are character data type. We should convert these two columns from characters into factors because these two columns contains the bus stop numbers and we will need these bus stop numbers to get the bus stop locations in subsequent steps. We will use `as.factor()` to convert the data from character to factor.
 
 ```{r}
 #| eval: false
@@ -44,9 +51,17 @@ odbus$ORIGIN_PT_CODE <- as.factor(odbus$ORIGIN_PT_CODE)
 odbus$DESTINATION_PT_CODE <- as.factor(odbus$DESTINATION_PT_CODE)
 ```
 
+::: {.callout-note appearance="simple"}
+## Do you know?
+
+Factors are used for categorical variables, variables that have a fixed and known set of possible values. In R, factors allow for ordered categories with a fixed set of acceptable values. Typically, we would convert a column from character or numeric class to a factor if we want to set an intrinsic order to the values ("levels") so they can be displayed non-alphabetically in plots and tables.
+
+If you are interested to read more about factors, this [webpage](https://r4ds.had.co.nz/factors.html "R for Data Science (2e)") has more interesting information and references.
+:::
+
 ### Extracting the Study Data
 
-We will extract the study data using *filter()*, *group_by()* and *summarise()* to get weekday trips that start from 7am and end before 10am.
+We will extract the study data using `filter()`, `group_by()` and `summarise()` to get our study data (i.e., weekday trips that start from 7am and end before 10am).
 
 ```{r}
 #| eval: false
@@ -59,12 +74,17 @@ origintrip_7_9 <- odbus %>%
 
 ## Working with Geospatial Data
 
-We will use *st_read()* from **sf** package to read the geospatial data and use *st_transform()* from **sf** package to project the data into svy21 using its ESPG code 3414.
+We will use `st_read()` from **sf** package to read the geospatial data and use `st_transform()` from **sf** package to project the data into **svy21** using its ESPG code 3414.
 
 ```{r}
 busstop <- st_read(dsn = "data/spatial", layer = "BusStop") %>%
   st_transform(crs = 3414)
 
+```
+
+Let us take a look at the imported data:
+
+```{r}
 busstop
 ```
 
@@ -72,5 +92,10 @@ busstop
 mpsz <- st_read(dsn = "data/spatial", layer = "MPSZ-2019") %>%
   st_transform(crs = 3414)
 
-mpsz 
+```
+
+Let us take a look at the imported data:
+
+```{r}
+mpsz
 ```

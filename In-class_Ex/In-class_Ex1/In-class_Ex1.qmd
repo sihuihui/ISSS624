@@ -37,7 +37,12 @@ We will import the `Passenger Volume by Origin Destination Bus Stops` data set d
 odbus <- read_csv("data/aspatial/origin_destination_bus_202308.csv")
 ```
 
+We now take a peek at the imported data:
 
+```{r}
+#| eval: false
+glimpse(odbus)
+```
 
 From the above, we see that **ORIGIN_PT_CODE** and **DESTINATION_PT_CODE** are character data type. We should convert these two columns from characters into factors because these two columns contains the bus stop numbers and we will need these bus stop numbers to get the bus stop locations in subsequent steps. We will use `as.factor()` to convert the data from character to factor.
 
@@ -50,7 +55,7 @@ odbus$DESTINATION_PT_CODE <- as.factor(odbus$DESTINATION_PT_CODE)
 ::: {.callout-note appearance="simple"}
 ## Do you know?
 
-Factors are used for categorical variables, variables that have a fixed and known set of possible values. In R, factors allow for ordered categories with a fixed set of acceptable values. Typically, we would convert a column from character or numeric class to a factor if we want to set an intrinsic order to the values ("levels") so they can be displayed non-alphabetically in plots and tables.
+In R, factors allow for ordered categories with a fixed set of acceptable values. Typically, we would convert a column from character or numeric class to a factor if we want to set an intrinsic order to the values ("levels") so they can be displayed non-alphabetically in plots and tables.
 
 If you are interested to read more about factors, this [webpage](https://r4ds.had.co.nz/factors.html "R for Data Science (2e)") has more interesting information and references.
 :::

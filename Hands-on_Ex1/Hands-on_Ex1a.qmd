@@ -20,7 +20,7 @@ pacman::p_load(sf, tidyverse)
 
 ```
 
-### Data Acquisition and Extraction 
+### Data Acquisition and Extraction
 
 We will extract the following data sets from these sources:
 

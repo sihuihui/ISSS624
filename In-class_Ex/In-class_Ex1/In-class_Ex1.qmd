@@ -1,0 +1,78 @@
+---
+title: "In-class Exercise 1: My first date with Geospatial Data Analytics"
+subtitle: "Lesson 1" 
+author: "Goh Si Hui"
+date: 2023/11/18
+date-format: long
+date-modified: "last-modified"
+format: html 
+execute: 
+  echo: true
+  eval: true
+  warning: false
+editor: visual 
+---
+
+## Getting Started
+
+We will first load the necessary packages using the following code chunk:
+
+-   tmap: for thematic mapping
+-   sf: for geospatial data handling
+-   tidyverse: for non-spatial data handling
+
+```{r}
+pacman::p_load(tmap, sf, tidyverse)
+```
+
+## Preparing the Flow Data
+
+### Importing the OD data
+
+We will import the *Passenger Volume by Origin Destination Bus Stops* data set downloaded from [LTA DataMall](https://datamall.lta.gov.sg/content/datamall/en.html "LTA DataMall") by using *read_csv()* of **readr** package.
+
+```{r}
+#| eval: false
+odbus <- read_csv("data/aspatial/origin_destination_bus_202308.csv")
+```
+
+We convert the chr data type to categories using *as.factor()*.
+
+```{r}
+#| eval: false
+odbus$ORIGIN_PT_CODE <- as.factor(odbus$ORIGIN_PT_CODE)
+odbus$DESTINATION_PT_CODE <- as.factor(odbus$DESTINATION_PT_CODE)
+```
+
+### Extracting the Study Data
+
+We will extract the study data using *filter()*, *group_by()* and *summarise()* to get weekday trips that start from 7am and end before 10am.
+
+```{r}
+#| eval: false
+origintrip_7_9 <- odbus %>%
+  filter(DAY_TYPE == "WEEKDAY") %>%
+  filter(TIME_PER_HOUR >= 7 & TIME_PER_HOUR <= 9) %>%
+  group_by(ORIGIN_PT_CODE) %>%
+  summarise(TRIPS = sum(TOTAL_TRIPS))
+```
+
+## Working with Geospatial Data
+
+We will use *st_read()* from **sf** package to read the geospatial data and use *st_transform()* from **sf** package to project the data into svy21 using its ESPG code 3414.
+
+```{r}
+busstop <- st_read(dsn = "data/spatial", layer = "BusStop") %>%
+  st_transform(crs = 3414)
+
+busstop
+```
+
+```{r}
+mpsz <- st_read(dsn = "data/spatial", layer = "MPSZ-2019") %>%
+  st_transform(crs = 3414)
+
+mpsz 
+```
+
+## 

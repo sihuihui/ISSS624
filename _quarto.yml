@@ -11,6 +11,15 @@ website:
             href: Hands-on_Ex1/Hands-on_Ex1a.qmd
           - text: Hands-on Exercise 1B 
             href: Hands-on_Ex1/Hands-on_Ex1b.qmd
+      - text: In-class Exercises
+        menu: 
+          - text: In-class Exercise 1
+            href: In-class_Ex/In-class_Ex1/In-class_Ex1.qmd
+      - text: Take-home Exercises
+        menu: 
+          - text: Take-home Exercise 1
+            
+          - text: Take-home Exercise 2
     right:
       - href: index.qmd
         text: Home

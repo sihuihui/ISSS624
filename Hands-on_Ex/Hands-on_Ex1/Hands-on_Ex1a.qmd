@@ -132,7 +132,7 @@ If plot() is unable to plot all attributes, a warning would appear.
 
 :::
 
-We can choose to plot only the geometry by using the code chunk below.
+We can choose to plot only the geometry using the code chunk below.
 
 ```{r}
 plot(st_geometry(mpsz))
@@ -145,6 +145,12 @@ Alternatively, we can also choose the plot the sf object by using a specific att
 plot(mpsz["PLN_AREA_N"])
 
 ```
+
+::: {.callout-note}
+
+We will learn more about plotting high cartographic quality plots using **tmap** package in [Hands-On Exercise 1B](https://isss624gohsihui.netlify.app/hands-on_ex/hands-on_ex1/hands-on_ex1b "Hands-On Exercise 1B").
+
+:::
 
 ## Working with MAP Projection
 
@@ -239,13 +245,13 @@ listings_sf <- st_as_sf(listings, coords = c("longitude", "latitude"), crs=4326)
 
 ```
 
-We then use glimpse() to examine the content of the newly created simple feature data frame.
+We then use `glimpse()` to examine the content of the newly created simple feature data frame.
 
 ```{r}
 glimpse(listings_sf)
 ```
 
-Table above shows the content of listing_sf. Notice that a new column called geometry has been added into the data frame. On the other hand, the longitude and latitude columns have been dropped from the data frame.
+Table above shows the content of listing_sf. Notice that a new column called **geometry** has been added into the data frame. On the other hand, the longitude and latitude columns have been dropped from the data frame.
 
 ## Geoprocessing with sf package
 
@@ -259,7 +265,7 @@ The authority is planning to upgrade the exiting cycling path. To do so, they ne
 
 The solution:
 
-Firstly, st_buffer() of sf package is used to compute the 5-meter buffers around cycling paths
+Firstly, `st_buffer()` of sf package is used to compute the 5-meter buffers around cycling paths
 
 ```{r}
 buffer_cycling <- st_buffer(cyclingpath, dist = 5, nQuadSegs = 30)
@@ -287,7 +293,7 @@ A pre-school service group want to find out the numbers of pre-schools in each P
 
 The solution:
 
-The code chunk below performs two operations at one go. Firstly, identify pre-schools located inside each Planning Subzone by using st_intersects(). Next, length() of Base R is used to calculate numbers of pre-schools that fall inside each planning subzone.
+The code chunk below performs two operations at one go. Firstly, identify pre-schools located inside each Planning Subzone by using `st_intersects()`. Next, `length()` of Base R is used to calculate numbers of pre-schools that fall inside each planning subzone.
 
 First, we calculate the number of preschools in each subzone:
 
@@ -296,20 +302,20 @@ mpsz3414$'PreSch Count' <- lengths(st_intersects(mpsz3414, preschool3414))
 
 ```
 
-Then, check the summary statistics of the PreSch count filed using summary():
+Then, check the summary statistics of the PreSch count filed using `summary()`:
 
 ```{r}
 summary(mpsz3414$'PreSch Count')
 ```
 
-We use top_n() to list the planning subzone with the most number of pre-school:
+We use `top_n()` to list the planning subzone with the most number of pre-school:
 
 ```{r}
 top_n(mpsz3414, 1, 'PreSch Count')
 
 ```
 
-To calculate the density of pre-school by planning subzone. we first derivethe area of each planning subzone:
+To calculate the density of pre-school by planning subzone. we first derives the area of each planning subzone:
 
 ```{r}
 mpsz3414$Area <- mpsz3414 %>% 
@@ -349,7 +355,7 @@ ggplot(data = mpsz3414,
        y = "Frequency")
 ```
 
-Scatterplot showing the relationship between pre-school density and pre-school count.
+Here is a scatterplot showing the relationship between pre-school density and pre-school count.
 
 ```{r}
 ggplot(data = mpsz3414,

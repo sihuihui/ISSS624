@@ -338,7 +338,7 @@ Geodetic CRS:  WGS 84</code></pre>
 <p>We can use different ways to retrieve information related to the content of a simple feature data frame.</p>
 <section id="working-with-st_geometry" class="level3" data-number="4.1">
 <h3 data-number="4.1" class="anchored" data-anchor-id="working-with-st_geometry"><span class="header-section-number">4.1</span> Working with st_geometry()</h3>
-<p><code>st_geometry()</code> only displays basic information of the feature class such as type of geometry, the geographic extent of the features and the coordinate system of the data.</p>
+<p><code>st_geometry()</code> displays basic information of the feature class such as type of geometry, the geographic extent of the features and the coordinate system of the data.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_geometry</span>(mpsz)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -377,22 +377,6 @@ $ SHAPE_Area &lt;dbl&gt; 1630379.27, 559816.25, 160807.50, 595428.89, 387429.44,
 $ geometry   &lt;MULTIPOLYGON [m]&gt; MULTIPOLYGON (((31495.56 30..., MULTIPOLYGON (…</code></pre>
 </div>
 </div>
-<div class="callout callout-style-simple callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Fun fact
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Here is an article on the difference between glimpse() and print().</p>
-<blockquote class="blockquote">
-<p>“the&nbsp;<em>head()</em> function shows the first few rows (observations) of the&nbsp;<em>Data Frame</em>. The&nbsp;<em>glimpse()</em>&nbsp;function displays the number of observations, and variables (columns) along with the type, name, and values of the latter.”</p>
-</blockquote>
-</div>
-</div>
 </section>
 <section id="working-with-head" class="level3" data-number="4.3">
 <h3 data-number="4.3" class="anchored" data-anchor-id="working-with-head"><span class="header-section-number">4.3</span> Working with head()</h3>
@@ -425,18 +409,48 @@ Projected CRS: SVY21
 5 30005.70   2825.594   387429.4 MULTIPOLYGON (((26451.03 30...</code></pre>
 </div>
 </div>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Interesting info found!
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Here is an <a href="https://towardsdatascience.com/python-and-r-for-data-wrangling-examples-for-both-including-speed-up-considerations-f2ec2bb53a86#:~:text=In%20the%20following%20gist%2C%20in,and%20values%20of%20the%20latter.">article</a> on the difference between <code>glimpse()</code> and <code>head()</code>.</p>
+<blockquote class="blockquote">
+<p>“the&nbsp;<em>head()</em> function shows the first few rows (observations) of the <em>Data Frame</em>. The&nbsp;<em>glimpse()</em>&nbsp;function displays the number of observations, and variables (columns) along with the type, name, and values of the latter.”</p>
+</blockquote>
+</div>
+</div>
 </section>
 </section>
 <section id="plotting-geospatial-data" class="level2" data-number="5">
 <h2 data-number="5" class="anchored" data-anchor-id="plotting-geospatial-data"><span class="header-section-number">5</span> Plotting Geospatial Data</h2>
-<p>Other than looking at feature information we should also visualise geospatial features. <code>plot()</code> is a quick and useful way to plot geospatial features:</p>
+<p>Other than looking at feature information, we should also visualise geospatial features. <code>plot()</code> is a quick and useful way to plot geospatial features:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(mpsz)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="Hands-on_Ex1a_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p><code>plot()</code> returns us a multi-plot of all attributes, up to a reasonable maximum as shown above. We can choose to plot only the geometry by using the code chunk below.</p>
+<p><code>plot()</code> returns us a multi-plot of all attributes, up to a reasonable maximum as shown above.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If plot() is unable to plot all attributes, a warning would appear.</p>
+</div>
+</div>
+<p>We can choose to plot only the geometry using the code chunk below.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">st_geometry</span>(mpsz))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
@@ -450,10 +464,36 @@ Projected CRS: SVY21
 <p><img src="Hands-on_Ex1a_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>We will learn more about plotting high cartographic quality plots using <strong>tmap</strong> package in <a href="https://isss624gohsihui.netlify.app/hands-on_ex/hands-on_ex1/hands-on_ex1b" title="Hands-On Exercise 1B">Hands-On Exercise 1B</a>.</p>
+</div>
+</div>
 </section>
 <section id="working-with-map-projection" class="level2" data-number="6">
 <h2 data-number="6" class="anchored" data-anchor-id="working-with-map-projection"><span class="header-section-number">6</span> Working with MAP Projection</h2>
 <p>Map projection is an important property of a geospatial data. In order to perform geoprocessing using two geospatial data, we need to ensure that both geospatial data are projected using similar coordinate system. In this section, we will project a simple feature data frame from one coordinate sstem to another coordinate system.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You can read more about map projections in general <a href="https://gisgeography.com/map-projections/" title="How Map Projections Work">here</a> and Singapore’s map projections <a href="https://epsg.io/?q=Singapore%20kind%3APROJCRS">here</a>.</p>
+</div>
+</div>
 <section id="assigning-epsg-code-to-a-simple-feature-data-frame" class="level3" data-number="6.1">
 <h3 data-number="6.1" class="anchored" data-anchor-id="assigning-epsg-code-to-a-simple-feature-data-frame"><span class="header-section-number">6.1</span> Assigning EPSG code to a simple feature data frame</h3>
 <p>First, we will check the coordinate system of <code>mpsz</code> simple feature data frame using <code>st_crs()</code> of <strong>sf</strong> package:</p>
@@ -578,7 +618,20 @@ GEOGCRS["WGS 84",
     ID["EPSG",4326]]</code></pre>
 </div>
 </div>
-<p>As preschool is in wgs84 coordinate system, we will need to reproject preschool from a wgs84 coordinate system to svy21 coordinate system using <code>st_transform()</code> . Note that <code>st_transform()</code> converts or transforms coordinates of simple feature while <code>st_set_crs()</code> change the coordinate reference system without modifying any coordinates.</p>
+<p>As preschool is in wgs84 coordinate system, we will need to reproject preschool from a wgs84 coordinate system to svy21 coordinate system using <code>st_transform()</code> .</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Note that <code>st_transform()</code> converts or transforms coordinates of simple feature while <code>st_set_crs()</code> change the coordinate reference system without modifying any coordinates.</p>
+</div>
+</div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>preschool3414 <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(preschool, <span class="at">crs =</span> <span class="dv">3414</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -674,7 +727,7 @@ PROJCRS["SVY21 / Singapore TM",
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>listings_sf <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(listings, <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"longitude"</span>, <span class="st">"latitude"</span>), <span class="at">crs=</span><span class="dv">4326</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="dv">3414</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>We then use glimpse() to examine the content of the newly created simple feature data frame.</p>
+<p>We then use <code>glimpse()</code> to examine the content of the newly created simple feature data frame.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(listings_sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -699,7 +752,7 @@ $ license                        &lt;chr&gt; NA, NA, NA, "S0399", "S0399", NA, N
 $ geometry                       &lt;POINT [m]&gt; POINT (41972.5 36390.05), POINT (…</code></pre>
 </div>
 </div>
-<p>Table above shows the content of listing_sf. Notice that a new column called geometry has been added into the data frame. On the other hand, the longitude and latitude columns have been dropped from the data frame.</p>
+<p>Table above shows the content of listing_sf. Notice that a new column called <strong>geometry</strong> has been added into the data frame. On the other hand, the longitude and latitude columns have been dropped from the data frame.</p>
 </section>
 </section>
 <section id="geoprocessing-with-sf-package" class="level2" data-number="8">
@@ -710,7 +763,7 @@ $ geometry                       &lt;POINT [m]&gt; POINT (41972.5 36390.05), POI
 <p>The scenario:</p>
 <p>The authority is planning to upgrade the exiting cycling path. To do so, they need to acquire 5 metres of reserved land on the both sides of the current cycling path. You are tasked to determine the extend of the land need to be acquired and their total area.</p>
 <p>The solution:</p>
-<p>Firstly, st_buffer() of sf package is used to compute the 5-meter buffers around cycling paths</p>
+<p>Firstly, <code>st_buffer()</code> of sf package is used to compute the 5-meter buffers around cycling paths</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>buffer_cycling <span class="ot">&lt;-</span> <span class="fu">st_buffer</span>(cyclingpath, <span class="at">dist =</span> <span class="dv">5</span>, <span class="at">nQuadSegs =</span> <span class="dv">30</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -731,12 +784,12 @@ $ geometry                       &lt;POINT [m]&gt; POINT (41972.5 36390.05), POI
 <p>The scenario:</p>
 <p>A pre-school service group want to find out the numbers of pre-schools in each Planning Subzone.</p>
 <p>The solution:</p>
-<p>The code chunk below performs two operations at one go. Firstly, identify pre-schools located inside each Planning Subzone by using st_intersects(). Next, length() of Base R is used to calculate numbers of pre-schools that fall inside each planning subzone.</p>
+<p>The code chunk below performs two operations at one go. Firstly, identify pre-schools located inside each Planning Subzone by using <code>st_intersects()</code>. Next, <code>length()</code> of Base R is used to calculate numbers of pre-schools that fall inside each planning subzone.</p>
 <p>First, we calculate the number of preschools in each subzone:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>mpsz3414<span class="sc">$</span><span class="st">'PreSch Count'</span> <span class="ot">&lt;-</span> <span class="fu">lengths</span>(<span class="fu">st_intersects</span>(mpsz3414, preschool3414))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Then, check the summary statistics of the PreSch count filed using summary():</p>
+<p>Then, check the summary statistics of the PreSch count filed using <code>summary()</code>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mpsz3414<span class="sc">$</span><span class="st">'PreSch Count'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -744,7 +797,7 @@ $ geometry                       &lt;POINT [m]&gt; POINT (41972.5 36390.05), POI
    0.00    0.00    4.00    7.09   10.00   72.00 </code></pre>
 </div>
 </div>
-<p>We use top_n() to list the planning subzone with the most number of pre-school:</p>
+<p>We use <code>top_n()</code> to list the planning subzone with the most number of pre-school:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">top_n</span>(mpsz3414, <span class="dv">1</span>, <span class="st">'PreSch Count'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -789,7 +842,7 @@ First 10 features:
 10 30104.18   3454.239   631644.3 MULTIPOLYGON (((24472.11 29...            1</code></pre>
 </div>
 </div>
-<p>To calculate the density of pre-school by planning subzone. we first derivethe area of each planning subzone:</p>
+<p>To calculate the density of pre-school by planning subzone. we first derives the area of each planning subzone:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>mpsz3414<span class="sc">$</span>Area <span class="ot">&lt;-</span> mpsz3414 <span class="sc">%&gt;%</span> </span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_area</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -826,7 +879,7 @@ First 10 features:
 <p><img src="Hands-on_Ex1a_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>Scatterplot showing the relationship between pre-school density and pre-school count.</p>
+<p>Here is a scatterplot showing the relationship between pre-school density and pre-school count.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> mpsz3414,</span>
 <span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">y =</span> <span class="st">`</span><span class="at">PreSch Count</span><span class="st">`</span>,</span>

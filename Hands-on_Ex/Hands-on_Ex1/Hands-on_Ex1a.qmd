@@ -106,13 +106,11 @@ head(mpsz, n=5)
 ```
 
 ::: {.callout-note appearance="simple"}
-
 ## Interesting info found!
 
 Here is an [article](https://towardsdatascience.com/python-and-r-for-data-wrangling-examples-for-both-including-speed-up-considerations-f2ec2bb53a86#:~:text=In%20the%20following%20gist%2C%20in,and%20values%20of%20the%20latter.) on the difference between `glimpse()` and `head()`.
 
 > "the *head()* function shows the first few rows (observations) of the *Data Frame*. The *glimpse()* function displays the number of observations, and variables (columns) along with the type, name, and values of the latter."
-
 :::
 
 ## Plotting Geospatial Data
@@ -126,10 +124,8 @@ plot(mpsz)
 
 `plot()` returns us a multi-plot of all attributes, up to a reasonable maximum as shown above.
 
-::: {.callout-note}
-
+::: callout-note
 If plot() is unable to plot all attributes, a warning would appear.
-
 :::
 
 We can choose to plot only the geometry using the code chunk below.
@@ -146,20 +142,16 @@ plot(mpsz["PLN_AREA_N"])
 
 ```
 
-::: {.callout-note}
-
+::: callout-note
 We will learn more about plotting high cartographic quality plots using **tmap** package in [Hands-On Exercise 1B](https://isss624gohsihui.netlify.app/hands-on_ex/hands-on_ex1/hands-on_ex1b "Hands-On Exercise 1B").
-
 :::
 
 ## Working with MAP Projection
 
 Map projection is an important property of a geospatial data. In order to perform geoprocessing using two geospatial data, we need to ensure that both geospatial data are projected using similar coordinate system. In this section, we will project a simple feature data frame from one coordinate sstem to another coordinate system.
 
-:::{.callout-note}
-
+::: callout-note
 You can read more about map projections in general [here](https://gisgeography.com/map-projections/ "How Map Projections Work") and Singapore's map projections [here](https://epsg.io/?q=Singapore%20kind%3APROJCRS).
-
 :::
 
 ### Assigning EPSG code to a simple feature data frame
@@ -196,10 +188,8 @@ st_crs(preschool)
 
 As preschool is in wgs84 coordinate system, we will need to reproject preschool from a wgs84 coordinate system to svy21 coordinate system using `st_transform()` .
 
-:::{.callout-note}
-
+::: callout-note
 Note that `st_transform()` converts or transforms coordinates of simple feature while `st_set_crs()` change the coordinate reference system without modifying any coordinates.
-
 :::
 
 ```{r}

@@ -9,7 +9,7 @@
 <meta name="author" content="Goh Si Hui">
 <meta name="dcterms.date" content="2023-11-18">
 
-<title>ISSS624 - In-class Exercise 1: My first date with Geospatial Data Analytics</title>
+<title>ISSS624 - In-class Exercise 1: My First Date with Geospatial Data Analytics</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -175,9 +175,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#getting-started" id="toc-getting-started" class="nav-link active" data-scroll-target="#getting-started"><span class="header-section-number">1</span> Getting Started</a></li>
-  <li><a href="#preparing-the-flow-data" id="toc-preparing-the-flow-data" class="nav-link" data-scroll-target="#preparing-the-flow-data"><span class="header-section-number">2</span> Preparing the Flow Data</a>
+  <li><a href="#preparing-the-data" id="toc-preparing-the-data" class="nav-link" data-scroll-target="#preparing-the-data"><span class="header-section-number">2</span> Preparing the Data</a>
   <ul class="collapse">
-  <li><a href="#importing-the-od-data" id="toc-importing-the-od-data" class="nav-link" data-scroll-target="#importing-the-od-data"><span class="header-section-number">2.1</span> Importing the OD data</a></li>
+  <li><a href="#importing-the-origin-destination-od-data" id="toc-importing-the-origin-destination-od-data" class="nav-link" data-scroll-target="#importing-the-origin-destination-od-data"><span class="header-section-number">2.1</span> Importing the Origin Destination (OD) data</a></li>
   <li><a href="#extracting-the-study-data" id="toc-extracting-the-study-data" class="nav-link" data-scroll-target="#extracting-the-study-data"><span class="header-section-number">2.2</span> Extracting the Study Data</a></li>
   </ul></li>
   <li><a href="#working-with-geospatial-data" id="toc-working-with-geospatial-data" class="nav-link" data-scroll-target="#working-with-geospatial-data"><span class="header-section-number">3</span> Working with Geospatial Data</a></li>
@@ -189,7 +189,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">In-class Exercise 1: My first date with Geospatial Data Analytics</h1>
+<h1 class="title">In-class Exercise 1: My First Date with Geospatial Data Analytics</h1>
 <p class="subtitle lead">Lesson 1</p>
 </div>
 
@@ -227,31 +227,45 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 data-number="1" class="anchored" data-anchor-id="getting-started"><span class="header-section-number">1</span> Getting Started</h2>
 <p>We will first load the necessary packages using the following code chunk:</p>
 <ul>
-<li>tmap: for thematic mapping</li>
-<li>sf: for geospatial data handling</li>
-<li>tidyverse: for non-spatial data handling</li>
+<li><strong>tmap</strong>: for thematic mapping</li>
+<li><strong>sf</strong>: for geospatial data handling</li>
+<li><strong>tidyverse</strong>: for non-spatial data handling</li>
 </ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tmap, sf, tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="preparing-the-flow-data" class="level2" data-number="2">
-<h2 data-number="2" class="anchored" data-anchor-id="preparing-the-flow-data"><span class="header-section-number">2</span> Preparing the Flow Data</h2>
-<section id="importing-the-od-data" class="level3" data-number="2.1">
-<h3 data-number="2.1" class="anchored" data-anchor-id="importing-the-od-data"><span class="header-section-number">2.1</span> Importing the OD data</h3>
-<p>We will import the <em>Passenger Volume by Origin Destination Bus Stops</em> data set downloaded from <a href="https://datamall.lta.gov.sg/content/datamall/en.html" title="LTA DataMall">LTA DataMall</a> by using <em>read_csv()</em> of <strong>readr</strong> package.</p>
+<section id="preparing-the-data" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="preparing-the-data"><span class="header-section-number">2</span> Preparing the Data</h2>
+<section id="importing-the-origin-destination-od-data" class="level3" data-number="2.1">
+<h3 data-number="2.1" class="anchored" data-anchor-id="importing-the-origin-destination-od-data"><span class="header-section-number">2.1</span> Importing the Origin Destination (OD) data</h3>
+<p>We will import the <code>Passenger Volume by Origin Destination Bus Stops</code> data set downloaded from <a href="https://datamall.lta.gov.sg/content/datamall/en.html" title="LTA DataMall">LTA DataMall</a> by using <code>read_csv()</code> of <strong>readr</strong> package, which is part of <strong>tidyverse</strong> package.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>odbus <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/aspatial/origin_destination_bus_202308.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>We convert the chr data type to categories using <em>as.factor()</em>.</p>
+<p>From the above, we see that <strong>ORIGIN_PT_CODE</strong> and <strong>DESTINATION_PT_CODE</strong> are character data type. We should convert these two columns from characters into factors because these two columns contains the bus stop numbers and we will need these bus stop numbers to get the bus stop locations in subsequent steps. We will use <code>as.factor()</code> to convert the data from character to factor.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>odbus<span class="sc">$</span>ORIGIN_PT_CODE <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(odbus<span class="sc">$</span>ORIGIN_PT_CODE)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>odbus<span class="sc">$</span>DESTINATION_PT_CODE <span class="ot">&lt;-</span> <span class="fu">as.factor</span>(odbus<span class="sc">$</span>DESTINATION_PT_CODE)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Do you know?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Factors are used for categorical variables, variables that have a fixed and known set of possible values.&nbsp;In R, factors allow for ordered categories with a fixed set of acceptable values. Typically, we would convert a column from character or numeric class to a factor if we want to set an intrinsic order to the values (“levels”) so they can be displayed non-alphabetically in plots and tables.</p>
+<p>If you are interested to read more about factors, this <a href="https://r4ds.had.co.nz/factors.html" title="R for Data Science (2e)">webpage</a> has more interesting information and references.</p>
+</div>
+</div>
 </section>
 <section id="extracting-the-study-data" class="level3" data-number="2.2">
 <h3 data-number="2.2" class="anchored" data-anchor-id="extracting-the-study-data"><span class="header-section-number">2.2</span> Extracting the Study Data</h3>
-<p>We will extract the study data using <em>filter()</em>, <em>group_by()</em> and <em>summarise()</em> to get weekday trips that start from 7am and end before 10am.</p>
+<p>We will extract the study data using <code>filter()</code>, <code>group_by()</code> and <code>summarise()</code> to get our study data (i.e., weekday trips that start from 7am and end before 10am).</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>origintrip_7_9 <span class="ot">&lt;-</span> odbus <span class="sc">%&gt;%</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(DAY_TYPE <span class="sc">==</span> <span class="st">"WEEKDAY"</span>) <span class="sc">%&gt;%</span></span>
@@ -263,7 +277,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="working-with-geospatial-data" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="working-with-geospatial-data"><span class="header-section-number">3</span> Working with Geospatial Data</h2>
-<p>We will use <em>st_read()</em> from <strong>sf</strong> package to read the geospatial data and use <em>st_transform()</em> from <strong>sf</strong> package to project the data into svy21 using its ESPG code 3414.</p>
+<p>We will use <code>st_read()</code> from <strong>sf</strong> package to read the geospatial data and use <code>st_transform()</code> from <strong>sf</strong> package to project the data into <strong>svy21</strong> using its ESPG code 3414.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>busstop <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/spatial"</span>, <span class="at">layer =</span> <span class="st">"BusStop"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs =</span> <span class="dv">3414</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -277,6 +291,9 @@ Dimension:     XY
 Bounding box:  xmin: 3970.122 ymin: 26482.1 xmax: 48284.56 ymax: 52983.82
 Projected CRS: SVY21</code></pre>
 </div>
+</div>
+<p>Let us take a look at the imported data:</p>
+<div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>busstop</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Simple feature collection with 5161 features and 3 fields
@@ -311,7 +328,10 @@ Dimension:     XY
 Bounding box:  xmin: 103.6057 ymin: 1.158699 xmax: 104.0885 ymax: 1.470775
 Geodetic CRS:  WGS 84</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>mpsz </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let us take a look at the imported data:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>mpsz</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Simple feature collection with 332 features and 6 fields
 Geometry type: MULTIPOLYGON

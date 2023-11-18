@@ -25,7 +25,7 @@ We will first load the necessary packages using the following code chunk:
 pacman::p_load(tmap, sf, tidyverse)
 ```
 
-## Preparing the Flow Data
+## Preparing the Data
 
 ### Importing the Origin Destination (OD) data
 
@@ -33,15 +33,11 @@ We will import the `Passenger Volume by Origin Destination Bus Stops` data set d
 
 ```{r}
 #| eval: false
+
 odbus <- read_csv("data/aspatial/origin_destination_bus_202308.csv")
 ```
 
-We use the following code chunk to take a peek at the imported `odbus` data:
 
-```{r}
-
-str(odbus)
-```
 
 From the above, we see that **ORIGIN_PT_CODE** and **DESTINATION_PT_CODE** are character data type. We should convert these two columns from characters into factors because these two columns contains the bus stop numbers and we will need these bus stop numbers to get the bus stop locations in subsequent steps. We will use `as.factor()` to convert the data from character to factor.
 

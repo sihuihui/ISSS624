@@ -335,7 +335,7 @@ Geodetic CRS:  WGS 84</code></pre>
 </section>
 <section id="checking-the-content-of-a-simple-feature-data-frame" class="level2" data-number="4">
 <h2 data-number="4" class="anchored" data-anchor-id="checking-the-content-of-a-simple-feature-data-frame"><span class="header-section-number">4</span> Checking the Content of A Simple Feature Data Frame</h2>
-<p>We will use different ways to retrieve information related to the content of a simple feature data frame.</p>
+<p>We can use different ways to retrieve information related to the content of a simple feature data frame.</p>
 <section id="working-with-st_geometry" class="level3" data-number="4.1">
 <h3 data-number="4.1" class="anchored" data-anchor-id="working-with-st_geometry"><span class="header-section-number">4.1</span> Working with st_geometry()</h3>
 <p><code>st_geometry()</code> only displays basic information of the feature class such as type of geometry, the geographic extent of the features and the coordinate system of the data.</p>
@@ -353,7 +353,7 @@ First 5 geometries:</code></pre>
 </section>
 <section id="working-with-glimpse" class="level3" data-number="4.2">
 <h3 data-number="4.2" class="anchored" data-anchor-id="working-with-glimpse"><span class="header-section-number">4.2</span> Working with glimpse()</h3>
-<p><em>glimpse()</em> reveals the data type of each fields.&nbsp;</p>
+<p><code>glimpse()</code> reveals the data type of each fields.&nbsp;</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(mpsz)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -375,6 +375,22 @@ $ Y_ADDR     &lt;dbl&gt; 29220.19, 29782.05, 29974.66, 29933.77, 30005.70, 29991
 $ SHAPE_Leng &lt;dbl&gt; 5267.381, 3506.107, 1740.926, 3313.625, 2825.594, 4428.913,…
 $ SHAPE_Area &lt;dbl&gt; 1630379.27, 559816.25, 160807.50, 595428.89, 387429.44, 103…
 $ geometry   &lt;MULTIPOLYGON [m]&gt; MULTIPOLYGON (((31495.56 30..., MULTIPOLYGON (…</code></pre>
+</div>
+</div>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Fun fact
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Here is an article on the difference between glimpse() and print().</p>
+<blockquote class="blockquote">
+<p>“the&nbsp;<em>head()</em> function shows the first few rows (observations) of the&nbsp;<em>Data Frame</em>. The&nbsp;<em>glimpse()</em>&nbsp;function displays the number of observations, and variables (columns) along with the type, name, and values of the latter.”</p>
+</blockquote>
 </div>
 </div>
 </section>
@@ -539,7 +555,7 @@ PROJCRS["SVY21 / Singapore TM",
 </section>
 <section id="transforming-the-projection-of-preschool-from-wgs84-to-svy21" class="level3" data-number="6.2">
 <h3 data-number="6.2" class="anchored" data-anchor-id="transforming-the-projection-of-preschool-from-wgs84-to-svy21"><span class="header-section-number">6.2</span> Transforming the projection of preschool from wgs84 to svy21</h3>
-<p>Using st_crs(), we check the projection of preschool data frame and note that it is in wgs84 coordinate system.</p>
+<p>Using <code>st_crs()</code>, we check the projection of preschool data frame:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(preschool)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -562,11 +578,11 @@ GEOGCRS["WGS 84",
     ID["EPSG",4326]]</code></pre>
 </div>
 </div>
-<p>As preschool is in wgs84 coordinate system, we will need to reproject preschool from a wgs84 coordinate system to svy21 coordinate system using st_transform() function. Note that st_transform() converts or transformates coordinates of simple feature while st_set_crs() change the coordinate reference system without modifying any coordinates.</p>
+<p>As preschool is in wgs84 coordinate system, we will need to reproject preschool from a wgs84 coordinate system to svy21 coordinate system using <code>st_transform()</code> . Note that <code>st_transform()</code> converts or transforms coordinates of simple feature while <code>st_set_crs()</code> change the coordinate reference system without modifying any coordinates.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>preschool3414 <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(preschool, <span class="at">crs =</span> <span class="dv">3414</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>We will check the projection of preschool data frame.</p>
+<p>We will check the projection of preschool data frame:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_crs</span>(preschool3414)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -778,7 +794,7 @@ First 10 features:
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>mpsz3414<span class="sc">$</span>Area <span class="ot">&lt;-</span> mpsz3414 <span class="sc">%&gt;%</span> </span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_area</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Then use mutate() to compute the density of preschool by planning subzone</p>
+<p>Then use <code>mutate()</code> to compute the density of preschool by planning subzone</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>mpsz3414 <span class="ot">&lt;-</span> mpsz3414 <span class="sc">%&gt;%</span> </span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="st">`</span><span class="at">PreSch Density</span><span class="st">`</span> <span class="ot">=</span> <span class="st">`</span><span class="at">PreSch Count</span><span class="st">`</span><span class="sc">/</span>Area <span class="sc">*</span> <span class="dv">1000000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -787,15 +803,15 @@ First 10 features:
 </section>
 <section id="exploratory-data-analysis" class="level2" data-number="9">
 <h2 data-number="9" class="anchored" data-anchor-id="exploratory-data-analysis"><span class="header-section-number">9</span> Exploratory Data Analysis</h2>
-<p>In this section, we will learn how to use appropriate ggplot2 functions to create statistical graphs for exploratory data analysis purposes.</p>
-<p>One quick way to plot the preschool density is to use hist() of R graphics:</p>
+<p>In this section, we will learn how to use appropriate <strong>ggplot2</strong> functions to create statistical graphs for exploratory data analysis purposes.</p>
+<p>One quick way to plot the preschool density is to use <code>hist()</code> of <strong>R graphics</strong>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(mpsz3414<span class="sc">$</span><span class="st">`</span><span class="at">PreSch Density</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="Hands-on_Ex1a_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>However hist() has limited room for further customisation. Hence, we will use functions from ggplot2:</p>
+<p>However <code>hist()</code> has limited room for further customisation. Hence, we will use functions from <strong>ggplot2</strong>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> mpsz3414,</span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.numeric</span>(<span class="st">`</span><span class="at">PreSch Density</span><span class="st">`</span>))) <span class="sc">+</span> </span>

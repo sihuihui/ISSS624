@@ -76,11 +76,11 @@ From the above, we know that `preschool` has 2290 features and 2 fields, a point
 
 ## Checking the Content of A Simple Feature Data Frame
 
-We will use different ways to retrieve information related to the content of a simple feature data frame.
+We can use different ways to retrieve information related to the content of a simple feature data frame.
 
 ### Working with st_geometry()
 
-`st_geometry()` only displays basic information of the feature class such as type of geometry, the geographic extent of the features and the coordinate system of the data.
+`st_geometry()` displays basic information of the feature class such as type of geometry, the geographic extent of the features and the coordinate system of the data.
 
 ```{r}
 st_geometry(mpsz)
@@ -89,7 +89,7 @@ st_geometry(mpsz)
 
 ### Working with glimpse()
 
-*glimpse()* reveals the data type of each fields. 
+`glimpse()` reveals the data type of each fields. 
 
 ```{r}
 glimpse(mpsz)
@@ -105,16 +105,34 @@ head(mpsz, n=5)
 
 ```
 
+::: {.callout-note appearance="simple"}
+
+## Interesting info found!
+
+Here is an [article](https://towardsdatascience.com/python-and-r-for-data-wrangling-examples-for-both-including-speed-up-considerations-f2ec2bb53a86#:~:text=In%20the%20following%20gist%2C%20in,and%20values%20of%20the%20latter.) on the difference between `glimpse()` and `head()`.
+
+> "the *head()* function shows the first few rows (observations) of the *Data Frame*. The *glimpse()* function displays the number of observations, and variables (columns) along with the type, name, and values of the latter."
+
+:::
+
 ## Plotting Geospatial Data
 
-Other than looking at feature information we should also visualise geospatial features. `plot()` is a quick and useful way to plot geospatial features:
+Other than looking at feature information, we should also visualise geospatial features. `plot()` is a quick and useful way to plot geospatial features:
 
 ```{r}
 plot(mpsz)
 
 ```
 
-`plot()` returns us a multi-plot of all attributes, up to a reasonable maximum as shown above. We can choose to plot only the geometry by using the code chunk below.
+`plot()` returns us a multi-plot of all attributes, up to a reasonable maximum as shown above.
+
+::: {.callout-note}
+
+If plot() is unable to plot all attributes, a warning would appear.
+
+:::
+
+We can choose to plot only the geometry by using the code chunk below.
 
 ```{r}
 plot(st_geometry(mpsz))
@@ -131,6 +149,12 @@ plot(mpsz["PLN_AREA_N"])
 ## Working with MAP Projection
 
 Map projection is an important property of a geospatial data. In order to perform geoprocessing using two geospatial data, we need to ensure that both geospatial data are projected using similar coordinate system. In this section, we will project a simple feature data frame from one coordinate sstem to another coordinate system.
+
+:::{.callout-note}
+
+You can read more about map projections in general [here](https://gisgeography.com/map-projections/ "How Map Projections Work") and Singapore's map projections [here](https://epsg.io/?q=Singapore%20kind%3APROJCRS).
+
+:::
 
 ### Assigning EPSG code to a simple feature data frame
 
@@ -157,21 +181,27 @@ st_crs(mpsz3414)
 
 ### Transforming the projection of preschool from wgs84 to svy21
 
-Using st_crs(), we check the projection of preschool data frame and note that it is in wgs84 coordinate system.
+Using `st_crs()`, we check the projection of preschool data frame:
 
 ```{r}
 st_crs(preschool)
 
 ```
 
-As preschool is in wgs84 coordinate system, we will need to reproject preschool from a wgs84 coordinate system to svy21 coordinate system using st_transform() function. Note that st_transform() converts or transformates coordinates of simple feature while st_set_crs() change the coordinate reference system without modifying any coordinates.
+As preschool is in wgs84 coordinate system, we will need to reproject preschool from a wgs84 coordinate system to svy21 coordinate system using `st_transform()` .
+
+:::{.callout-note}
+
+Note that `st_transform()` converts or transforms coordinates of simple feature while `st_set_crs()` change the coordinate reference system without modifying any coordinates.
+
+:::
 
 ```{r}
 preschool3414 <- st_transform(preschool, crs = 3414)
 
 ```
 
-We will check the projection of preschool data frame.
+We will check the projection of preschool data frame:
 
 ```{r}
 st_crs(preschool3414)
@@ -287,7 +317,7 @@ mpsz3414$Area <- mpsz3414 %>%
 
 ```
 
-Then use mutate() to compute the density of preschool by planning subzone
+Then use `mutate()` to compute the density of preschool by planning subzone
 
 ```{r}
 
@@ -297,15 +327,15 @@ mpsz3414 <- mpsz3414 %>%
 
 ## Exploratory Data Analysis
 
-In this section, we will learn how to use appropriate ggplot2 functions to create statistical graphs for exploratory data analysis purposes.
+In this section, we will learn how to use appropriate **ggplot2** functions to create statistical graphs for exploratory data analysis purposes.
 
-One quick way to plot the preschool density is to use hist() of R graphics:
+One quick way to plot the preschool density is to use `hist()` of **R graphics**:
 
 ```{r}
 hist(mpsz3414$`PreSch Density`)
 ```
 
-However hist() has limited room for further customisation. Hence, we will use functions from ggplot2:
+However `hist()` has limited room for further customisation. Hence, we will use functions from **ggplot2**:
 
 ```{r}
 ggplot(data = mpsz3414,

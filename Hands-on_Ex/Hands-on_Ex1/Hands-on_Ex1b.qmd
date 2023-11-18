@@ -28,7 +28,7 @@ pacman::p_load(tmap, sf, tidyverse)
 ```
 
 ::: callout-note
-Note that we will be using the readr, tidyr and dplyr packages which are part of the tidyverse package.
+We will be using the readr, tidyr and dplyr packages which are part of the tidyverse package.
 :::
 
 ### Data Acquisition
@@ -43,7 +43,7 @@ The datasets we are using are downloaded from the following sources:
 
 ### Importing Geospatial Data
 
-The code chunk below uses st_read() function of sf package to import the planning subzones, which is a polygon feature data frame.
+The code chunk below uses `st_read()` function of **sf** package to import the planning subzones, which is a polygon feature data frame.
 
 ```{r}
 mpsz <- st_read(dsn = "data/geospatial", layer = "MP14_SUBZONE_WEB_PL")
@@ -57,6 +57,8 @@ mpsz
 
 ### Importing Attribute Data
 
+We will use `read_csv()`
+
 ```{r}
 popdata <- read_csv("data/aspatial/respopagesexfa2011to2020.csv")
 ```
@@ -67,11 +69,13 @@ Let's take a look at the data imported in:
 list(popdata)
 ```
 
-Note: We can do some exploratory data analysis after importing the data. For example, plot charts to understand the population data.
+::: callout-note
+We can do some exploratory data analysis after importing the data. For example, plot charts to understand more about the population data.
+:::
 
 ## Data Preparation
 
-Before a thematic map can be prepared, we need to prepare a data table with 2020 values. The data table should include the following variables:
+Before a thematic map can be prepared, we need to prepare a data table just for year 2020 values. The data table should include the following variables:
 
 -   PA
 
@@ -156,29 +160,6 @@ qtm(mpsz_pop2020, fill = "DEPENDENCY")
 
 ### Creating a choropleth map by using *tmap*'s elements
 
-To draw a high quality cartographic choropleth map as shown in the figure below, tmap's drawing elements should be used.
-
-```{r}
-tm_shape(mpsz_pop2020) + 
-  tm_fill("DEPENDENCY", 
-          style = "quantile",
-          palette = "Blues",
-          title = "Dependency ratio") + 
-  tm_layout(main.title = "Distribution of Dependency Ratio by planning subzone",
-            main.title.position = "center",
-            main.title.size = 1.2,
-            legend.height = 0.45,
-            legend.width = 0.35,
-            frame = TRUE) + 
-  tm_borders(alpha = 0.5) +
-  tm_compass(type = "8star", size = 2) + 
-  tm_scale_bar() +
-  tm_grid(alpha = 0.2) +
-  tm_credits("Source: Planning Subzone boundary from Urban Redevelopment Authority (URA) \n and Population data from Department of Statistics (DOS)",
-             position = c("left", "bottom"))
-
-```
-
 In the following sub-section, we will share with you tmap functions that used to plot these elements.
 
 #### Drawing a base map
@@ -216,11 +197,39 @@ tm_shape(mpsz_pop2020) +
   tm_borders(lw = 0.1, alpha = 1)
 ```
 
+#### Putting it all together
+
+To draw a high quality cartographic choropleth map as shown in the figure below, tmap's drawing elements should be used.
+
+```{r}
+tm_shape(mpsz_pop2020) +    
+  tm_fill("DEPENDENCY",
+          style = "quantile",
+          palette = "Blues",
+          title = "Dependency ratio") +
+  tm_layout(main.title = "Distribution of Dependency Ratio by planning subzone",
+            main.title.position = "center",
+            main.title.size = 1.2,             
+            legend.height = 0.45,             
+            legend.width = 0.35,             
+            frame = TRUE) +    
+  tm_borders(alpha = 0.5) +   
+  tm_compass(type = "8star", size = 2) +    
+  tm_scale_bar() +   
+  tm_grid(alpha = 0.2) +   
+  tm_credits("Source: Planning Subzone boundary from Urban Redevelopment Authority (URA) \n and Population data from Department of Statistics (DOS)",              
+             position = c("left", "bottom")) 
+```
+
 ### Data Classification Methods of tmap
 
-Most choropleth maps employ some methods of data classification. The point of classification is to take a large number of observations and group them into data ranges or classes.
+Most choropleth maps use some methods of data classification in order to take a large number of observations and group them into data ranges or classes.
 
 tmap provides a total ten data classification methods, namely: fixed, sd, equal, pretty (default), quantile, kmeans, hclust, bclust, fisher, and jenks.
+
+::: callout-note
+For more information on data classification for choropleth maps, you can refer [here](https://gisgeography.com/choropleth-maps-data-classification/#:~:text=Data%20Classification%3A%20Try%20It%20Out,method%20impacts%20the%20reader%20differently. "Choropleth Maps – A Guide to Data Classification").
+:::
 
 To define a data classification method, the style argument of tm_fill() or tm_polygons() will be used.
 
@@ -258,7 +267,7 @@ summary(mpsz_pop2020$DEPENDENCY)
 
 Using the above results, we set the break points at 0.60, 0.70, 0.80, 0.90, and 0 will be the minimum while 1 will be the maximum.
 
-We plot the choropleth map using the following code chunk:
+We plot the choropleth map with our customised breaks using the following code chunk:
 
 ```{r}
 tm_shape(mpsz_pop2020) +
@@ -269,7 +278,7 @@ tm_shape(mpsz_pop2020) +
 
 ### Colour Scheme
 
-tmap supports colour ramps either defined by the user or a set of predefined colour ramps from the RColorBrewer package.
+**tmap** supports colour ramps either defined by the user or a set of predefined colour ramps from the **RColorBrewer** package.
 
 #### Using ColourBrewer palette
 
@@ -299,7 +308,7 @@ tm_shape(mpsz_pop2020) +
 
 #### Map Legend
 
-In tmap, several legend options are provided to change the placement, format and appearance of the legend.
+In **tmap**, several legend options are available to change the placement, format and appearance of the legend.
 
 ```{r}
 tm_shape(mpsz_pop2020) + 
@@ -322,7 +331,7 @@ tm_shape(mpsz_pop2020) +
 
 #### Map Style
 
-tmap allows a wide variety of layout settings to be changed. They can be called by using tmap_style().
+**tmap** allows a wide variety of layout settings to be changed. They can be called by using `tmap_style()`.
 
 The code chunk below shows the classic style is used.
 
@@ -337,9 +346,9 @@ tm_shape(mpsz_pop2020) +
 
 #### Cartographic Furniture
 
-tmap also also provides arguments to draw other map furniture such as compass, scale bar and grid lines.
+**tmap** also also provides arguments to draw other map furniture such as compass, scale bar and grid lines.
 
-In the code chunk below, tm_compass(), tm_scale_bar() and tm_grid() are used to add compass, scale bar and grid lines onto the choropleth map.
+In the code chunk below, `tm_compass()`, `tm_scale_bar()` and `tm_grid()` are used to add compass, scale bar and grid lines onto the choropleth map.
 
 ```{r}
 tm_shape(mpsz_pop2020) + 
@@ -360,6 +369,8 @@ tm_shape(mpsz_pop2020) +
              position = c("left", "bottom"))
 ```
 
+To return to the previous map style, use the following code chunk:
+
 ```{r}
 tmap_style("white")
 ```
@@ -370,9 +381,9 @@ In tmap, small multiple maps (also known as facet maps) can be plotted in three 
 
 -   by assigning multiple values to at least one of the asthetic arguments,
 
--   by defining a group-by variable in tm_facets(), and
+-   by defining a group-by variable in `tm_facets()`, and
 
--   by creating multiple stand-alone maps with tmap_arrange().
+-   by creating multiple stand-alone maps with `tmap_arrange()`.
 
 #### By assigning multiple values to at least one of the aesthetic arguments
 

@@ -8,9 +8,9 @@ website:
       - text: Hands-on Exercises
         menu: 
           - text: Hands-on Exercise 1A
-            href: Hands-on_Ex1/Hands-on_Ex1a.qmd
+            href: Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1a.qmd
           - text: Hands-on Exercise 1B 
-            href: Hands-on_Ex1/Hands-on_Ex1b.qmd
+            href: Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1b.qmd
       - text: In-class Exercises
         menu: 
           - text: In-class Exercise 1

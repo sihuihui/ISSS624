@@ -74,5 +74,3 @@ mpsz <- st_read(dsn = "data/spatial", layer = "MPSZ-2019") %>%
 
 mpsz 
 ```
-
-## 

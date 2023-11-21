@@ -1,0 +1,20 @@
+[
+  {
+    "listing": "/index.html",
+    "items": [
+      "/Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1a.html",
+      "/Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1b.html"
+    ]
+  },
+  {
+    "listing": "/Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1a.html",
+    "items": []
+  },
+  {
+    "listing": "/Hands-on_Ex2a.html",
+    "items": [
+      "/Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1a.html",
+      "/Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1b.html"
+    ]
+  }
+]

@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Goh Si Hui">
+<meta name="dcterms.date" content="2023-11-19">
 
-<title>ISSS624 - ISSS624: Applied Geospatial Analytics</title>
+<title>ISSS624 - Hands-on Exercise 2A</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -64,7 +66,7 @@ ul.task-list li input[type="checkbox"] {
 <script>
 
   window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-hands-on .list');
+    const listingTargetEl = window.document.querySelector('#listing-listing .list');
     if (!listingTargetEl) {
       // No listing discovered, do not attach.
       return; 
@@ -77,7 +79,7 @@ ul.task-list li input[type="checkbox"] {
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-hands-on'] = new List('listing-hands-on', options);
+    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
 
     if (window['quarto-listing-loaded']) {
       window['quarto-listing-loaded']();
@@ -158,7 +160,7 @@ ul.task-list li input[type="checkbox"] {
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" rel="" target="" aria-current="page">
+    <a class="nav-link" href="./index.html" rel="" target="">
  <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item compact">
@@ -179,40 +181,67 @@ ul.task-list li input[type="checkbox"] {
     </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        
+    </div>
 <!-- main -->
-<main class="content column-page" id="quarto-document-content">
+<main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">ISSS624: Applied Geospatial Analytics</h1>
+<h1 class="title">Hands-on Exercise 2A</h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Goh Si Hui </p>
+          </div>
+  </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 19, 2023</p>
+    </div>
+  </div>
   
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">November 21, 2023</p>
+    </div>
+  </div>
     
   </div>
   
 
 </header>
 
-<p>Welcome! In this website, I will be sharing my learning journey on applied geospatial analytics.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><a href="https://www.freepik.com/"><img src="images/GIS_paranoic-01.png" class="img-fluid figure-img" width="941"></a></p>
-<figcaption class="figure-caption">Image by rawpixel.com on Freepik</figcaption>
-</figure>
-</div>
-<section id="latest" class="level2">
-<h2 class="anchored" data-anchor-id="latest">Latest</h2>
-<div id="listing-hands-on" class="quarto-listing quarto-listing-container-grid">
+<p>Overview</p>
+<p>In this exercise, we will learn how to compute spatial weights using R.</p>
+<p>Getting Started</p>
+<p>Packages</p>
+<p>Data Acquisition</p>
+<p>Data Wrangling</p>
+<p>Visualising Regional Development Indicator</p>
+<p>About Spatial Weights</p>
+<p>Computing Spatial Weights based on Contiguity</p>
+<p>Queen + visualising</p>
+<p>Rook + visualising</p>
+<p>Computing Spatial Weights based on distance</p>
+
+
+
+
+<div class="quarto-listing quarto-listing-container-grid" id="listing-listing">
 <div class="list grid quarto-listing-cols-3">
 <div class="g-col-1" data-index="0" data-listing-date-sort="1700064000000" data-listing-file-modified-sort="1700307405460" data-listing-date-modified-sort="1700307405000" data-listing-reading-time-sort="8">
 <a href="./Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1a.html" class="quarto-grid-link">
@@ -230,7 +259,7 @@ In this hands-on exercise, I will be sharing how to import and wrangle geospatia
 Goh Si Hui
 </div>
 <div class="listing-date">
-Nov 16, 2023
+November 16, 2023
 </div>
 </div>
 </div>
@@ -253,7 +282,7 @@ In this hands-on exercise, I will be sharing how to plot functional and truthful
 Goh Si Hui
 </div>
 <div class="listing-date">
-Nov 16, 2023
+November 16, 2023
 </div>
 </div>
 </div>
@@ -264,13 +293,7 @@ Nov 16, 2023
 <div class="listing-no-matching d-none">
 No matching items
 </div>
-</div>
-
-
-
-</section>
-
-</main> <!-- /main -->
+</div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

@@ -1,9 +1,22 @@
 ---
-title: "ISSS624"
+title: "ISSS624: Applied Geospatial Analytics"
+page-layout: full
+listing:
+  id: hands-on
+  contents:
+    - "Hands-on_Ex/Hands-on_Ex1/*.qmd"
+  type: grid 
+  
+toc: false 
+number-sections: false
 ---
 
-Welcome to ISSS624 Geospatial Analytics and Applications
+Welcome! In this website, I will be sharing my learning journey on applied geospatial analytics.
 
-In this webpage, I am going to share with you my learning journey on geospatial analytics.
+[![Image by rawpixel.com on Freepik](images/GIS_paranoic-01.png){fig-align="center" width="941"}](https://www.freepik.com/)
 
-[![Image by rawpixel.com on Freepik](images/GIS.jpg){fig-align="center"}](https://www.freepik.com/)
+## Latest 
+
+::: {#hands-on}
+:::
+

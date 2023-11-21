@@ -130,7 +130,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1b.html" rel="" target="">
  <span class="dropdown-text">Hands-on Exercise 1B</span></a>
   </li>  
-        <li class="dropdown-header">Hands-on Exercise 2A</li>
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex2/Hands-on_Ex2a.html" rel="" target="">
+ <span class="dropdown-text">Hands-on Exercise 2A</span></a>
+  </li>  
         <li class="dropdown-header">Hands-on Exercise 2B</li>
         <li class="dropdown-header">Hands-on Exercise 2C</li>
     </ul>
@@ -397,7 +400,8 @@ $ ROREmp      &lt;dbl&gt; 0.8929619, 0.8782065, 0.8041262, 0.7460163, 0.9052651,
 <div class="tab-content">
 <div id="tabset-3-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-3-1-tab">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>hunan <span class="ot">&lt;-</span> <span class="fu">left_join</span>(hunan, hunan2012)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>hunan <span class="ot">&lt;-</span> <span class="fu">left_join</span>(hunan, hunan2012,</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">by=</span><span class="st">"County"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 <div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
@@ -719,10 +723,121 @@ $ ROREmp      &lt;dbl&gt; 0.8929619, 0.8782065, 0.8041262, 0.7460163, 0.9052651,
 </div>
 </div>
 </div>
+<p>As we intend to only show the distribution of Gross Domestic Product Per Capita (GDPPC), we can drop some of the columns that we will not be using by selecting the columns that we want using select().</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-4-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-1" role="tab" aria-controls="tabset-4-1" aria-selected="true">Codes</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-4-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-4-2" role="tab" aria-controls="tabset-4-2" aria-selected="false">Output</a></li></ul>
+<div class="tab-content">
+<div id="tabset-4-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-4-1-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>hunan <span class="ot">&lt;-</span> <span class="fu">left_join</span>(hunan, hunan2012,</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">by=</span><span class="st">"County"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="dv">7</span>, <span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<div id="tabset-4-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-4-2-tab">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(hunan))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 7%">
+<col style="width: 9%">
+<col style="width: 14%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 38%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">NAME_2</th>
+<th style="text-align: right;">ID_3</th>
+<th style="text-align: left;">NAME_3</th>
+<th style="text-align: left;">ENGTYPE_3</th>
+<th style="text-align: left;">County</th>
+<th style="text-align: right;">GDPPC.x</th>
+<th style="text-align: left;">geometry</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Changde</td>
+<td style="text-align: right;">21098</td>
+<td style="text-align: left;">Anxiang</td>
+<td style="text-align: left;">County</td>
+<td style="text-align: left;">Anxiang</td>
+<td style="text-align: right;">23667</td>
+<td style="text-align: left;">POLYGON ((112.0625 29.75523…</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Changde</td>
+<td style="text-align: right;">21100</td>
+<td style="text-align: left;">Hanshou</td>
+<td style="text-align: left;">County</td>
+<td style="text-align: left;">Hanshou</td>
+<td style="text-align: right;">20981</td>
+<td style="text-align: left;">POLYGON ((112.2288 29.11684…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Changde</td>
+<td style="text-align: right;">21101</td>
+<td style="text-align: left;">Jinshi</td>
+<td style="text-align: left;">County City</td>
+<td style="text-align: left;">Jinshi</td>
+<td style="text-align: right;">34592</td>
+<td style="text-align: left;">POLYGON ((111.8927 29.6013,…</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Changde</td>
+<td style="text-align: right;">21102</td>
+<td style="text-align: left;">Li</td>
+<td style="text-align: left;">County</td>
+<td style="text-align: left;">Li</td>
+<td style="text-align: right;">24473</td>
+<td style="text-align: left;">POLYGON ((111.3731 29.94649…</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Changde</td>
+<td style="text-align: right;">21103</td>
+<td style="text-align: left;">Linli</td>
+<td style="text-align: left;">County</td>
+<td style="text-align: left;">Linli</td>
+<td style="text-align: right;">25554</td>
+<td style="text-align: left;">POLYGON ((111.6324 29.76288…</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Changde</td>
+<td style="text-align: right;">21104</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: left;">County</td>
+<td style="text-align: left;">Shimen</td>
+<td style="text-align: right;">27137</td>
+<td style="text-align: left;">POLYGON ((110.8825 30.11675…</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
 </section>
 </section>
 <section id="visualising-regional-development-indicator" class="level2" data-number="3">
 <h2 data-number="3" class="anchored" data-anchor-id="visualising-regional-development-indicator"><span class="header-section-number">3</span> Visualising Regional Development Indicator</h2>
+<p>We will prepare a base map and a choropleth map to show the distribution of Gross Domestic Product per Capita (GDPPC) using qtm() of tmap package.</p>
+<p>First,we will visualise the base map using the following code chunk:</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-5-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-1" role="tab" aria-controls="tabset-5-1" aria-selected="true">Codes</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-5-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-5-2" role="tab" aria-controls="tabset-5-2" aria-selected="false">Visualisation</a></li></ul>
+<div class="tab-content">
+<div id="tabset-5-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-5-1-tab">
+
+</div>
+<div id="tabset-5-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-5-2-tab">
+
+</div>
+</div>
+</div>
 </section>
 <section id="computing-spatial-weights" class="level2" data-number="4">
 <h2 data-number="4" class="anchored" data-anchor-id="computing-spatial-weights"><span class="header-section-number">4</span> Computing Spatial Weights</h2>

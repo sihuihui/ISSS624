@@ -13,7 +13,7 @@ execute:
 editor: visual 
 ---
 
-## Task 
+## Task
 
 For this task, we are required to prepare a choropleth map showing the distribution of passenger trips across the planning sub-zones.
 
@@ -35,23 +35,20 @@ pacman::p_load(tmap, sf, tidyverse)
 
 We will import the `Passenger Volume by Origin Destination Bus Stops` data set downloaded from [LTA DataMall](https://datamall.lta.gov.sg/content/datamall/en.html "LTA DataMall") by using `read_csv()` of **readr** package, which is part of **tidyverse** package.
 
+:::{.panel-tabset}
+## Codes 
 ```{r}
-#| eval: false
-
 odbus <- read_csv("data/aspatial/origin_destination_bus_202308.csv")
 ```
-
-We now take a peek at the imported data:
-
+## Imported Data 
 ```{r}
-#| eval: false
 glimpse(odbus)
 ```
+:::
 
 From the above, we see that **ORIGIN_PT_CODE** and **DESTINATION_PT_CODE** are character data type. We should convert these two columns from characters into factors because these two columns contains the bus stop numbers and we will need these bus stop numbers to get the bus stop locations in subsequent steps. We will use `as.factor()` to convert the data from character to factor.
 
 ```{r}
-#| eval: false
 odbus$ORIGIN_PT_CODE <- as.factor(odbus$ORIGIN_PT_CODE)
 odbus$DESTINATION_PT_CODE <- as.factor(odbus$DESTINATION_PT_CODE)
 ```
@@ -68,8 +65,10 @@ If you are interested to read more about factors, this [webpage](https://r4ds.ha
 
 We will extract the study data using `filter()`, `group_by()` and `summarise()` to get our study data (i.e., weekday trips that start from 7am and end before 10am).
 
+:::{.panel-tabset}
+## Codes 
+
 ```{r}
-#| eval: false
 origintrip_7_9 <- odbus %>%
   filter(DAY_TYPE == "WEEKDAY") %>%
   filter(TIME_PER_HOUR >= 7 & TIME_PER_HOUR <= 9) %>%
@@ -77,12 +76,12 @@ origintrip_7_9 <- odbus %>%
   summarise(TRIPS = sum(TOTAL_TRIPS))
 ```
 
-Let's take a look at the study data that we have extracted:
+## Data
 
 ```{r}
-#| eval: false
-kable(head(origintrip_7_9))
+head(origintrip_7_9)
 ```
+:::
 
 ## Preparing the Geospatial Data
 
@@ -90,37 +89,47 @@ kable(head(origintrip_7_9))
 
 We will use `st_read()` from **sf** package to read the geospatial data and use `st_transform()` from **sf** package to project the data into **svy21** using its ESPG code 3414.
 
+:::{.panel-tabset}
+## Codes
 ```{r}
+#| eval: false
 busstop <- st_read(dsn = "data/spatial", layer = "BusStop") %>%
   st_transform(crs = 3414)
 
 ```
+## Output
+```{r}
+#| echo: false
+busstop <- st_read(dsn = "data/spatial", layer = "BusStop") %>%
+  st_transform(crs = 3414)
+
+```
+:::
 
 From the above, we know that the `busstop` data is a point feature data frame. There are a total of 5161 features and 3 fields, and it uses the **svy21** projected coordinates system.
 
-Let us take a look at the imported data:
 
-```{r}
-#| eval: false
-glimpse(busstop)
-```
 
 We will now bring in the master plan subzone dataset using the code chunk below.
 
+:::{.panel-tabset}
+## Codes 
 ```{r}
+#| eval: false
 mpsz <- st_read(dsn = "data/spatial", layer = "MPSZ-2019") %>%
   st_transform(crs = 3414)
 
 ```
+## Output
+```{r}
+#| echo: false
+mpsz <- st_read(dsn = "data/spatial", layer = "MPSZ-2019") %>%
+  st_transform(crs = 3414)
 
+```
+:::
 From the above, we know that the `MPSZ-2019` data is a multipolygon feature data frame. There are a total of 332 features and 6 fields, and it uses the **WGS84** geographic coordinates system.
 
-Let us take a look at the imported data:
-
-```{r}
-#| eval: false
-glimpse(mpsz)
-```
 
 ## Geospatial Data Wrangling
 
@@ -128,13 +137,18 @@ glimpse(mpsz)
 
 We will now populate the planning subzone code (**SUBZONE_C**) of `mpsz` dataframe (multipolyon feature) into `busstop` (point feature) dataframe.
 
+::: {.panel-tabset}
+## Codes
 ```{r}
-
 busstop_mpsz <- st_intersection(busstop, mpsz) %>%
   select(BUS_STOP_N, SUBZONE_C) %>%
   st_drop_geometry()
 ```
-
+## Data
+```{r}
+head(busstop_mpsz)
+```
+:::
 We will save the output into rds format for future use.
 
 ```{r}
@@ -143,62 +157,86 @@ write_rds(busstop_mpsz, "data/rds/busstop_mpsz.csv")
 
 We will then append the planning subzone code (**SUBZONE_C**) from `busstop_mpsz` data frame onto `origintrip7_9` dataframe using the following code:
 
+:::{.panel-tabset}
+
+## Codes
 ```{r}
-#| eval: false
 origintrip_7_9_subzone <- left_join(origintrip_7_9,busstop_mpsz,
                                     by = c("ORIGIN_PT_CODE" = "BUS_STOP_N")) %>%
   rename(ORIGIN_BS = ORIGIN_PT_CODE, 
          ORIGIN_SZ = SUBZONE_C)
 ```
-
+## Data 
+```{r}
+head(origintrip_7_9_subzone)
+```
+:::
 Let us check for duplicate records:
 
+:::{.panel-tabset}
+## Codes
 ```{r}
-#| eval: false
 duplicate <- origintrip_7_9_subzone %>% 
   group_by_all() %>%
   filter(n()>1) %>%
   ungroup()
 ```
-
+## Output
 ```{r}
-#| eval: false
 glimpse(duplicate)
 ```
+::: 
 
 From the above, we know that there are duplicate records. Hence, we will use the following code chunk to retain only the unique records.
 
+:::{.panel-tabset}
+## Codes
 ```{r}
-#| eval: false
 origin_data <- unique(origintrip_7_9_subzone)
 ```
+## Data 
+```{r}
+head(origin_data)
+```
+:::
 
 Let us confirm if there are any duplicate records in the above dataframe:
 
+:::{.panel-tabset}
+## Codes
 ```{r}
-#| eval: false
 duplicate2 <- origin_data %>%
   group_by_all() %>%
   filter(n()>1) %>%
   ungroup()
 
+```
+## Output 
+```{r}
 glimpse(duplicate2)
 ```
+::: 
 
-Since there are no rows returned, it means that `origin_data` has no duplicates and we can proceed to the next step.
+Since there are no rows returned, it means that `origin_data` has no duplicates and we will now update the `origin_data` data frame with the planning subzone codes found in `mpsz` using the following code chunk.
 
-We will then update the `origin_data` data frame with the planning subzone codes found in `mpsz` using the following code chunk.
-
+:::{.panel-tabset}
+## Codes
 ```{r}
-#| eval: false
 mpsz_origin_data <- left_join(mpsz, origin_data,
                               by = c("SUBZONE_C" = "ORIGIN_SZ"))
 ```
+## Output 
+```{r}
+head(mpsz_origin_data)
+```
+:::
 
 ## Choropleth Visualisation
 
 We will now visualise the distribution of passenger trips on weekdays from 7am till before 10am across the planning subzones using the following code chunk.
 
+::: {.panel-tabset}
+## Codes
 ```{r}
 #| eval: false
 tm_shape(mpsz_origin_data)+
@@ -220,3 +258,27 @@ tm_shape(mpsz_origin_data)+
   tm_credits("Source: Planning Subzone boundary from URA and \nPassenger Trips Data from LTA", size = 0.5, position = c("left", "bottom"))
 
 ```
+
+## Output
+```{r}
+#| echo: false
+tm_shape(mpsz_origin_data)+
+  tm_fill("TRIPS", 
+          n = 5, 
+          style = "quantile",
+          palette = "Blues", 
+          title = "Passenger Trips")+
+  tm_layout(main.title = "Passenger Trips Generated at Planning Subzone Level",
+            main.title.position = "center",
+            main.title.size = 1.2,
+            legend.height = 0.45,
+            legend.width = 0.35,
+            frame = TRUE)+
+  tm_borders(alpha = 0.5)+
+  tm_compass(type = "8star", size = 2) +
+  tm_scale_bar()+
+  tm_grid(alpha = 0.2)+
+  tm_credits("Source: Planning Subzone boundary from URA and \nPassenger Trips Data from LTA", size = 0.5, position = c("left", "bottom"))
+
+```
+::: 

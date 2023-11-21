@@ -1,0 +1,160 @@
+---
+title: "Hands-on Exercise 2A"
+author: "Goh Si Hui"
+date: 2023/11/19
+date-format: long
+date-modified: "last-modified"
+format: html 
+execute: 
+  echo: true
+  eval: true
+  warning: false
+editor: visual 
+---
+
+## Overview
+
+In this exercise, we will learn how to compute spatial weights using R.
+
+::: {.callout-note appearance="simple"}
+## Do you know?
+
+Spatial Weights is a way to define spatial neighbourhood. Defining the neighbourhood is an essential step towards measuring the strength of the spatial relationships between objects.
+:::
+
+## Getting Started
+
+### Packages
+
+First, we will import the relevant packages that we will be using for this hands-on exercise.
+
+```{r}
+pacman::p_load(sf,spdep,tmap,tidyverse,knitr)
+```
+
+### Importing Data
+
+The datasets used in this hands-on exercise are:
+
+-   Hunan county boundary layer: a geospatial data set in ESRI shapefile format
+
+-   Hunan_2012.csv: an aspatial data set in csv format. It contains selected Hunan's local development indicators in 2012.
+
+::: callout-note
+The datasets from this exercise were provided as part of the coursework and downloaded from the student learning portal.
+:::
+
+#### Geospatial Data
+
+First, we will use st_read() of sf package to import Human shapefile into R.
+
+::: panel-tabset
+## Codes
+
+```{r}
+#| eval: false
+hunan <- st_read(dsn = "data/geospatial", layer = "Hunan")
+
+```
+
+## Output
+
+```{r}
+#| echo: false
+hunan <- st_read(dsn = "data/geospatial", layer = "Hunan")
+
+```
+## Data 
+
+```{r}
+glimpse(hunan)
+```
+:::
+
+From the output, we know that Hunan is a polygon dataframe with 88 features and 7 fields. It also uses a WGS84 geometric coordinates system.
+
+#### Aspatial Data
+
+We will import Hunan_2012.csv into R using read_csv() of readr package.
+
+::: panel-tabset
+## Codes
+
+```{r}
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+```
+## Data
+
+```{r}
+glimpse(hunan2012)
+```
+:::
+
+### Performing Relational Join
+We will update the attribute table of hunan's Spatial Polygons dataframe with the attribute fields of hunan2012 dataframe using the left_join() of dplyr package. 
+
+:::{.panel-tabset}
+## Codes 
+
+```{r}
+hunan <- left_join(hunan, hunan2012,
+                   by="County") 
+```
+## Output 
+```{r}
+kable(head(hunan))
+```
+
+:::
+
+As we intend to only show the distribution of Gross Domestic Product Per Capita (GDPPC), we can drop some of the columns that we will not be using by selecting the columns that we want using select(). 
+
+:::{.panel-tabset}
+## Codes 
+
+```{r}
+hunan <- left_join(hunan, hunan2012,
+                   by="County") %>%
+  select(1:4, 7, 15)
+```
+## Output 
+```{r}
+kable(head(hunan))
+```
+
+:::
+
+
+## Visualising Regional Development Indicator
+We will prepare a base map and a choropleth map to show the distribution of Gross Domestic Product per Capita (GDPPC) using qtm() of tmap package. 
+
+First,we will visualise the base map using the following code chunk: 
+
+:::{.panel-tabset}
+## Codes
+```{r}
+
+```
+
+## Visualisation
+```{r}
+
+```
+
+:::
+
+
+
+## Computing Spatial Weights
+
+### Based on Contiguity
+
+#### Queen
+
+visualising
+
+#### Rook
+
+visualising
+
+### Based on Distance

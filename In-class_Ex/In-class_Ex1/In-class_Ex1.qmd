@@ -35,12 +35,15 @@ pacman::p_load(tmap, sf, tidyverse)
 
 We will import the `Passenger Volume by Origin Destination Bus Stops` data set downloaded from [LTA DataMall](https://datamall.lta.gov.sg/content/datamall/en.html "LTA DataMall") by using `read_csv()` of **readr** package, which is part of **tidyverse** package.
 
-:::{.panel-tabset}
-## Codes 
+::: panel-tabset
+## Codes
+
 ```{r}
 odbus <- read_csv("data/aspatial/origin_destination_bus_202308.csv")
 ```
-## Imported Data 
+
+## Imported Data
+
 ```{r}
 glimpse(odbus)
 ```
@@ -65,8 +68,8 @@ If you are interested to read more about factors, this [webpage](https://r4ds.ha
 
 We will extract the study data using `filter()`, `group_by()` and `summarise()` to get our study data (i.e., weekday trips that start from 7am and end before 10am).
 
-:::{.panel-tabset}
-## Codes 
+::: panel-tabset
+## Codes
 
 ```{r}
 origintrip_7_9 <- odbus %>%
@@ -89,15 +92,18 @@ head(origintrip_7_9)
 
 We will use `st_read()` from **sf** package to read the geospatial data and use `st_transform()` from **sf** package to project the data into **svy21** using its ESPG code 3414.
 
-:::{.panel-tabset}
+::: panel-tabset
 ## Codes
+
 ```{r}
 #| eval: false
 busstop <- st_read(dsn = "data/spatial", layer = "BusStop") %>%
   st_transform(crs = 3414)
 
 ```
+
 ## Output
+
 ```{r}
 #| echo: false
 busstop <- st_read(dsn = "data/spatial", layer = "BusStop") %>%
@@ -108,19 +114,20 @@ busstop <- st_read(dsn = "data/spatial", layer = "BusStop") %>%
 
 From the above, we know that the `busstop` data is a point feature data frame. There are a total of 5161 features and 3 fields, and it uses the **svy21** projected coordinates system.
 
-
-
 We will now bring in the master plan subzone dataset using the code chunk below.
 
-:::{.panel-tabset}
-## Codes 
+::: panel-tabset
+## Codes
+
 ```{r}
 #| eval: false
 mpsz <- st_read(dsn = "data/spatial", layer = "MPSZ-2019") %>%
   st_transform(crs = 3414)
 
 ```
+
 ## Output
+
 ```{r}
 #| echo: false
 mpsz <- st_read(dsn = "data/spatial", layer = "MPSZ-2019") %>%
@@ -128,8 +135,8 @@ mpsz <- st_read(dsn = "data/spatial", layer = "MPSZ-2019") %>%
 
 ```
 :::
-From the above, we know that the `MPSZ-2019` data is a multipolygon feature data frame. There are a total of 332 features and 6 fields, and it uses the **WGS84** geographic coordinates system.
 
+From the above, we know that the `MPSZ-2019` data is a multipolygon feature data frame. There are a total of 332 features and 6 fields, and it uses the **WGS84** geographic coordinates system.
 
 ## Geospatial Data Wrangling
 
@@ -137,18 +144,22 @@ From the above, we know that the `MPSZ-2019` data is a multipolygon feature data
 
 We will now populate the planning subzone code (**SUBZONE_C**) of `mpsz` dataframe (multipolyon feature) into `busstop` (point feature) dataframe.
 
-::: {.panel-tabset}
+::: panel-tabset
 ## Codes
+
 ```{r}
 busstop_mpsz <- st_intersection(busstop, mpsz) %>%
   select(BUS_STOP_N, SUBZONE_C) %>%
   st_drop_geometry()
 ```
+
 ## Data
+
 ```{r}
 head(busstop_mpsz)
 ```
 :::
+
 We will save the output into rds format for future use.
 
 ```{r}
@@ -157,44 +168,53 @@ write_rds(busstop_mpsz, "data/rds/busstop_mpsz.csv")
 
 We will then append the planning subzone code (**SUBZONE_C**) from `busstop_mpsz` data frame onto `origintrip7_9` dataframe using the following code:
 
-:::{.panel-tabset}
-
+::: panel-tabset
 ## Codes
+
 ```{r}
 origintrip_7_9_subzone <- left_join(origintrip_7_9,busstop_mpsz,
                                     by = c("ORIGIN_PT_CODE" = "BUS_STOP_N")) %>%
   rename(ORIGIN_BS = ORIGIN_PT_CODE, 
          ORIGIN_SZ = SUBZONE_C)
 ```
-## Data 
+
+## Data
+
 ```{r}
 head(origintrip_7_9_subzone)
 ```
 :::
+
 Let us check for duplicate records:
 
-:::{.panel-tabset}
+::: panel-tabset
 ## Codes
+
 ```{r}
 duplicate <- origintrip_7_9_subzone %>% 
   group_by_all() %>%
   filter(n()>1) %>%
   ungroup()
 ```
+
 ## Output
+
 ```{r}
 glimpse(duplicate)
 ```
-::: 
+:::
 
 From the above, we know that there are duplicate records. Hence, we will use the following code chunk to retain only the unique records.
 
-:::{.panel-tabset}
+::: panel-tabset
 ## Codes
+
 ```{r}
 origin_data <- unique(origintrip_7_9_subzone)
 ```
-## Data 
+
+## Data
+
 ```{r}
 head(origin_data)
 ```
@@ -202,8 +222,9 @@ head(origin_data)
 
 Let us confirm if there are any duplicate records in the above dataframe:
 
-:::{.panel-tabset}
+::: panel-tabset
 ## Codes
+
 ```{r}
 duplicate2 <- origin_data %>%
   group_by_all() %>%
@@ -211,21 +232,26 @@ duplicate2 <- origin_data %>%
   ungroup()
 
 ```
-## Output 
+
+## Output
+
 ```{r}
 glimpse(duplicate2)
 ```
-::: 
+:::
 
 Since there are no rows returned, it means that `origin_data` has no duplicates and we will now update the `origin_data` data frame with the planning subzone codes found in `mpsz` using the following code chunk.
 
-:::{.panel-tabset}
+::: panel-tabset
 ## Codes
+
 ```{r}
 mpsz_origin_data <- left_join(mpsz, origin_data,
                               by = c("SUBZONE_C" = "ORIGIN_SZ"))
 ```
-## Output 
+
+## Output
+
 ```{r}
 head(mpsz_origin_data)
 ```
@@ -235,8 +261,9 @@ head(mpsz_origin_data)
 
 We will now visualise the distribution of passenger trips on weekdays from 7am till before 10am across the planning subzones using the following code chunk.
 
-::: {.panel-tabset}
+::: panel-tabset
 ## Codes
+
 ```{r}
 #| eval: false
 tm_shape(mpsz_origin_data)+
@@ -260,6 +287,7 @@ tm_shape(mpsz_origin_data)+
 ```
 
 ## Output
+
 ```{r}
 #| echo: false
 tm_shape(mpsz_origin_data)+
@@ -281,4 +309,4 @@ tm_shape(mpsz_origin_data)+
   tm_credits("Source: Planning Subzone boundary from URA and \nPassenger Trips Data from LTA", size = 0.5, position = c("left", "bottom"))
 
 ```
-::: 
+:::

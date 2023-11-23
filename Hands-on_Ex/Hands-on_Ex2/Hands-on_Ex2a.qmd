@@ -64,7 +64,8 @@ hunan <- st_read(dsn = "data/geospatial", layer = "Hunan")
 hunan <- st_read(dsn = "data/geospatial", layer = "Hunan")
 
 ```
-## Data 
+
+## Data
 
 ```{r}
 glimpse(hunan)
@@ -83,6 +84,7 @@ We will import Hunan_2012.csv into R using read_csv() of readr package.
 ```{r}
 hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
 ```
+
 ## Data
 
 ```{r}
@@ -91,70 +93,190 @@ glimpse(hunan2012)
 :::
 
 ### Performing Relational Join
-We will update the attribute table of hunan's Spatial Polygons dataframe with the attribute fields of hunan2012 dataframe using the left_join() of dplyr package. 
 
-:::{.panel-tabset}
-## Codes 
+We will update the attribute table of hunan's Spatial Polygons dataframe with the attribute fields of hunan2012 dataframe using the left_join() of dplyr package.
+
+::: panel-tabset
+## Codes
 
 ```{r}
-hunan <- left_join(hunan, hunan2012,
+hunan1 <- left_join(hunan, hunan2012,
                    by="County") 
 ```
-## Output 
-```{r}
-kable(head(hunan))
-```
 
+## Output
+
+```{r}
+kable(head(hunan1))
+```
 :::
 
-As we intend to only show the distribution of Gross Domestic Product Per Capita (GDPPC), we can drop some of the columns that we will not be using by selecting the columns that we want using select(). 
+As we intend to only show the distribution of Gross Domestic Product Per Capita (GDPPC), we can drop some of the columns that we will not be using by selecting the columns that we want using select().
 
-:::{.panel-tabset}
-## Codes 
+::: panel-tabset
+## Codes
 
 ```{r}
-hunan <- left_join(hunan, hunan2012,
-                   by="County") %>%
-  select(1:4, 7, 15)
-```
-## Output 
-```{r}
-kable(head(hunan))
+hunan2 <- hunan1 %>% 
+  select(c(1:4, 6, 15)) 
 ```
 
+## Output
+
+```{r}
+kable(head(hunan2))
+```
 :::
-
 
 ## Visualising Regional Development Indicator
-We will prepare a base map and a choropleth map to show the distribution of Gross Domestic Product per Capita (GDPPC) using qtm() of tmap package. 
 
-First,we will visualise the base map using the following code chunk: 
+We will show the distribution of Gross Domestic Product per Capita (GDPPC) using qtm() of tmap package using the following code chunk.
 
-:::{.panel-tabset}
+::: panel-tabset
 ## Codes
+
 ```{r}
+
+#| eval: false
+
+basemap <- tm_shape(hunan2) + 
+  tm_polygons() + 
+  tm_text("NAME_3", size = 0.5)
+
+gdppc <- qtm(hunan2, fill = "GDPPC")
+tmap_arrange(basemap, gdppc, asp = 1, ncol=2)
+
 
 ```
 
 ## Visualisation
+
 ```{r}
+#| echo: false
+
+basemap <- tm_shape(hunan2) + 
+  tm_polygons() + 
+  tm_text("NAME_3", size = 0.5)
+gdppc <- qtm(hunan2, "GDPPC")
+tmap_arrange(basemap, gdppc, asp=1, ncol=2)
+
+```
+:::
+
+## Defining and Computing Spatial Weights
+
+There are at least two popular methods can be used to define spatial weights of geographical areas. They are contiguity and distance.
+
+### Contiguity-Based Weight matrix
+
+There are three different ways to define contiguity neighbours. They are Rooks, Bishops and Queen's methods. Rooks and Queens are the tow commonly used methods. The main difference between Queen's and Rooks is that Rooks only considers geospgrahical areas that shared common boundaries but Queen's method includes geographical areas touching at the tips of the target geographical area.
+
+In this section, we will use poly2nb() of spdep package to compute contiguity weight matrices for the study area. This function builds a neigbours list based on regions with contiguous boundaries that is sharing one or more boundary point. For poly2nb() function, it is defined in QUEEN contiguity by default. Hence if we want to compute Rook contiguity based neighbours, we would need to pass the argument "queen = False".
+
+#### Computing Contiguity Weight Matrix
+
+We use the following code chunk to compute Queen and Rook contiguity weight matrix.
+
+::: panel-tabset
+## Queen
+
+```{r}
+wm_q <- poly2nb(hunan2, queen=TRUE)
 
 ```
 
+## Rook
+
+```{r}
+wm_r <- poly2nb(hunan2, queen = FALSE)
+```
 :::
 
+#### Retrieving Neighbours in the Contiguity Weight Matrix
+
+We use summary() to get a summary report of the computed weight matrix.
+
+::: panel-tabset
+## Queen
+
+```{r}
+summary(wm_q)
+
+```
+
+## Rook
+
+```{r}
+summary(wm_r)
+```
+:::
+
+From the output of the Queen continguity weight matrix, we see that there are 88 regions in total within Hunan and 448 non-zero links in total. There is only 1 most-connected region and it has 11 neigbours. There are 2 least-connected area and each has only 1 neighbour.
+
+From the output of the Rook contiguity weight matrix, we see that there are 440 non-zero links in total. There is only 1 most-connected region and it has 10 neigbours. There are 2 least-connected area and each has only 1 neighbour.
+
+***Finding the neighbour's names***
+
+For each polygon in our polygon object, wm_q (Queen) and wm_r (Rook), We can use the following code chunk to find out the list of neigbours for each most-connected region (a.k.a polygon).
+
+:::{.panel-tabset}
+
+## Queen's Polygon 85
+
+```{r}
+wm_q[[85]]
+```
+
+## Rook's Polygon 85
+
+```{r}
+wm_r[[85]]
+```
+:::
+The numbes in the output represent the polygon IDs stored in the Hunan Spatial Polygon Data Frame.  
+
+To retrieve the county name of PolygonID=85, we use the following code chunk:
+
+```{r}
+hunan$NAME_3[85]
+```
+So we now know that polygon ID 85 is Taoyuan County in Hunan. 
+
+To find out the names of the 11 neigbouring polygons that we got from the Queen Contiguity Matrix, we use the following code chunk:
+```{r}
+hunan2$NAME_3[c(1,2,3,5,6,32,56,57,69,75,78)]
+```
+
+We can retrieve the GDPPC of these 11 counties using the following code chunk:
+
+```{r}
+nb85q <- wm_q[[85]]
+nb85q <- hunan2$GDPPC[nb85q]
+nb85q
+
+```
+The output above shows the GDPPC of the 11 nearest neighbours based on Queen's method are: 23667, 20981, 34592, 25554, 27137, 24194, 14567, 21311, 18714, 14624 and 19509 respectively. 
 
 
-## Computing Spatial Weights
+We can display the complete weight matrix using str():
+:::{.panel-tabset}
+## Code
 
-### Based on Contiguity
+```{r}
+#| eval: false
+str(wm_q)
+```
+## Output 
+```{r}
+#| echo: false
+str(wm_q)
+```
+:::
 
-#### Queen
+#### Visualising Continguity Weights
+A connectivity graph takes a point and displays a line to each neighboring point. As we are working with polygons currently, we will need to get points in order to make our connectivity graphs. The typical method for this will be polygon centroids. We will calculate the polygon centroids using the sf package before getting Latitude and Longitude of Polygon Centroids
 
-visualising
 
-#### Rook
+### Distance-based Weight Matrix
 
-visualising
-
-### Based on Distance
+#### Computing Distance Weight Matrix

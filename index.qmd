@@ -2,11 +2,17 @@
 title: "ISSS624: Applied Geospatial Analytics"
 page-layout: full
 listing:
-  id: hands-on
-  contents:
+  - id: hands-on
+    contents:
     - "Hands-on_Ex/Hands-on_Ex1/*.qmd"
-  type: grid 
-  
+    - "Hands-on_Ex/Hands-on_Ex2/*.qmd"
+    type: grid 
+
+  - id: in-class
+    contents:
+    - "In-class_Ex/In-class_Ex1/*.qmd"
+    type: grid
+
 toc: false 
 number-sections: false
 ---
@@ -20,3 +26,7 @@ Welcome! In this website, I will be sharing my learning journey on applied geosp
 ::: {#hands-on}
 :::
 
+## In-Class Exercises
+
+::: {#in-class}
+:::

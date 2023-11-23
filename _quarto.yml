@@ -51,6 +51,8 @@ format:
     toc: true
     toc-title: "On this page"
     number-sections: true
+    toc-expand: 3
+    toc-depth: 3
     
 editor: visual
 

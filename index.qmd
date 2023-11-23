@@ -15,7 +15,7 @@ Welcome! In this website, I will be sharing my learning journey on applied geosp
 
 [![Image by rawpixel.com on Freepik](images/GIS_paranoic-01.png){fig-align="center" width="941"}](https://www.freepik.com/)
 
-## Latest 
+## Hands-On Exercises
 
 ::: {#hands-on}
 :::

@@ -258,7 +258,8 @@ nb85q
 The output above shows the GDPPC of the 11 nearest neighbours based on Queen's method are: 23667, 20981, 34592, 25554, 27137, 24194, 14567, 21311, 18714, 14624 and 19509 respectively. 
 
 
-We can display the complete weight matrix using str():
+We can display the complete weight matrix using str().
+
 :::{.panel-tabset}
 ## Code
 

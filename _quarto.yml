@@ -43,8 +43,6 @@ website:
         text: "Published with Quarto |"
       - href: https://www.netlify.com/
         text: "Hosted by Netlify"
-    right: 
-     - "Copyright 2023, Goh Si Hui"
 
 format:
   html:

@@ -360,27 +360,73 @@ The code chunk below performs permutation test for Geary's C statistuc using ```
 
 ```{r}
 set.seed(1234)
-bperm = geary.mc(hunans$GDPPC,
+bperm_g = geary.mc(hunans$GDPPC,
                  listw = rswm_q,
                  nsim = 999)
 bperm
 ```
 
 
-
-
 #### Visualising  Monte Carlo Geary's C
+We will plot a histogram to reveal the distribution of the simulated values using the following code chunks. 
 
+```{r}
+mean(bperm_g$res[1:999])
+```
+
+```{r}
+var(bperm_g$res[1:999])
+```
+
+```{r}
+summary(bperm_g$res[1:999])
+```
+
+```{r}
+hist(bperm_g$res, freq = TRUE, breaks = 20, xlab="Simulated Geary C")
+abline(v=1, col = "red")
+```
 
 ## Spatial Correlogram
-
+Spatial correlograms are great to examine patterns of spatial autocorrelation in your data or model residuals. They show how correlated are pairs of spatial observations when you increase the distance (lag) between them - they are plots of some index of autocorrelation (Moran’s I or Geary’s c) against distance.Although correlograms are not as fundamental as variograms (a keystone concept of geostatistics), they are very useful as an exploratory and descriptive tool. For this purpose they actually provide richer information than variograms.
 
 ### Compute Moran's I Correlogram
+We will use ```sp.correlogram()``` of **spdep package** to compute a 6-lag spatial correlogram of GDPPC for Moran's I (```method = "I"```).We will then use the plot() function of base Graph to plot the output. 
 
+```{r}
+MI_corr <- sp.correlogram(wm_q, hunans$GDPPC,
+                          order = 6, method = "I",
+                          style = "W")
+
+plot(MI_corr)
+
+```
+Plotting the output might not allow us to provide complete interpretation because not all autocorrelation values are statistically significant. Hence, it is important for us to examine the full analysis report by printing out the analysis results as in the code chunk below.
+
+```{r}
+print(MI_corr)
+```
 
 ### Compute Geary's C Correlogram and Plot 
+We will use ```sp.correlogram()``` of **spdep package** to compute a 6-lag spatial correlogram of GDPPC for Geary's C (```method = "C"```).We will then use the plot() function of base Graph to plot the output. 
 
+```{r}
+GC_corr <- sp.correlogram(wm_q,
+                          hunans$GDPPC,
+                          order = 6,
+                          method = "C",
+                          style = "W")
+
+plot(GC_corr)
+
+```
+Similar to the previous step, we will print out the analysis report by using the code chunk below.
+```{r}
+print(GC_corr)
+```
 
 ## Cluster and Outlier Analysis
+
+
 
 ## Creating a LISA Cluster Map

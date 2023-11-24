@@ -1,0 +1,17 @@
+---
+title: "Hands-on Exercise 2B: Global and Local Measures of Spatial Autocorrelations"
+author: "Goh Si Hui"
+date: 2023/11/24
+date-format: long
+date-modified: "last-modified"
+format: html 
+execute: 
+  echo: true
+  eval: true
+  warning: false
+editor: visual 
+---
+
+## Overview
+
+In this hands-on exercise, we will learn how to compute Global and Local Measure of Spatial Autocorrelation (GLSA) using the **spdep** package.

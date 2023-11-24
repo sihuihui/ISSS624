@@ -135,7 +135,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">Hands-on Exercise 2A</span></a>
   </li>  
         <li class="dropdown-header">Hands-on Exercise 2B</li>
-        <li class="dropdown-header">Hands-on Exercise 2C</li>
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -148,8 +147,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">In-class Exercise 1</span></a>
   </li>  
         <li class="dropdown-header">In-class Exercise 2</li>
-        <li class="dropdown-header">In-class Exercise 3</li>
-        <li class="dropdown-header">In-class Exercise 4</li>
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -158,7 +155,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-take-home-exercises">    
         <li class="dropdown-header">Take-home Exercise 1</li>
-        <li class="dropdown-header">Take-home Exercise 2</li>
     </ul>
   </li>
 </ul>
@@ -214,7 +210,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#spatial-window-average" id="toc-spatial-window-average" class="nav-link" data-scroll-target="#spatial-window-average"><span class="header-section-number">5.3</span> Spatial Window Average</a></li>
   <li><a href="#spatial-window-sum" id="toc-spatial-window-sum" class="nav-link" data-scroll-target="#spatial-window-sum"><span class="header-section-number">5.4</span> Spatial Window Sum</a></li>
   </ul></li>
-  <li><a href="#output-9" id="toc-output-9" class="nav-link" data-scroll-target="#output-9"><span class="header-section-number">6</span> Output</a></li>
   </ul>
 </nav>
     </div>
@@ -2968,16 +2963,17 @@ B 88 7744 536 1072 14160</code></pre>
 <div class="sourceCode cell-code" id="cb113"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a>hunan6 <span class="ot">&lt;-</span> <span class="fu">left_join</span>(hunan4, w_sum_gdppc.res)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>To compare the values of lag GDPPC and Spatial window average, <code>kable()</code> of <strong>Knitr</strong> package is used to prepare a table using the code chunk below.</p>
-<p>:::{.panel-tabset} ## Codes</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-18-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-18-1" role="tab" aria-controls="tabset-18-1" aria-selected="true">Codes</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-18-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-18-2" role="tab" aria-controls="tabset-18-2" aria-selected="false">Output</a></li></ul>
+<div class="tab-content">
+<div id="tabset-18-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-18-1-tab">
 <div class="cell">
 <div class="sourceCode cell-code" id="cb114"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a>hunan6 <span class="sc">%&gt;%</span></span>
 <span id="cb114-2"><a href="#cb114-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">"NAME_3"</span>, <span class="st">"lag_sum GDPPC"</span>, <span class="st">"w_sum GDPPC"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb114-3"><a href="#cb114-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section>
-</section>
-<section id="output-9" class="level2" data-number="6">
-<h2 data-number="6" class="anchored" data-anchor-id="output-9"><span class="header-section-number">6</span> Output</h2>
+</div>
+<div id="tabset-18-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-18-2-tab">
 <div class="cell">
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
@@ -3528,6 +3524,9 @@ B 88 7744 536 1072 14160</code></pre>
 </table>
 </div>
 </div>
+</div>
+</div>
+</div>
 <p>Lastly, <code>qtm()</code> of <strong>tmap</strong> package is used to plot the lag_sum GDPPC and w_sum_gdppc maps next to each other for quick comparison.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb115"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a>w_sum_gdppc <span class="ot">&lt;-</span> <span class="fu">qtm</span>(hunan6, <span class="st">"w_sum GDPPC"</span>)</span>
@@ -3538,6 +3537,7 @@ B 88 7744 536 1072 14160</code></pre>
 </div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

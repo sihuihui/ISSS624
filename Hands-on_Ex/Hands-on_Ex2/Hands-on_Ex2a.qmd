@@ -845,6 +845,7 @@ hunan6 %>%
   select("NAME_3", "lag_sum GDPPC", "w_sum GDPPC") %>%
   kable()
 ```
+:::
 
 Lastly, `qtm()` of **tmap** package is used to plot the lag_sum GDPPC and w_sum_gdppc maps next to each other for quick comparison.
 

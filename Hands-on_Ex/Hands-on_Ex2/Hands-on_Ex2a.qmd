@@ -136,7 +136,6 @@ We will show the distribution of Gross Domestic Product per Capita (GDPPC) using
 ## Codes
 
 ```{r}
-
 #| eval: false
 
 basemap <- tm_shape(hunan2) + 
@@ -378,19 +377,42 @@ wm_d62
 
 From the above output, we know that there are 88 regions in Hunan and on average each region has 3.68 neighbours.
 
-We can use `str()` to display the contents of `wm_d62` weight matrix. Another way to display the structure of the weight matrix is to combine `table()` and `card()` of **spdep**.
+We can use `str()` to display the contents of `wm_d62` weight matrix.
 
-::: panel-tabset
-## Using str()
+:::{.panel-tabset}
+
+## Codes
 
 ```{r}
+#| eval: false
 str(wm_d62)
 
 ```
 
-##Using table() and card()
+## Output
 
 ```{r}
+#| echo: false
+str(wm_d62)
+```
+
+:::
+
+Another way to display the structure of the weight matrix is to combine `table()` and `card()` of **spdep**.
+
+:::{.panel-tabset}
+## Codes
+
+```{r}
+#| eval: false
+table(hunan$County, card(wm_d62))
+
+```
+
+## Output
+
+```{r}
+#| echo: false
 table(hunan$County, card(wm_d62))
 ```
 :::
@@ -806,7 +828,19 @@ hunan6 <- left_join(hunan4, w_sum_gdppc.res)
 
 To compare the values of lag GDPPC and Spatial window average, `kable()` of **Knitr** package is used to prepare a table using the code chunk below.
 
+:::{.panel-tabset}
+## Codes 
+
 ```{r}
+#| eval: false
+hunan6 %>%
+  select("NAME_3", "lag_sum GDPPC", "w_sum GDPPC") %>%
+  kable()
+```
+## Output
+
+```{r}
+#| echo: false
 hunan6 %>%
   select("NAME_3", "lag_sum GDPPC", "w_sum GDPPC") %>%
   kable()

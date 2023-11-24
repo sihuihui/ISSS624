@@ -281,9 +281,9 @@ str(wm_q)
 
 #### Visualising Continguity Neighbours
 
-To visualise the contiguity neigbours, we will use a connectivity graph. A connectivity graph takes a point and displays a line to each neighboring point. As we are working with polygons currently, we will need to get points in order to make our connectivity graphs. The typical method for this will be polygon centroids. We will first calculate the polygon centroids using the sf package. To get the latitude and longitude of polygon centroids, we will use a mapping function to return a vector of the same length for each element. For this exercise, we will be using map_dbl variation of map from purrr package.
+To visualise the contiguity neigbours, we will use a connectivity graph. A connectivity graph takes a point and displays a line to each neighboring point. As we are working with polygons currently, we will need to get points in order to make our connectivity graphs. The typical method for this will be polygon centroids. We will first calculate the polygon centroids using the **sf** package. To get the latitude and longitude of polygon centroids, we will use a mapping function to return a vector of the same length for each element. For this exercise, we will be using `map_dbl` variation of map from **purrr** package.
 
-To get the longtitude values, we map the st_centroid function over the geometry column of hunan and access the longitude value through the double bracket notation `[[]]` and `1`. This allows us to get only the longitude, which is the first value in each centroid.
+To get the longtitude values, we map the `st_centroid()` function over the geometry column of hunan and access the longitude value through the double bracket notation `[[]]` and `1`. This allows us to get only the longitude, which is the first value in each centroid.
 
 ```{r}
 longitude <- map_dbl(hunan2$geometry, ~st_centroid(.x)[[1]])
@@ -379,8 +379,7 @@ From the above output, we know that there are 88 regions in Hunan and on average
 
 We can use `str()` to display the contents of `wm_d62` weight matrix.
 
-:::{.panel-tabset}
-
+::: panel-tabset
 ## Codes
 
 ```{r}
@@ -395,12 +394,11 @@ str(wm_d62)
 #| echo: false
 str(wm_d62)
 ```
-
 :::
 
 Another way to display the structure of the weight matrix is to combine `table()` and `card()` of **spdep**.
 
-:::{.panel-tabset}
+::: panel-tabset
 ## Codes
 
 ```{r}
@@ -828,8 +826,8 @@ hunan6 <- left_join(hunan4, w_sum_gdppc.res)
 
 To compare the values of lag GDPPC and Spatial window average, `kable()` of **Knitr** package is used to prepare a table using the code chunk below.
 
-:::{.panel-tabset}
-## Codes 
+::: panel-tabset
+## Codes
 
 ```{r}
 #| eval: false
@@ -837,6 +835,7 @@ hunan6 %>%
   select("NAME_3", "lag_sum GDPPC", "w_sum GDPPC") %>%
   kable()
 ```
+
 ## Output
 
 ```{r}

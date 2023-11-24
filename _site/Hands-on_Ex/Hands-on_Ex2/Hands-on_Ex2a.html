@@ -134,7 +134,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex2/Hands-on_Ex2a.html" rel="" target="">
  <span class="dropdown-text">Hands-on Exercise 2A</span></a>
   </li>  
-        <li class="dropdown-header">Hands-on Exercise 2B</li>
+        <li>
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex2/Hands-on_Ex2b.html" rel="" target="">
+ <span class="dropdown-text">Hands-on Exercise 2B</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -1098,8 +1101,8 @@ Link number distribution:
 </section>
 <section id="visualising-continguity-neighbours" class="level4" data-number="4.1.3">
 <h4 data-number="4.1.3" class="anchored" data-anchor-id="visualising-continguity-neighbours"><span class="header-section-number">4.1.3</span> Visualising Continguity Neighbours</h4>
-<p>To visualise the contiguity neigbours, we will use a connectivity graph. A connectivity graph takes a point and displays a line to each neighboring point. As we are working with polygons currently, we will need to get points in order to make our connectivity graphs. The typical method for this will be polygon centroids. We will first calculate the polygon centroids using the sf package. To get the latitude and longitude of polygon centroids, we will use a mapping function to return a vector of the same length for each element. For this exercise, we will be using map_dbl variation of map from purrr package.</p>
-<p>To get the longtitude values, we map the st_centroid function over the geometry column of hunan and access the longitude value through the double bracket notation <code>[[]]</code> and <code>1</code>. This allows us to get only the longitude, which is the first value in each centroid.</p>
+<p>To visualise the contiguity neigbours, we will use a connectivity graph. A connectivity graph takes a point and displays a line to each neighboring point. As we are working with polygons currently, we will need to get points in order to make our connectivity graphs. The typical method for this will be polygon centroids. We will first calculate the polygon centroids using the <strong>sf</strong> package. To get the latitude and longitude of polygon centroids, we will use a mapping function to return a vector of the same length for each element. For this exercise, we will be using <code>map_dbl</code> variation of map from <strong>purrr</strong> package.</p>
+<p>To get the longtitude values, we map the <code>st_centroid()</code> function over the geometry column of hunan and access the longitude value through the double bracket notation <code>[[]]</code> and <code>1</code>. This allows us to get only the longitude, which is the first value in each centroid.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>longitude <span class="ot">&lt;-</span> <span class="fu">map_dbl</span>(hunan2<span class="sc">$</span>geometry, <span class="sc">~</span><span class="fu">st_centroid</span>(.x)[[<span class="dv">1</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>

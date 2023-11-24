@@ -15,3 +15,372 @@ editor: visual
 ## Overview
 
 In this hands-on exercise, we will learn how to compute Global and Local Measure of Spatial Autocorrelation (GLSA) using the **spdep** package.
+
+## The Analytical Question
+
+In spatial policy, one of the main development objective of the local government and planners is to ensure equal distribution of development in the province. Our task in this study, hence, is to apply appropriate spatial statistical methods to discover if development are even distributed geographically. If the answer is No. Then, our next question will be "is there sign of spatial clustering?". And, if the answer for this question is yes, then our next question will be "where are these clusters?"
+
+In this case study, we are interested to examine the spatial pattern of a selected development indicator (i.e. GDP per capita) of [Hunan Province](https://en.wikipedia.org/wiki/Hunan "About Hunan"), People's Republic of China.
+
+## Getting Started
+
+### Packages
+
+First, we will import the relevant packages that we will be using for this hands-on exercise.
+
+```{r}
+pacman::p_load(sf,spdep,tmap,tidyverse,knitr)
+```
+
+We will be using the following packages:
+
+-   **sf**: to import and handle geospatial data,
+
+-   **tidyverse**: to handle and wrangle attribute data,
+
+-   **knitr**: to generate tables for matrices,
+
+-   **spdep**: to compute spatial weights, global and local spatial autocorrelation statistics; and
+
+-   **tmap**: to prepare and plot cartographic quality chropleth map.
+
+### Importing Data
+
+The datasets used in this hands-on exercise are:
+
+-   `Hunan county boundary layer:` a geospatial data set in ESRI shapefile format
+
+-   `Hunan_2012.csv`: an aspatial data set in csv format. It contains selected Hunan's local development indicators in 2012.
+
+::: callout-note
+The datasets from this exercise were provided as part of the coursework and downloaded from the student learning portal.
+:::
+
+#### Geospatial Data
+
+First, we will use `st_read()` of **sf** package to import `Hunan county boundary layer` (a shapefile) into R.
+
+::: panel-tabset
+## Codes
+
+```{r}
+#| eval: false
+hunan <- st_read(dsn = "data/geospatial", layer = "Hunan")
+
+```
+
+## Output
+
+```{r}
+#| echo: false
+hunan <- st_read(dsn = "data/geospatial", layer = "Hunan")
+
+```
+
+## Data
+
+```{r}
+glimpse(hunan)
+```
+:::
+
+From the output, we know that `hunan` is a polygon sf dataframe with 88 features and 7 fields. It also uses a WGS84 geometric coordinates system.
+
+#### Aspatial Data
+
+We will import `Hunan_2012.csv` into R using `read_csv()` of **readr** package.
+
+::: panel-tabset
+## Codes
+
+```{r}
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+```
+
+## Data
+
+```{r}
+glimpse(hunan2012)
+```
+:::
+
+### Performing Relational Join
+
+We will update the attribute table of `hunan`'s spatial polygons dataframe with the attribute fields of `hunan2012` dataframe using the `left_join()` of **dplyr** package.
+
+::: panel-tabset
+## Codes
+
+```{r}
+hunan_joined <- left_join(hunan, hunan2012,
+                   by="County") 
+```
+
+## Output
+
+```{r}
+kable(head(hunan_joined))
+```
+:::
+
+As we intend to only show the distribution of Gross Domestic Product Per Capita (GDPPC), we can drop some of the columns that we will not be using by selecting the columns that we want using `select()`.
+
+::: panel-tabset
+## Codes
+
+```{r}
+hunans <- hunan_joined %>% 
+  select(c(1:4, 7, 15)) 
+```
+
+## Output
+
+```{r}
+kable(head(hunans))
+```
+:::
+
+## Visualising Regional Development Indicator
+
+We will show the distribution of Gross Domestic Product per Capita (GDPPC) 2012 using `qtm()` of **tmap** package using the following code chunk.
+
+::: panel-tabset
+## Codes
+
+```{r}
+#| eval: false
+
+equal <- tm_shape(hunans) +
+  tm_fill("GDPPC",
+          n = 5,
+          style = "equal") +
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "Equal interval classification")
+
+quantile <- tm_shape(hunans) +
+  tm_fill("GDPPC",
+          n = 5,
+          style = "quantile") +
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "Equal quantile classification")
+
+tmap_arrange(equal, 
+             quantile, 
+             asp=1, 
+             ncol=2)
+
+```
+
+## Visualisation
+
+```{r}
+#| echo: false
+
+
+equal <- tm_shape(hunans) +
+  tm_fill("GDPPC",
+          n = 5,
+          style = "equal") +
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "Equal interval classification")
+
+quantile <- tm_shape(hunans) +
+  tm_fill("GDPPC",
+          n = 5,
+          style = "quantile") +
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "Equal quantile classification")
+
+tmap_arrange(equal, 
+             quantile, 
+             asp=1, 
+             ncol=2)
+
+```
+:::
+
+## Global Spatial Autocorrelation
+
+In this section, we will learn how to compute global spatial autocorrelation statistics and perform spatial complete randomness test for global spatial autocorrelation.
+
+### Computing Contiguity Spatial Weights
+
+Before we can compute the global spatial autocorrelation statistics, we need to construct spatial weights of the study area. Spatial weights is used to define the neighbourhood relationships between the geographical units (i.e., county) in the study area.
+
+::: callout-note
+To learn more about computing spatial weights, please refer to [Hands-on Exercise 2a](https://gohsihui.netlify.app/hands-on_ex/hands-on_ex2/hands-on_ex2a "Hands-on Ex2a").
+:::
+
+In the code chunk below, `poly2nb()` of **spdep** package is used to compute contiguity weight matrices for the study area. This function builds a neighbours list based on regions with contiguous boundaries.
+
+As mentioned in [Hands-on Exercise 2a](https://gohsihui.netlify.app/hands-on_ex/hands-on_ex2/hands-on_ex2a "Hands-on Ex2a"), `poly2nb()`'s default argument for `Queen` is `queen=TRUE`, meaning that the function computes Queen contiguity by default. If we want to compute Rook contiguity, we need to set `queen=FALSE`.
+
+We use the following code chunk to compute Queen contiguity weight matrix.
+
+```{r}
+wm_q <- poly2nb(hunans, queen = TRUE)
+summary(wm_q)
+```
+
+The summary report above shows that there are 88 regions in Hunan. The most connected region has 11 neighbours and there are 2 regions with only 1 neighbours. On average, each region has 5.090909 neighbours.
+
+
+### Row-standardised Weight Matrix
+Next, we need to assign weights to each neighbouring polygon. We will assign each neighbouring polygon with equal weight (`style="W"`). This is accomplished by assigning the fraction 1/(total number of neighbours) to each neighbouring county then summing the weighted income values.
+
+While assigning each neighbouring polygon with the same weight is most intuitive way to summarise the neighbours' values, polygons which are situated along the edges of the map will base their lagged values on fewer polygons (due to the nature of their positions on the map). This could cause potential over- or under- estimation of the true nature of the spatial autocorrelation in the data.
+
+For the purpose of this hands-on exercise, we will use the `style="W"` option for simplicity sake.
+
+::: callout-note
+The **`nb2listw()`** function can take in the following styles:
+
+-   B is the basic binary coding
+
+-   W is row standardised (sums over all links to n)
+
+-   C is globally standardised (sums over all links to n)
+
+-   U is equal to C divided by the number of neighbours (sums over all links to unity)
+
+-   S is the variance-stabilizing coding scheme proposed by Tiefelsdorf et al. 1999
+
+-   minmax is based on Kelejian and Prucha (2010), and divides the weights by the minimum of the maximum row sums and maximum column sums of the input weights. It is similar to the C and U styles.
+:::
+
+```{r}
+rswm_q <- nb2listw(wm_q, style="W", zero.policy = TRUE)
+rswm_q
+```
+
+::: callout-warning
+The `zero.policy=TRUE` option allows for lists of non-neighbors. This should be used with caution since the user may not be aware of missing neighbors in their dataset however, a `zero.policy = FALSE` would return an error.
+:::
+### Global Spatial Autocorrelation: Moran's I
+In this section, we will learn how to perform Moran's I statistics testing using ```moran.test()``` of **spdep** package. 
+
+:::{.callout-Note}
+Moran's test for spatial autocorrelation using a spatial weights matrix in weights list form. The assumptions underlying the test are sensitive to the form of the graph of neighbour relationships and other factors, and results may be checked against those of ```moran.mc``` permutations.
+:::
+
+#### Moran's I test
+The code chunk below performs Moran's I statistical testing using ```moran.test()``` of **spdep** package. 
+
+```{r}
+moran.test(hunans$GDPPC, 
+           listw = rswm_q,
+          zero.policy = TRUE,
+          alternative = "greater",
+          na.action = na.omit)
+```
+
+The Moran I test is a measure of spatial autocorrelation, which assesses whether the observed pattern in the spatial distribution of a variable is different from what would be expected under spatial randomness. 
+
+From the above outcome, we see that the Moran I statistic is 0.30075, and its standard deviation is 4.7351. The p-value is 1.095e-06, which is very small. Assuming that our chosen significance level is 0.05, we would reject the null hypothesis since p-value < 0.05, suggesting strong evidence against the null hypothesis of spatial randomness. 
+
+:::{.callout-Note}
+The alternative hypothesis is "greater", indicating that we are testing if there is a positive spatial autocorrelation (i.e., similar values are close to each other). We can specify the alternative hypothesis using ```alternative =```. The default value is ```"greater"```, but it can be changed to ```"less"``` or ```"two.sided"```. 
+:::
+
+Hence, the results suggests that there is a significant positive spatial autocorrelation in the variable **GDPPC** and the observed spatial pattern is not likely to have occurred by random chance. 
+
+#### Computing Monte Carlo Moran's I
+If we doubt that the assumptions of Moran's I are true (normality and randomisation), we can use a Monte Carlo simulation. The purpose of the Monte Carlo simulation is to estimate the significance of the Moran I statistic through random permutations. We will:
+-   Simulate Moran's I n times under the assumption of no spatial pattern,
+-   Assign all regions the mean value, 
+-   Calculate Moran's I,
+-   Compare the actual value of Moran's I to randomly simulated distribution to obtain p-value (pseudo significance). 
+
+The code chunk below performs permutation test for Moran's I statistic using ```moran.mc()``` of **spdep** package. A total of 1000 simulation will be performed. 
+
+```{r}
+set.seed(1234)
+bperm = moran.mc(hunans$GDPPC,
+                 listw = rswm_q,
+                 nsim = 999,
+                 zero.policy = TRUE,
+                 na.action = na.omit)
+```
+
+:::{.callout-note}
+The simulation was run with 999 permutations (```nsim = 999```) plus the observed statistic, making a total of 1000 simulations. 
+:::
+
+The Monte Carlo simulation supports the earlier findings from the Moran I test. The small p-value (0.001) indicates that the observe spatial pattern in the variable **GDPPC** is unlikely due to random chance and there is a strong evidence of positive spatial autocorrelation. 
+
+#### Visualising Monte Carlo Moran's I
+It is a good practice for us the examine the simulated Moran’s I test statistics in greater detail. This can be achieved by plotting the distribution of the statistical values as a histogram by using the code chunk below.
+
+```{r}
+mean(bperm$res[1:999])
+```
+
+
+```{r}
+var(bperm$res[1:999])
+```
+
+```{r}
+summary(bperm$res[1:999])
+
+```
+We will use hist() and abline() of R Graphics to plot the histogram.
+
+```{r}
+hist(bperm$res,
+     freq=TRUE,
+     breaks = 20,
+     xlab = "Simulated Moran's I")
+
+abline(v=0,
+       col="red")
+
+```
+The observed statistic from Monte Carlo Moran's I Simulation is 0.300749970, which falls way to the right of the histogram distribution suggesting that **GDPPC** values are clustered (a positive Moran's I value suggests clustering while a negative Moran'sI value suggests dispersion).
+
+### Global Spatial Autocorrelation: Geary's C
+In this section, we will learn how to perform Geary’s c statistics testing by using appropriate functions of spdep package.
+
+#### Geary's C test
+The code chunk below performs Geary’s C test for spatial autocorrelation by using ```geary.test()``` of **spdep** package. 
+
+```{r}
+geary.test(hunans$GDPPC, listw = rswm_q)
+```   
+The p-value associated with the Geary C test is 0.0001526, which is very small and less than 0.05. This means that we can reject the null hypothesis of spatial randomness. 
+
+:::{.callout-Note}
+The alternative hypothesis's default value is "Expectation greater than statistic", indicating that we are testing whether the expected value of Geary's C is greater than the observed statistic. This suggests positive spatial autocorrelation. 
+:::
+
+The Geary's C test result suggests that there is significant positive spatial autocorrelation in the variable **GDPPC** in the ```hunans``` dataset based on the specified spatial weights matrix. The observed spatial pattern is not likely to have occurred by random chance.
+
+#### Computing Monte Carlo Geary's C
+The code chunk below performs permutation test for Geary's C statistuc using ```geary.mc()``` of **spdep** package. 
+
+```{r}
+set.seed(1234)
+bperm = geary.mc(hunans$GDPPC,
+                 listw = rswm_q,
+                 nsim = 999)
+bperm
+```
+
+
+
+
+#### Visualising  Monte Carlo Geary's C
+
+
+## Spatial Correlogram
+
+
+### Compute Moran's I Correlogram
+
+
+### Compute Geary's C Correlogram and Plot 
+
+
+## Cluster and Outlier Analysis
+
+## Creating a LISA Cluster Map

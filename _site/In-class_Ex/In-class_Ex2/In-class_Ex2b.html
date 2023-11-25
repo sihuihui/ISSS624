@@ -261,7 +261,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">November 25, 2023</p>
+      <p class="date-modified">November 26, 2023</p>
     </div>
   </div>
     
@@ -583,22 +583,22 @@ Geodetic CRS:  WGS 84
 #   ENGTYPE_3 &lt;chr&gt;, County &lt;chr&gt;, GDPPC &lt;int&gt;, geometry &lt;POLYGON [°]&gt;</code></pre>
 </div>
 </div>
-<p>The output of <code>local_moran()</code> is an sf data.frame containing the columns ii, eii, var_ii, z_ii, p_ii, p_ii_sim, and p_folded_sim.</p>
+<p>The output of <code>local_moran()</code> is an sf data.frame containing the columns <em>ii,</em> <em>eii</em>, <em>var_ii</em>, <em>z_ii,</em> <em>p_ii</em>, p<em>_ii_sim</em>, <em>p_folded_sim</em>, <em>skewness</em> and <em>kurtosis</em>.</p>
 <ul>
-<li><p>ii: local moran statistic</p></li>
-<li><p>eii: expectation of local moran statistic; for localmoran_perm(), it refers to the permutation sample means</p></li>
-<li><p>var.ii:variance of local moran statistic; for localmoran_perm(), it refers to the permutation sample standard deviations</p></li>
-<li><p>z_ii: standard deviate of local moran statistic; for localmoran_perm based on permutation sample means and standard deviations</p></li>
-<li><p>p_ii:p-value of local moran statistic using pnorm(); for localmoran_perm using standard</p></li>
-<li><p>p_ii_sim: For localmoran_perm(), rank() and punif() of observed statistic rank for [0, 1] p-values using alternative=</p></li>
-<li><p>p_folded_sim: he simulation folded [0, 0.5] range ranked p-value (based on https://github.com/pysal/esda/blob/4a63e0b5df1e754b17b5f1205b cadcbecc5e061/esda/crand.py#L211-L213)</p></li>
-<li><p>skewness: For localmoran_perm, the output of e1071::skewness() for the permutation samples underlying the standard deviates</p></li>
-<li><p>Kurtosis: For localmoran_perm, the output of e1071::kurtosis() for the permutation samples underlying the standard deviates</p></li>
+<li><p><em>ii:</em> local moran statistic</p></li>
+<li><p><em>eii</em>: expectation of local moran statistic; for <code>localmoran_perm()</code>, it refers to the permutation sample means</p></li>
+<li><p><em>var.ii</em>:variance of local moran statistic; for <code>localmoran_perm()</code>, it refers to the permutation sample standard deviations</p></li>
+<li><p><em>z_ii</em>: standard deviate of local moran statistic; for <code>localmoran_perm()</code>, based on permutation sample means and standard deviations</p></li>
+<li><p><em>p_ii</em>:p-value of local moran statistic using <code>pnorm()</code>; for <code>localmoran_perm()</code> using standard</p></li>
+<li><p><em>p_ii_sim</em>: For <code>localmoran_perm()</code>, <code>rank()</code> and <code>punif()</code> of observed statistic rank for [0, 1] p-values using <code>alternative=</code></p></li>
+<li><p>p_folded_sim: the simulation folded [0, 0.5] range ranked p-value (based on <a href="https://github.com/pysal/esda/blob/4a63e0b5df1e754b17b5f1205b%20cadcbecc5e061/esda/crand.py#L211-L213">this</a>)</p></li>
+<li><p>skewness: For <code>localmoran_perm()</code>, the output of <code>e1071::skewness()</code> for the permutation samples underlying the standard deviates</p></li>
+<li><p>Kurtosis: For <code>localmoran_perm()</code>, the output of <code>e1071::kurtosis()</code> for the permutation samples underlying the standard deviates</p></li>
 </ul>
 </section>
 <section id="visualising-local-morans-i" class="level3" data-number="7.6">
 <h3 data-number="7.6" class="anchored" data-anchor-id="visualising-local-morans-i"><span class="header-section-number">7.6</span> Visualising Local Moran’s I</h3>
-<p>We can use <strong>tmap</strong> package to prepare a choropleth map using the value in the ii field.</p>
+<p>We can use <strong>tmap</strong> package to prepare a choropleth map using the values in the <em>ii</em> field.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)</span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(lisa) <span class="sc">+</span></span>
@@ -614,9 +614,42 @@ Geodetic CRS:  WGS 84
 </section>
 <section id="visualising-local-morans-p-value" class="level3" data-number="7.7">
 <h3 data-number="7.7" class="anchored" data-anchor-id="visualising-local-morans-p-value"><span class="header-section-number">7.7</span> Visualising Local Moran’s p-value</h3>
+<p>We can use <strong>tmap</strong> package to prepare a choropleth map using the values in the <em>p_ii_sim</em> field.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(lisa) <span class="sc">+</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"p_ii_sim"</span>) <span class="sc">+</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">main.title =</span> <span class="st">"p-value of Local Moran's I"</span>, </span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">main.title.size =</span> <span class="fl">0.8</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="In-class_Ex2b_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
 </section>
 <section id="visualising-local-morans-i-and-p-value" class="level3" data-number="7.8">
 <h3 data-number="7.8" class="anchored" data-anchor-id="visualising-local-morans-i-and-p-value"><span class="header-section-number">7.8</span> Visualising Local Moran’s I and p-value</h3>
+<p>For effective comparison, let us plot both maps next to each other.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>ii_val <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(lisa) <span class="sc">+</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"ii"</span>) <span class="sc">+</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_view</span>(<span class="at">set.zoom.limits =</span> <span class="fu">c</span>(<span class="dv">6</span>,<span class="dv">8</span>)) <span class="sc">+</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">main.title =</span> <span class="st">"Local Moran's I of GDPPC"</span>, </span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">main.title.size =</span> <span class="fl">0.8</span>)</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>piisim_val <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(lisa) <span class="sc">+</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"p_ii_sim"</span>) <span class="sc">+</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">main.title =</span> <span class="st">"p-value of Local Moran's I"</span>, </span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">main.title.size =</span> <span class="fl">0.8</span>)</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_arrange</span>(ii_val, piisim_val, <span class="at">asp =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="In-class_Ex2b_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
 </section>
 <section id="visualising-lisa-map" class="level3" data-number="7.9">
 <h3 data-number="7.9" class="anchored" data-anchor-id="visualising-lisa-map"><span class="header-section-number">7.9</span> Visualising LISA Map</h3>

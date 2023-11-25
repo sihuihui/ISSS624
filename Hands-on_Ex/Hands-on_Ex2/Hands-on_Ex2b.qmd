@@ -546,18 +546,179 @@ tmap_arrange(localMI.map, pvalue.map, asp=1, ncol=2)
 ```
 
 ## Creating a LISA Cluster Map
+The LISA Cluster Map shows the significant locations color coded by type of spatial autocorrelation. Before we generate the LISA cluster map, we would need to plot the Moran Scatterplot. 
 
-Plotting Moran Scatterplot
+###Plotting Moran Scatterplot
+The Moran scatterplot is an illustration of the relationship between the values of the chosen attribute at each location and the average value of the same attribute at neighboring locations.
 
-Plotting Moran Scatterplot with Standardised Variable
+```{r}
+nci <- moran.plot(hunans$GDPPC, rswm_q, 
+                  labels=as.character(hunans$County),
+                  xlab="GDPPC 2012",
+                  ylab="Spatially Lag GDPPC 2012")
 
-Preparing LISA Map Classes
+```
 
-Plotting LISA Map
+Notice that the plot is split in 4 quadrants. The top right corner belongs to areas that have high GDPPC and are surrounded by other areas that have the similar high level of GDPPC. This are the high-high locations in the lesson slide.
+
+### Plotting Moran Scatterplot with Standardised Variable
+We will use ```scale()``` to center and scale the variable. Here centering is done by subtracting the mean (omitting NAs) the corresponding columns, and scaling is done by dividing the (centered) variable by their standard deviations.
+
+```{r}
+hunans$Z.GDPPC <- scale(hunans$GDPPC) %>%
+  as.vector()
+```
+The ```as.vector()``` added to the end if to make sure that the data type we get from this vector maps neatly onto our dataframe. 
+
+We now plot the Moran scatterplot with standardised variable using the following code chunk. 
+
+```{r}
+nci2 <- moran.plot(hunans$Z.GDPPC, rswm_q,
+                   labels = as.character((hunans$County),                   xlab= "z-GDPPC 2012",                            ylab="Spatially Lag z-GDPPC 2012"))
+
+```
+### Preparing LISA Map Classes
+
+First we generate the quadrants of the LISA cluster map. 
+
+```{r}
+quadrant <-vector(mode="numeric", length=nrow(localMI))
+
+```
+Next, we derive the spatially legged variable of interest (i.e., GDPPC) and centers the spatially lagged variable around its mean. 
+
+```{r}
+hunans$lag_GDPPC <- lag.listw(rswm_q, hunans$GDPPC)
+
+DV <- hunan$lag_GDPPC - mean(hunans$lag_GDPPC)
+```
+
+Then, we center the local Moran's around the mean. 
+
+```{r}
+
+LM_I <- localMI[,1] - mean(localMI[,1])
+```
+
+Next, we will set a statistical significance level for the local Moran.
+
+```{r}
+signif <- 0.05
+```
+
+We also define the low-low(1), low-high(2), high-low(3) and high-high(4) categories. 
+
+```{r}
+quadrant[DV <0 & LM_I>0] <- 1
+quadrant[DV >0 & LM_I<0] <- 2
+quadrant[DV <0 & LM_I<0] <- 3  
+quadrant[DV >0 & LM_I>0] <- 4  
+
+```
+
+Lastly,we place non-significant Moran in the category 0.
+
+```{r}
+quadrant[localMI[,5]>signif] <- 0
+```
+
+
+```{r}
+quadrant <- vector(mode="numeric",length=nrow(localMI))
+hunans$lag_GDPPC <- lag.listw(rswm_q, hunans$GDPPC)
+DV <- hunans$lag_GDPPC - mean(hunans$lag_GDPPC)     
+LM_I <- localMI[,1]   
+signif <- 0.05       
+quadrant[DV <0 & LM_I>0] <- 1
+quadrant[DV >0 & LM_I<0] <- 2
+quadrant[DV <0 & LM_I<0] <- 3  
+quadrant[DV >0 & LM_I>0] <- 4    
+quadrant[localMI[,5]>signif] <- 0
+```
+
+### Plotting LISA Map
+Now, we can build the LISA map by using the following code chunk. 
+
+```{r}
+hunan.localMI$quadrant <- quadrant
+colors <- c("#ffffff", "#2c7bb6", "#abd9e9", "#fdae61", "#d7191c")
+clusters <- c("insignificant", "low-low", "low-high", "high-low", "high-high")
+
+tm_shape(hunan.localMI) +
+  tm_fill(col = "quadrant", 
+          style = "cat", 
+          palette = colors[c(sort(unique(quadrant)))+1], 
+          labels = clusters[c(sort(unique(quadrant)))+1],
+          popup.vars = c("")) +
+  tm_view(set.zoom.limits = c(11,17)) +
+  tm_borders(alpha=0.5)
+
+```
+For effective interpretation,we plot both the local Moran’s I values map and its corresponding p-values map next to each other.
+
+```{r}
+gdppc <- qtm(hunans, "GDPPC")
+
+hunan.localMI$quadrant <- quadrant
+colors <- c("#ffffff", "#2c7bb6", "#abd9e9", "#fdae61", "#d7191c")
+clusters <- c("insignificant", "low-low", "low-high", "high-low", "high-high")
+
+LISAmap <- tm_shape(hunan.localMI) +
+  tm_fill(col = "quadrant", 
+          style = "cat", 
+          palette = colors[c(sort(unique(quadrant)))+1], 
+          labels = clusters[c(sort(unique(quadrant)))+1],
+          popup.vars = c("")) +
+  tm_view(set.zoom.limits = c(11,17)) +
+  tm_borders(alpha=0.5)
+
+tmap_arrange(gdppc, LISAmap, 
+             asp=1, ncol=2)
+```
+We can also include the local Moran’s I map and p-value map as shown below for easy comparison.
+
+```{r}
+gdppc <- qtm(hunans, "GDPPC")
+
+hunan.localMI$quadrant <- quadrant
+colors <- c("#ffffff", "#2c7bb6", "#abd9e9", "#fdae61", "#d7191c")
+clusters <- c("insignificant", "low-low", "low-high", "high-low", "high-high")
+
+LISAmap <- tm_shape(hunan.localMI) +
+  tm_fill(col = "quadrant", 
+          style = "cat", 
+          palette = colors[c(sort(unique(quadrant)))+1], 
+          labels = clusters[c(sort(unique(quadrant)))+1],
+          popup.vars = c("")) +
+  tm_view(set.zoom.limits = c(11,17)) +
+  tm_borders(alpha=0.5)
+
+localMI.map <- tm_shape(hunan.localMI) +
+  tm_fill(col = "Ii", 
+          style = "pretty", 
+          title = "Local Moran Statistics") +
+  tm_borders(alpha = 0.5)
+
+pvalue.map <- tm_shape(hunan.localMI) +
+  tm_fill(col = "Pr.Ii", 
+          breaks=c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf),
+          palette="-Blues", 
+          title = "local Moran's I p-values") +
+  tm_borders(alpha = 0.5)
+
+tmap_arrange(gdppc,LISAmap,localMI.map, pvalue.map)
+```
 
 ## Hot Spot and Cold Spot Area Analysis
 
+Besides detecting cluster and outliers, localised spatial statistics can be also used to detect hot spot and/or cold spot areas.
+
+The term ‘hot spot’ has been used generically across disciplines to describe a region or value that is higher relative to its surroundings (Lepers et al 2005, Aben et al 2012, Isobe et al 2015).
+
+
 ### Getis and Ord's G-Statistics 
+
+
 
 ### Deriving Distance-based Weight Matrix 
 

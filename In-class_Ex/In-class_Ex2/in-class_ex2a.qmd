@@ -1,12 +1,39 @@
 ---
-title: "EHSA"
+title: "In-class Exercise 2: Spatial Weights "
+subtitle: "Using sfdep package" 
+author: "Goh Si Hui"
+date: 2023/11/25
+date-format: long
+date-modified: "last-modified"
+format: html 
+execute: 
+  echo: true
+  eval: true
+  warning: false
+editor: visual 
 ---
 
-```{r}
-pacman::p_load(tmap, sf, tidyverse, sfdep, knitr, plotly)
-```
+## Task
 
-plotly to make the graph interactive
+For this task, we will be learning how to derive spatial weights using the **sfdep** package.
+
+According to Josiah Parry, the developer of the package,
+
+> "sfdep builds on the great shoulders of spdep package for spatial dependence. sfdep creates an sf and tidyverse friendly interface to the package as well as introduces new functionality that is not present in spdep. sfdep utilizes list columns extensively to make this interface possible."
+
+## Getting Started
+
+We will first load the necessary packages using the following code chunk:
+
+-   **tmap**: for thematic mapping
+-   **sf**: for geospatial data handling (e.g. importing and exporting for spatial data and geoprocessing)
+-   **tidyverse**: a family of R packages for non-spatial data handling
+-   **knitr**: to generate static html tables
+-   **sfdep**: to calculate spatial weights and matrices, space time cube and hot spot analysis
+
+```{r}
+pacman::p_load(tmap, sf, tidyverse, sfdep, knitr)
+```
 
 ## Preparing the Geospatial Data
 
@@ -16,60 +43,64 @@ plotly to make the graph interactive
 hunan <- st_read(dsn = "data/geospatial", layer="Hunan")
 ```
 
-The projection is WGS84. hunan data is simple feature (sf) data frame with 88 features (each representing 1 geographical entity), and each feature is a polygon. \## Preparing the Aspatial Data
+From the above outcome, we know that `hunan`data is simple feature (sf) data frame with 88 features (each representing 1 geographical entity), and each feature is a polygon.It also uses the WGS84 projection.
+
+## Preparing the Aspatial Data
 
 ### Importing the data
 
 ```{r}
-GDPPC <- read.csv("data/aspatial/Hunan_GDPPC.csv")
+hunan2012 <- read.csv("data/aspatial/Hunan_2012.csv")
 ```
 
-note: year does not need to be in date time format. just need to be in a num/ inte format
-
-## Create Time Series Cube
+## Combining Both Data Frames Using Left Join
 
 ```{r}
-GDPPC_st <-spacetime(GDPPC, hunan, .loc_col = "County", .time_col = "Year")
+hunan_GDPPC<- left_join(hunan, hunan2012) %>% 
+                select(1:4, 7, 15)
 ```
 
-output is a spacetime cube
+When joining these 2 data frames, we did not specify the `by=` because there is a common column in both data frames (i.e., Country )
+
+Other than joining both data frames, we also use `select()` to pick the relevant columns that we want. Note that the geometry column was retained even though it was not specified.
+
+::: callout-Note
+We typically use a left join with a spatial layer (e.g. hunan) and nonspatial layer (hunan_GDPPC) so that we can retain spatial geometric properties.
+:::
+
+## Visualising the Map
+
+We use the following code to visualise the choropleth map of Hunan's 2012 GDPPC.
 
 ```{r}
-is_spacetime_cube(GDPPC_st)
+tmap_mode("plot")
+tm_shape(hunan_GDPPC) +
+  tm_fill("GDPPC",
+          style = "quantile",
+          palette = "Blues",
+          title = "GDPPC") + 
+  tm_borders(alpha = 0.5) + 
+  tm_layout(main.title = "Distribution of GDP per capita by district in Hunan (2012)", main.title.position="center",
+            main.title.size = 1.2,
+            legend.height = 0.45,
+            legend.width = 0.35, 
+            frame= TRUE) +
+  tm_compass(type = "8star", size=2) +
+  tm_scale_bar() +
+  tm_grid(alpha = 0.2)
+
 ```
+
+## Contiguity weight matrix
 
 ```{r}
-is_spacetime_cube(GDPPC)
+wm_q <- hunan_GDPPC %>%
+  mutate(nb = st_contiguity(geometry),
+         wt= st_weights(nb, 
+                        style= "W"),
+                        .before = 1)
 ```
 
-##Compute Gi\*
+nb: neighbour list object crreated by st_neighbour style: Default:W" for row standardised weight matrix
 
-Derive spatial weight (Got errors! to check again)
-
-{r}
-GDPPC_nb <- GDPPC_st %>% 
-  activate("geometry") %>% 
-  mutate(nb= include_self(st_contiguity(geometry)),
-         wt = st_inverse_distance(nb, geometry, scale=1, alpha=1),
-.before=1) %>%
-  set_nbs("nb") 
-  
-
-
-gi_stars <- GDPPC_nb %>% 
-  group_by(Year) %>%
-  mutate(gi_star = local_gstar_perm(GDPPC, nb, wt)) %>% 
-  tidyr::unnest(gi_star)
-
-##### to fill in later!
-
-cbg \<- gi_stars %\>%
-
-ggplot(data = cbg)
-
-
-ehsa <- emerging_hotspot_analysis(
-  x = GDPPC_st, .var = "GDPPC", k = 1, nsim=99)
-
-
-no pattern is not equals to cold spot; they are not significantly significant
+Combine neighbour list and weights in 1 code

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>ISSS624 - ISSS624: Applied Geospatial Analytics</title>
+<title>ISSS624 - EHSA</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,27 +20,59 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -61,68 +93,9 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-hands-on .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
 
-    const options = {
-      valueNames: ['listing-title','listing-author','listing-date','listing-image','listing-description',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-title","listing-author","listing-date","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-hands-on'] = new List('listing-hands-on', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  
-
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-in-class .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-title','listing-author','listing-date','listing-image','listing-description',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-title","listing-author","listing-date","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-in-class'] = new List('listing-in-class', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../../styles.css">
 </head>
 
 <body class="nav-fixed">
@@ -132,7 +105,7 @@ ul.task-list li input[type="checkbox"] {
     <nav class="navbar navbar-expand-lg navbar-dark ">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">ISSS624</span>
     </a>
   </div>
@@ -148,19 +121,19 @@ ul.task-list li input[type="checkbox"] {
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-hands-on-exercises">    
         <li>
-    <a class="dropdown-item" href="./Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1a.html" rel="" target="">
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1a.html" rel="" target="">
  <span class="dropdown-text">Hands-on Exercise 1A</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1b.html" rel="" target="">
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1b.html" rel="" target="">
  <span class="dropdown-text">Hands-on Exercise 1B</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./Hands-on_Ex/Hands-on_Ex2/Hands-on_Ex2a.html" rel="" target="">
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex2/Hands-on_Ex2a.html" rel="" target="">
  <span class="dropdown-text">Hands-on Exercise 2A</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./Hands-on_Ex/Hands-on_Ex2/Hands-on_Ex2b.html" rel="" target="">
+    <a class="dropdown-item" href="../../Hands-on_Ex/Hands-on_Ex2/Hands-on_Ex2b.html" rel="" target="">
  <span class="dropdown-text">Hands-on Exercise 2B</span></a>
   </li>  
     </ul>
@@ -171,15 +144,15 @@ ul.task-list li input[type="checkbox"] {
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-in-class-exercises">    
         <li>
-    <a class="dropdown-item" href="./In-class_Ex/In-class_Ex1/In-class_Ex1.html" rel="" target="">
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex1/In-class_Ex1.html" rel="" target="">
  <span class="dropdown-text">In-class Exercise 1</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./In-class_Ex/In-class_Ex2/In-class_Ex2a.html" rel="" target="">
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex2/In-class_Ex2a.html" rel="" target="">
  <span class="dropdown-text">In-class Exercise 2A</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="./In-class_Ex/In-class_Ex2/In-class_Ex2b.html" rel="" target="">
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex2/In-class_Ex2b.html" rel="" target="">
  <span class="dropdown-text">In-class Exercise 2B</span></a>
   </li>  
     </ul>
@@ -195,7 +168,7 @@ ul.task-list li input[type="checkbox"] {
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" rel="" target="" aria-current="page">
+    <a class="nav-link" href="../../index.html" rel="" target="">
  <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item compact">
@@ -216,16 +189,32 @@ ul.task-list li input[type="checkbox"] {
     </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="3">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#preparing-the-geospatial-data" id="toc-preparing-the-geospatial-data" class="nav-link active" data-scroll-target="#preparing-the-geospatial-data"><span class="header-section-number">1</span> Preparing the Geospatial Data</a>
+  <ul class="collapse">
+  <li><a href="#importing-the-data" id="toc-importing-the-data" class="nav-link" data-scroll-target="#importing-the-data"><span class="header-section-number">1.1</span> Importing the data</a></li>
+  <li><a href="#importing-the-data-1" id="toc-importing-the-data-1" class="nav-link" data-scroll-target="#importing-the-data-1"><span class="header-section-number">1.2</span> Importing the data</a></li>
+  </ul></li>
+  <li><a href="#create-time-series-cube" id="toc-create-time-series-cube" class="nav-link" data-scroll-target="#create-time-series-cube"><span class="header-section-number">2</span> Create Time Series Cube</a></li>
+  <li><a href="#global-measures-of-spatial-autocorrelation" id="toc-global-measures-of-spatial-autocorrelation" class="nav-link" data-scroll-target="#global-measures-of-spatial-autocorrelation"><span class="header-section-number">3</span> Global Measures of Spatial Autocorrelation</a></li>
+  <li><a href="#local-autocorrelation" id="toc-local-autocorrelation" class="nav-link" data-scroll-target="#local-autocorrelation"><span class="header-section-number">4</span> Local Autocorrelation</a></li>
+  <li><a href="#emerging-hot-spot-analysis" id="toc-emerging-hot-spot-analysis" class="nav-link" data-scroll-target="#emerging-hot-spot-analysis"><span class="header-section-number">5</span> Emerging Hot Spot Analysis</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
-<main class="content column-page" id="quarto-document-content">
+<main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">ISSS624: Applied Geospatial Analytics</h1>
+<h1 class="title">EHSA</h1>
 </div>
 
 
@@ -240,191 +229,78 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>Welcome! In this website, I will be sharing my learning journey on applied geospatial analytics.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><a href="https://www.freepik.com/"><img src="images/GIS_paranoic-01.png" class="img-fluid figure-img" width="941"></a></p>
-<figcaption class="figure-caption">Image by rawpixel.com on Freepik</figcaption>
-</figure>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tmap, sf, tidyverse, sfdep, knitr, plotly)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="hands-on-exercises" class="level2">
-<h2 class="anchored" data-anchor-id="hands-on-exercises">Hands-On Exercises</h2>
-<div id="listing-hands-on" class="quarto-listing quarto-listing-container-grid">
-<div class="list grid quarto-listing-cols-3">
-<div class="g-col-1" data-index="0" data-listing-date-sort="1700064000000" data-listing-file-modified-sort="1700307405460" data-listing-date-modified-sort="1700307405000" data-listing-reading-time-sort="8">
-<a href="./Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1a.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="Hands-on_Ex\Hands-on_Ex1\Hands-on_Ex1a_files\figure-html\unnamed-chunk-8-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Hands-on Exercise 1A: Geospatial Data Wrangling with R
-</h5>
-<div class="card-text listing-description">
-In this hands-on exercise, I will be sharing how to import and wrangle geospatial data using appropriate R packages.
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-Goh Si Hui
-</div>
-<div class="listing-date">
-Nov 16, 2023
+<p>plotly to make the graph interactive</p>
+<section id="preparing-the-geospatial-data" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="preparing-the-geospatial-data"><span class="header-section-number">1</span> Preparing the Geospatial Data</h2>
+<section id="importing-the-data" class="level3" data-number="1.1">
+<h3 data-number="1.1" class="anchored" data-anchor-id="importing-the-data"><span class="header-section-number">1.1</span> Importing the data</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>hunan <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/geospatial"</span>, <span class="at">layer=</span><span class="st">"Hunan"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `Hunan' from data source 
+  `C:\sihuihui\ISSS624\In-class_Ex\In-class_Ex2\data\geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 88 features and 7 fields
+Geometry type: POLYGON
+Dimension:     XY
+Bounding box:  xmin: 108.7831 ymin: 24.6342 xmax: 114.2544 ymax: 30.12812
+Geodetic CRS:  WGS 84</code></pre>
 </div>
 </div>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="1" data-listing-date-sort="1700064000000" data-listing-file-modified-sort="1700282714622" data-listing-date-modified-sort="1700282714000" data-listing-reading-time-sort="13">
-<a href="./Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1b.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="Hands-on_Ex\Hands-on_Ex1\Hands-on_Ex1b_files\figure-html\unnamed-chunk-10-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Hands-on Exercise 1B: Choropleth Mapping with R
-</h5>
-<div class="card-text listing-description">
-In this hands-on exercise, I will be sharing how to plot functional and truthful choropleth maps using an R package <code>tmap</code>.
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-Goh Si Hui
-</div>
-<div class="listing-date">
-Nov 16, 2023
-</div>
-</div>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="2" data-listing-date-sort="1700323200000" data-listing-file-modified-sort="1700898328948" data-listing-date-modified-sort="1700898328000" data-listing-reading-time-sort="17">
-<a href="./Hands-on_Ex/Hands-on_Ex2/Hands-on_Ex2a.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="Hands-on_Ex\Hands-on_Ex2\Hands-on_Ex2a_files\figure-html\unnamed-chunk-12-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Hands-on Exercise 2A: Spatial Weights and Applications
-</h5>
-<div class="card-text listing-description">
-In this exercise, we will learn how to compute spatial weights using R.
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-Goh Si Hui
-</div>
-<div class="listing-date">
-Nov 19, 2023
-</div>
-</div>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="3" data-listing-date-sort="1700755200000" data-listing-file-modified-sort="1700901900326" data-listing-date-modified-sort="1700901900000" data-listing-reading-time-sort="25">
-<a href="./Hands-on_Ex/Hands-on_Ex2/Hands-on_Ex2b.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="Hands-on_Ex\Hands-on_Ex2\Hands-on_Ex2b_files\figure-html\unnamed-chunk-12-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-Hands-on Exercise 2B: Global and Local Measures of Spatial Autocorrelations
-</h5>
-<div class="card-text listing-description">
-In this hands-on exercise, we will learn how to compute Global and Local Measure of Spatial Autocorrelation (GLSA) using the <strong>spdep</strong> package.
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-Goh Si Hui
-</div>
-<div class="listing-date">
-Nov 24, 2023
-</div>
-</div>
-</div>
-</div>
-</a>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div>
+<p>The projection is WGS84. hunan data is simple feature (sf) data frame with 88 features (each representing 1 geographical entity), and each feature is a polygon. ## Preparing the Aspatial Data</p>
 </section>
-<section id="in-class-exercises" class="level2">
-<h2 class="anchored" data-anchor-id="in-class-exercises">In-Class Exercises</h2>
-<div id="listing-in-class" class="quarto-listing quarto-listing-container-grid">
-<div class="list grid quarto-listing-cols-3">
-<div class="g-col-1" data-index="0" data-listing-file-modified-sort="1700901959411" data-listing-reading-time-sort="2">
-<a href="./In-class_Ex/In-class_Ex2/In-class_Ex2b.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<div class="listing-item-img-placeholder card-img-top" style="height: 150px;">&nbsp;</div>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-EHSA
-</h5>
-<div class="card-text listing-description">
-plotly to make the graph interactive
+<section id="importing-the-data-1" class="level3" data-number="1.2">
+<h3 data-number="1.2" class="anchored" data-anchor-id="importing-the-data-1"><span class="header-section-number">1.2</span> Importing the data</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>GDPPC <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/aspatial/Hunan_GDPPC.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="card-attribution card-text-small start">
-<div class="listing-author">
-
+<p>note: year does not need to be in date time format. just need to be in a num/ inte format</p>
+</section>
+</section>
+<section id="create-time-series-cube" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="create-time-series-cube"><span class="header-section-number">2</span> Create Time Series Cube</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>GDPPC_st <span class="ot">&lt;-</span><span class="fu">spacetime</span>(GDPPC, hunan, <span class="at">.loc_col =</span> <span class="st">"County"</span>, <span class="at">.time_col =</span> <span class="st">"Year"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</div>
+<p>output is a spacetime cube</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is_spacetime_cube</span>(GDPPC_st)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
 </div>
 </div>
-</a>
-</div>
-<div class="g-col-1" data-index="1" data-listing-date-sort="1700236800000" data-listing-file-modified-sort="1700576314100" data-listing-date-modified-sort="1700576314000" data-listing-reading-time-sort="6">
-<a href="./In-class_Ex/In-class_Ex1/In-class_Ex1.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="In-class_Ex\In-class_Ex1\In-class_Ex1_files\figure-html\unnamed-chunk-25-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-In-Class Exercise 1: My First Date with Geospatial Data Analytics
-</h5>
-<div class="card-text listing-description">
-For this task, we are required to prepare a choropleth map showing the distribution of passenger trips across the planning sub-zones.
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-Goh Si Hui
-</div>
-<div class="listing-date">
-Nov 18, 2023
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is_spacetime_cube</span>(GDPPC)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE</code></pre>
 </div>
 </div>
-</div>
-</div>
-</a>
-</div>
-<div class="g-col-1" data-index="2" data-listing-date-sort="1700841600000" data-listing-file-modified-sort="1700907943167" data-listing-date-modified-sort="1700907943000" data-listing-reading-time-sort="8">
-<a href="./In-class_Ex/In-class_Ex2/In-class_Ex2a.html" class="quarto-grid-link">
-<div class="quarto-grid-item card h-100 card-left">
-<p class="card-img-top"><img src="In-class_Ex\In-class_Ex2\In-class_Ex2a_files\figure-html\unnamed-chunk-5-1.png" style="height: 150px;"  class="thumbnail-image card-img"/></p>
-<div class="card-body post-contents">
-<h5 class="no-anchor card-title listing-title">
-In-class Exercise 2: Spatial Weights
-</h5>
-<div class="card-text listing-description">
-For this task, we will be learning how to derive spatial weights using the <strong>sfdep</strong> package.
-</div>
-<div class="card-attribution card-text-small justify">
-<div class="listing-author">
-Goh Si Hui
-</div>
-<div class="listing-date">
-Nov 25, 2023
-</div>
-</div>
-</div>
-</div>
-</a>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div>
-
+<p>##Compute Gi*</p>
+<p>Derive spatial weight (Got errors! to check again)</p>
+<p>{r} GDPPC_nb &lt;- GDPPC_st %&gt;% activate(“geometry”) %&gt;% mutate(nb= include_self(st_contiguity(geometry)), wt = st_inverse_distance(nb, geometry, scale=1, alpha=1), .before=1) %&gt;% set_nbs(“nb”)</p>
+<p>gi_stars &lt;- GDPPC_nb %&gt;% group_by(Year) %&gt;% mutate(gi_star = local_gstar_perm(GDPPC, nb, wt)) %&gt;% tidyr::unnest(gi_star)</p>
+<section id="to-fill-in-later" class="level5" data-number="2.0.0.1">
+<h5 data-number="2.0.0.1" class="anchored" data-anchor-id="to-fill-in-later"><span class="header-section-number">2.0.0.1</span> to fill in later!</h5>
+<p>cbg &lt;- gi_stars %&gt;%</p>
+<p>ggplot(data = cbg)</p>
+<p>ehsa &lt;- emerging_hotspot_analysis( x = GDPPC_st, .var = “GDPPC”, k = 1, nsim=99)</p>
+<p>no pattern is not equals to cold spot; they are not significantly significant</p>
+</section>
+</section>
+<section id="global-measures-of-spatial-autocorrelation" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="global-measures-of-spatial-autocorrelation"><span class="header-section-number">3</span> Global Measures of Spatial Autocorrelation</h2>
+</section>
+<section id="local-autocorrelation" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="local-autocorrelation"><span class="header-section-number">4</span> Local Autocorrelation</h2>
+<pre><code></code></pre>
+<p>lisa &lt;- wm_q %&gt;% mutate(local_moran =local_moran(GDPPC, nb, wt, nsim=99), .before=1) %&gt;% unnest(local_moran)</p>
+<p>need to unnest to ungroup the table data frame %&gt;% then syntax to decide between mean and median. look at the distribution. if the distribution is skewed, use median</p>
+</section>
+<section id="emerging-hot-spot-analysis" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="emerging-hot-spot-analysis"><span class="header-section-number">5</span> Emerging Hot Spot Analysis</h2>
 
 
 </section>

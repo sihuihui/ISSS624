@@ -784,9 +784,11 @@ k1dists <- unlist(nbdists(k1, coords, longlat = TRUE))
 summary(k1dists)
 
 ```
+
 The summary report shows that the largest first nearest neighbour distance is 61.79 km, so using this as the upper threshold gives certainty that all units will have at least one neighbour.
 
 #### Computing the fixed distance weight matrix
+
 We will now compute the distance weight matrix using `dnearneigh()` and the following code chunk.
 
 ```{r}
@@ -796,7 +798,7 @@ wm_d62
 
 From the above output, we know that there are 88 regions in Hunan and on average each region has 3.68 neighbours.
 
-Next, ```nb2listw()``` is used to convert the nb object into spatial weights object. 
+Next, `nb2listw()` is used to convert the nb object into spatial weights object.
 
 ```{r}
 wm62_lw <- nb2listw(wm_d62, style = "B")
@@ -805,6 +807,7 @@ summary(wm62_lw)
 ```
 
 ### Computing adaptive distance weight matrix
+
 One of the characteristics of fixed distance weight matrix is that more densely settled areas (usually the urban areas) tend to have more neighbours and the less densely settled areas (usually the rural counties) tend to have lesser neighbours. Having many neighbours smoothens the neighbour relationship across more neighbours.
 
 We can control the numbers of neighbours directly using k-nearest neighbours, either accepting asymmetric neighbours or imposing symmetry as shown in the code chunk below.
@@ -814,6 +817,7 @@ knn8 <- knn2nb(knearneigh(coords, k=8))
 knn8
 
 ```
+
 Next, nb2listw() is used to convert the nb object into spatial weights object.
 
 ```{r}
@@ -830,7 +834,8 @@ fips <- order(hunans$County)
 gi.fixed <- localG(hunans$GDPPC, wm62_lw)
 gi.fixed
 ```
-The output of ```localG()``` is a vector of G or Gstar values, with attributes “gstari” set to TRUE or FALSE, “call” set to the function call, and class “localG”.
+
+The output of `localG()` is a vector of G or Gstar values, with attributes "gstari" set to TRUE or FALSE, "call" set to the function call, and class "localG".
 
 The Gi statistics is represented as a Z-score. Greater values represent a greater intensity of clustering and the direction (positive or negative) indicates high or low clusters.
 
@@ -841,12 +846,12 @@ hunan.gi <- cbind(hunans, as.matrix(gi.fixed)) %>%
   rename(gstat_fixed = as.matrix.gi.fixed.)
 
 ```
-The code chunk above performs three tasks. 
-1.    First, it convert the output vector (i.e. gi.fixed) into r matrix object by using ```as.matrix()```. 
-2.    Next, ```cbind()``` is used to join ```hunans``` data frame and ```gi.fixed``` matrix to produce a new SpatialPolygonDataFrame called ```hunan.gi```. Lastly, the field name of the gi values is renamed to ```gstat_fixed``` by using ```rename()```.
+
+The code chunk above performs three tasks. 1. First, it convert the output vector (i.e. gi.fixed) into r matrix object by using `as.matrix()`. 2. Next, `cbind()` is used to join `hunans` data frame and `gi.fixed` matrix to produce a new SpatialPolygonDataFrame called `hunan.gi`. Lastly, the field name of the gi values is renamed to `gstat_fixed` by using `rename()`.
 
 ### Mapping Gi values with fixed distance weights
-The code chunk below  maps the Gi values derived using fixed distance weight matrix.
+
+The code chunk below maps the Gi values derived using fixed distance weight matrix.
 
 ```{r}
 
@@ -861,8 +866,10 @@ Gimap <- tm_shape(hunan.gi) +
 
 tmap_arrange(gdppc, Gimap, asp = 1, ncol = 2)
 ```
+
 ### Gi statistics using adaptive distance
-We will now compute the Gi values for GDPPC2012 using an adaptive distance weight matrix (i.e. ```knb_lw```). 
+
+We will now compute the Gi values for GDPPC2012 using an adaptive distance weight matrix (i.e. `knb_lw`).
 
 ```{r}
 fips <- order(hunans$County)
@@ -871,8 +878,10 @@ hunan.gi <- cbind(hunans, as.matrix(gi.adaptive)) %>%
   rename(gstat_adaptive = as.matrix.gi.adaptive.)
 
 ```
+
 ### Mapping Gi values with adaptive distance weights
-To visualise the hot and cold spot areas, we will use **tmap** package to map the Gi values derived using adaptive distance weight matrix. 
+
+To visualise the hot and cold spot areas, we will use **tmap** package to map the Gi values derived using adaptive distance weight matrix.
 
 ```{r}
 gdppc <- qtm(hunans, "GDPPC")

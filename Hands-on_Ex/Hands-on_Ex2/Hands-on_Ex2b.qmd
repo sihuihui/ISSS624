@@ -862,5 +862,28 @@ Gimap <- tm_shape(hunan.gi) +
 tmap_arrange(gdppc, Gimap, asp = 1, ncol = 2)
 ```
 ### Gi statistics using adaptive distance
+We will now compute the Gi values for GDPPC2012 using an adaptive distance weight matrix (i.e. ```knb_lw```). 
 
+```{r}
+fips <- order(hunans$County)
+gi.adaptive <- localG(hunans$GDPPC, knn8_lw)
+hunan.gi <- cbind(hunans, as.matrix(gi.adaptive)) %>%
+  rename(gstat_adaptive = as.matrix.gi.adaptive.)
+
+```
 ### Mapping Gi values with adaptive distance weights
+To visualise the hot and cold spot areas, we will use **tmap** package to map the Gi values derived using adaptive distance weight matrix. 
+
+```{r}
+gdppc <- qtm(hunans, "GDPPC")
+
+Gimap <- tm_shape(hunan.gi) +
+  tm_fill(col = "gstat_adaptive", 
+          style="pretty",
+          palette="-RdBu",
+          title = "Local Gi using adaptive distance weights") +
+  tm_borders(alpha = 0.5)
+
+tmap_arrange(gdppc, Gimap, asp=1, ncol=2)
+
+```

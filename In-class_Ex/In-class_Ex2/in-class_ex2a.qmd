@@ -1,5 +1,5 @@
 ---
-title: "In-class Exercise 2: Spatial Weights "
+title: "In-Class Exercise 2A: Spatial Weights"
 subtitle: "Using sfdep package" 
 author: "Goh Si Hui"
 date: 2023/11/25

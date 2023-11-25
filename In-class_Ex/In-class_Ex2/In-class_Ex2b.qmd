@@ -1,6 +1,23 @@
 ---
-title: "EHSA"
+title: "In-Class Exercise 2B: Global and Local Spatial Autocorrelations"
+subtitle: "Using sfdep package" 
+author: "Goh Si Hui"
+date: 2023/11/25
+date-format: long
+date-modified: "last-modified"
+format: html 
+execute: 
+  echo: true
+  eval: true
+  warning: false
+editor: visual 
 ---
+
+## Overview 
+
+For this task, we will be learning how to derive spatial weights using the sfdep package.
+
+## Getting Started 
 
 ```{r}
 pacman::p_load(tmap, sf, tidyverse, sfdep, knitr, plotly)

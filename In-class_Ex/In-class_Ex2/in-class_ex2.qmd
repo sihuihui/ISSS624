@@ -27,19 +27,19 @@ We will first load the necessary packages using the following code chunk:
 -   **knitr**: to generate static html tables
 -   **sfdep**: to calculate spatial weights and matrices, space time cube and hot spot analysis
 
-```{r} 
+```{r}
 pacman::p_load(tmap, sf, tidyverse, sfdep, knitr)
 ```
 
 ## Preparing the Geospatial Data
 
 ### Importing the data
+
 ```{r}
 hunan <- st_read(dsn = "data/geospatial", layer="Hunan")
 ```
-The projection is WGS84. 
-hunan data is simple feature (sf) data frame with 88 features (each representing 1 geographical entity), and each feature is a polygon. 
-## Preparing the Aspatial Data
+
+The projection is WGS84. hunan data is simple feature (sf) data frame with 88 features (each representing 1 geographical entity), and each feature is a polygon. \## Preparing the Aspatial Data
 
 ### Importing the data
 
@@ -47,21 +47,19 @@ hunan data is simple feature (sf) data frame with 88 features (each representing
 hunan2012 <- read.csv("data/aspatial/Hunan_2012.csv")
 ```
 
-## Combining Both Data Frames Using Left Join 
+## Combining Both Data Frames Using Left Join
 
 ```{r}
 hunan_GDPPC<- left_join(hunan, hunan2012,) %>% 
                 select(1:4, 7, 15)
 ```
 
-left join with spatial layer (hunan) and nonspatial layer so that we can retain spatial geometric properties
-Do a selection to pick the relevant columns that we want, note that the geometry column was retained 
-Did not specify the "by=" because there is a common column in both data frame (i.e., Country )
+left join with spatial layer (hunan) and nonspatial layer so that we can retain spatial geometric properties Do a selection to pick the relevant columns that we want, note that the geometry column was retained Did not specify the "by=" because there is a common column in both data frame (i.e., Country )
 
-
-## Visualising the Map 
+## Visualising the Map
 
 ## weight matrix
+
 ```{r}
 wm_q <- hunan_GDPPC %>%
   mutate(nb = st_contiguity(geometry),
@@ -70,27 +68,24 @@ wm_q <- hunan_GDPPC %>%
                         .before = 1)
 ```
 
-nb: neighbour list object crreated by st_neighbour
-style: Default:W" for row standardised weight matrix 
+nb: neighbour list object crreated by st_neighbour style: Default:W" for row standardised weight matrix
 
 Combine neighbour list and weights in 1 code
 
-
 ## Global Measures of Spatial Autocorrelation
+
 ```{r}
 
 ```
 
-## Local Autocorrelation 
+## Local Autocorrelation
+
 ```{r}
 lisa <- wm_q %>%
   mutate(local_moran =local_moran(GDPPC, nb, wt, nsim=99), .before=1) %>% unnest(local_moran)
 
 ```
-need to unnest to ungroup the table 
-data frame %>% then syntax
-to decide between mean and median. look at the distribution. if the distribution is skewed, use median 
 
-## Emerging Hot Spot Analysis 
+need to unnest to ungroup the table data frame %\>% then syntax to decide between mean and median. look at the distribution. if the distribution is skewed, use median
 
-
+## Emerging Hot Spot Analysis

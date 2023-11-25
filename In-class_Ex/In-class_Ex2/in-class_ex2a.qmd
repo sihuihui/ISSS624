@@ -2,21 +2,21 @@
 title: "EHSA"
 ---
 
-
-```{r} 
+```{r}
 pacman::p_load(tmap, sf, tidyverse, sfdep, knitr, plotly)
 ```
-plotly to make the graph interactive 
+
+plotly to make the graph interactive
 
 ## Preparing the Geospatial Data
 
 ### Importing the data
+
 ```{r}
 hunan <- st_read(dsn = "data/geospatial", layer="Hunan")
 ```
-The projection is WGS84. 
-hunan data is simple feature (sf) data frame with 88 features (each representing 1 geographical entity), and each feature is a polygon. 
-## Preparing the Aspatial Data
+
+The projection is WGS84. hunan data is simple feature (sf) data frame with 88 features (each representing 1 geographical entity), and each feature is a polygon. \## Preparing the Aspatial Data
 
 ### Importing the data
 
@@ -24,50 +24,52 @@ hunan data is simple feature (sf) data frame with 88 features (each representing
 GDPPC <- read.csv("data/aspatial/Hunan_GDPPC.csv")
 ```
 
-note: year does not need to be in date time format. just need to be in a num/ inte format 
+note: year does not need to be in date time format. just need to be in a num/ inte format
 
-## Create Time Series Cube 
+## Create Time Series Cube
 
 ```{r}
 GDPPC_st <-spacetime(GDPPC, hunan, .loc_col = "County", .time_col = "Year")
 ```
 
-output is a spacetime cube 
+output is a spacetime cube
 
 ```{r}
 is_spacetime_cube(GDPPC_st)
 ```
+
 ```{r}
 is_spacetime_cube(GDPPC)
 ```
 
-##Compute Gi* 
+##Compute Gi\*
 
 Derive spatial weight (Got errors! to check again)
 
-```{r}
+{r}
 GDPPC_nb <- GDPPC_st %>% 
   activate("geometry") %>% 
   mutate(nb= include_self(st_contiguity(geometry)),
          wt = st_inverse_distance(nb, geometry, scale=1, alpha=1),
 .before=1) %>%
-  set_nbs("nb") %>%
-  set_wts("wts")
-```
-```{r}
+  set_nbs("nb") 
+  
+
+
 gi_stars <- GDPPC_nb %>% 
   group_by(Year) %>%
   mutate(gi_star = local_gstar_perm(GDPPC, nb, wt)) %>% 
   tidyr::unnest(gi_star)
-```
 
-##### to fill in later! 
-cbg <- gi_stars %>%
+##### to fill in later!
+
+cbg \<- gi_stars %\>%
 
 ggplot(data = cbg)
 
-```{r}
+
 ehsa <- emerging_hotspot_analysis(
   x = GDPPC_st, .var = "GDPPC", k = 1, nsim=99)
-```
-no pattern is not equals to cold spot; they are not significantly significant 
+
+
+no pattern is not equals to cold spot; they are not significantly significant

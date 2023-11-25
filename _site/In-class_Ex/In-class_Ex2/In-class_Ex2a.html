@@ -9,7 +9,7 @@
 <meta name="author" content="Goh Si Hui">
 <meta name="dcterms.date" content="2023-11-25">
 
-<title>ISSS624 - In-class Exercise 2: Spatial Weights</title>
+<title>ISSS624 - In-Class Exercise 2A: Spatial Weights</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -210,7 +210,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#importing-the-data-1" id="toc-importing-the-data-1" class="nav-link" data-scroll-target="#importing-the-data-1"><span class="header-section-number">4.1</span> Importing the data</a></li>
   </ul></li>
   <li><a href="#combining-both-data-frames-using-left-join" id="toc-combining-both-data-frames-using-left-join" class="nav-link" data-scroll-target="#combining-both-data-frames-using-left-join"><span class="header-section-number">5</span> Combining Both Data Frames Using Left Join</a></li>
-  <li><a href="#visualising-the-map" id="toc-visualising-the-map" class="nav-link" data-scroll-target="#visualising-the-map"><span class="header-section-number">6</span> Visualising the Map</a></li>
+  <li><a href="#plotting-the-choropleth-map" id="toc-plotting-the-choropleth-map" class="nav-link" data-scroll-target="#plotting-the-choropleth-map"><span class="header-section-number">6</span> Plotting the choropleth Map</a></li>
   <li><a href="#defining-weight-matrix" id="toc-defining-weight-matrix" class="nav-link" data-scroll-target="#defining-weight-matrix"><span class="header-section-number">7</span> Defining Weight Matrix</a>
   <ul class="collapse">
   <li><a href="#contiguity-weight-matrix" id="toc-contiguity-weight-matrix" class="nav-link" data-scroll-target="#contiguity-weight-matrix"><span class="header-section-number">7.1</span> Contiguity Weight Matrix</a></li>
@@ -224,7 +224,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">In-class Exercise 2: Spatial Weights</h1>
+<h1 class="title">In-Class Exercise 2A: Spatial Weights</h1>
 <p class="subtitle lead">Using sfdep package</p>
 </div>
 
@@ -321,8 +321,8 @@ Geodetic CRS:  WGS 84</code></pre>
 <p>We typically use a left join with a spatial layer (e.g.&nbsp;hunan) and nonspatial layer (hunan_GDPPC) so that we can retain spatial geometric properties.</p>
 </div>
 </section>
-<section id="visualising-the-map" class="level2" data-number="6">
-<h2 data-number="6" class="anchored" data-anchor-id="visualising-the-map"><span class="header-section-number">6</span> Visualising the Map</h2>
+<section id="plotting-the-choropleth-map" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="plotting-the-choropleth-map"><span class="header-section-number">6</span> Plotting the choropleth Map</h2>
 <p>We use the following code to visualise the choropleth map of Hunan’s 2012 GDPPC.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)</span>
@@ -817,7 +817,7 @@ Explanation of the functions used above
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Explanation of the functions used above
+Explanation of the function used above
 </div>
 </div>
 <div class="callout-body-container callout-body">

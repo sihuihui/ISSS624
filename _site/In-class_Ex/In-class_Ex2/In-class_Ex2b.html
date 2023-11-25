@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Goh Si Hui">
+<meta name="dcterms.date" content="2023-11-25">
 
-<title>ISSS624 - EHSA</title>
+<title>ISSS624 - In-Class Exercise 2B: Global and Local Spatial Autocorrelations</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -197,15 +199,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#preparing-the-geospatial-data" id="toc-preparing-the-geospatial-data" class="nav-link active" data-scroll-target="#preparing-the-geospatial-data"><span class="header-section-number">1</span> Preparing the Geospatial Data</a>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">1</span> Overview</a></li>
+  <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started"><span class="header-section-number">2</span> Getting Started</a></li>
+  <li><a href="#preparing-the-geospatial-data" id="toc-preparing-the-geospatial-data" class="nav-link" data-scroll-target="#preparing-the-geospatial-data"><span class="header-section-number">3</span> Preparing the Geospatial Data</a>
   <ul class="collapse">
-  <li><a href="#importing-the-data" id="toc-importing-the-data" class="nav-link" data-scroll-target="#importing-the-data"><span class="header-section-number">1.1</span> Importing the data</a></li>
-  <li><a href="#importing-the-data-1" id="toc-importing-the-data-1" class="nav-link" data-scroll-target="#importing-the-data-1"><span class="header-section-number">1.2</span> Importing the data</a></li>
+  <li><a href="#importing-the-data" id="toc-importing-the-data" class="nav-link" data-scroll-target="#importing-the-data"><span class="header-section-number">3.1</span> Importing the data</a></li>
   </ul></li>
-  <li><a href="#create-time-series-cube" id="toc-create-time-series-cube" class="nav-link" data-scroll-target="#create-time-series-cube"><span class="header-section-number">2</span> Create Time Series Cube</a></li>
-  <li><a href="#global-measures-of-spatial-autocorrelation" id="toc-global-measures-of-spatial-autocorrelation" class="nav-link" data-scroll-target="#global-measures-of-spatial-autocorrelation"><span class="header-section-number">3</span> Global Measures of Spatial Autocorrelation</a></li>
-  <li><a href="#local-autocorrelation" id="toc-local-autocorrelation" class="nav-link" data-scroll-target="#local-autocorrelation"><span class="header-section-number">4</span> Local Autocorrelation</a></li>
-  <li><a href="#emerging-hot-spot-analysis" id="toc-emerging-hot-spot-analysis" class="nav-link" data-scroll-target="#emerging-hot-spot-analysis"><span class="header-section-number">5</span> Emerging Hot Spot Analysis</a></li>
+  <li><a href="#preparing-the-aspatial-data" id="toc-preparing-the-aspatial-data" class="nav-link" data-scroll-target="#preparing-the-aspatial-data"><span class="header-section-number">4</span> Preparing the Aspatial Data</a>
+  <ul class="collapse">
+  <li><a href="#importing-the-data-1" id="toc-importing-the-data-1" class="nav-link" data-scroll-target="#importing-the-data-1"><span class="header-section-number">4.1</span> Importing the data</a></li>
+  </ul></li>
+  <li><a href="#combining-both-data-frames-using-left-join" id="toc-combining-both-data-frames-using-left-join" class="nav-link" data-scroll-target="#combining-both-data-frames-using-left-join"><span class="header-section-number">5</span> Combining Both Data Frames Using Left Join</a></li>
+  <li><a href="#plotting-the-choropleth-map" id="toc-plotting-the-choropleth-map" class="nav-link" data-scroll-target="#plotting-the-choropleth-map"><span class="header-section-number">6</span> Plotting the choropleth Map</a></li>
   </ul>
 </nav>
     </div>
@@ -214,29 +219,63 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">EHSA</h1>
+<h1 class="title">In-Class Exercise 2B: Global and Local Spatial Autocorrelations</h1>
+<p class="subtitle lead">Using sfdep package</p>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Goh Si Hui </p>
+          </div>
+  </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 25, 2023</p>
+    </div>
+  </div>
   
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">November 25, 2023</p>
+    </div>
+  </div>
     
   </div>
   
 
 </header>
 
+<section id="overview" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="overview"><span class="header-section-number">1</span> Overview</h2>
+<p>For this task, we will be learning how to compute global and local spatial autocorrelations using the sfdep package.</p>
+</section>
+<section id="getting-started" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="getting-started"><span class="header-section-number">2</span> Getting Started</h2>
+<p>We will first load the necessary packages using the following code chunk:</p>
+<ul>
+<li><strong>tmap</strong>: for thematic mapping</li>
+<li><strong>sf</strong>: for geospatial data handling (e.g.&nbsp;importing and exporting for spatial data and geoprocessing)</li>
+<li><strong>tidyverse</strong>: a family of R packages for non-spatial data handling</li>
+<li><strong>knitr</strong>: to generate static html tables</li>
+<li><strong>sfdep</strong>: to calculate spatial weights and matrices, space time cube and hot spot analysis</li>
+<li><strong>plotly</strong>: to make the graphs interactive</li>
+</ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tmap, sf, tidyverse, sfdep, knitr, plotly)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>plotly to make the graph interactive</p>
-<section id="preparing-the-geospatial-data" class="level2" data-number="1">
-<h2 data-number="1" class="anchored" data-anchor-id="preparing-the-geospatial-data"><span class="header-section-number">1</span> Preparing the Geospatial Data</h2>
-<section id="importing-the-data" class="level3" data-number="1.1">
-<h3 data-number="1.1" class="anchored" data-anchor-id="importing-the-data"><span class="header-section-number">1.1</span> Importing the data</h3>
+</section>
+<section id="preparing-the-geospatial-data" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="preparing-the-geospatial-data"><span class="header-section-number">3</span> Preparing the Geospatial Data</h2>
+<section id="importing-the-data" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="importing-the-data"><span class="header-section-number">3.1</span> Importing the data</h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>hunan <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/geospatial"</span>, <span class="at">layer=</span><span class="st">"Hunan"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -250,57 +289,53 @@ Bounding box:  xmin: 108.7831 ymin: 24.6342 xmax: 114.2544 ymax: 30.12812
 Geodetic CRS:  WGS 84</code></pre>
 </div>
 </div>
-<p>The projection is WGS84. hunan data is simple feature (sf) data frame with 88 features (each representing 1 geographical entity), and each feature is a polygon. ## Preparing the Aspatial Data</p>
+<p>From the above outcome, we know that <code>hunan</code>data is simple feature (sf) data frame with 88 features (each representing 1 geographical entity), and each feature is a polygon.It uses the WGS84 projection.</p>
 </section>
-<section id="importing-the-data-1" class="level3" data-number="1.2">
-<h3 data-number="1.2" class="anchored" data-anchor-id="importing-the-data-1"><span class="header-section-number">1.2</span> Importing the data</h3>
+</section>
+<section id="preparing-the-aspatial-data" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="preparing-the-aspatial-data"><span class="header-section-number">4</span> Preparing the Aspatial Data</h2>
+<section id="importing-the-data-1" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="importing-the-data-1"><span class="header-section-number">4.1</span> Importing the data</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>GDPPC <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/aspatial/Hunan_GDPPC.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>hunan2012 <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/aspatial/Hunan_2012.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>note: year does not need to be in date time format. just need to be in a num/ inte format</p>
 </section>
 </section>
-<section id="create-time-series-cube" class="level2" data-number="2">
-<h2 data-number="2" class="anchored" data-anchor-id="create-time-series-cube"><span class="header-section-number">2</span> Create Time Series Cube</h2>
+<section id="combining-both-data-frames-using-left-join" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="combining-both-data-frames-using-left-join"><span class="header-section-number">5</span> Combining Both Data Frames Using Left Join</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>GDPPC_st <span class="ot">&lt;-</span><span class="fu">spacetime</span>(GDPPC, hunan, <span class="at">.loc_col =</span> <span class="st">"County"</span>, <span class="at">.time_col =</span> <span class="st">"Year"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>hunan_GDPPC<span class="ot">&lt;-</span> <span class="fu">left_join</span>(hunan, hunan2012) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>                <span class="fu">select</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, <span class="dv">7</span>, <span class="dv">15</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>output is a spacetime cube</p>
+<p>When joining these 2 data frames, we did not specify the <code>by=</code> because there is a common column in both data frames (i.e., Country )</p>
+<p>Other than joining both data frames, we also use <code>select()</code> to pick the relevant columns that we want. Note that the geometry column was retained even though it was not specified.</p>
+<div class="callout-Note">
+<p>We typically use a left join with a spatial layer (e.g.&nbsp;hunan) and nonspatial layer (hunan_GDPPC) so that we can retain spatial geometric properties.</p>
+</div>
+</section>
+<section id="plotting-the-choropleth-map" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="plotting-the-choropleth-map"><span class="header-section-number">6</span> Plotting the choropleth Map</h2>
+<p>We use the following code to visualise the choropleth map of Hunan’s 2012 GDPPC.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is_spacetime_cube</span>(GDPPC_st)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] TRUE</code></pre>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(hunan_GDPPC) <span class="sc">+</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"GDPPC"</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">style =</span> <span class="st">"quantile"</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>          <span class="at">palette =</span> <span class="st">"Blues"</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>          <span class="at">title =</span> <span class="st">"GDPPC"</span>) <span class="sc">+</span> </span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_borders</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span> </span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">main.title =</span> <span class="st">"Distribution of GDP per capita by district in Hunan (2012)"</span>, <span class="at">main.title.position=</span><span class="st">"center"</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">main.title.size =</span> <span class="fl">1.2</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.height =</span> <span class="fl">0.45</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.width =</span> <span class="fl">0.35</span>, </span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">frame=</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_compass</span>(<span class="at">type =</span> <span class="st">"8star"</span>, <span class="at">size=</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_scale_bar</span>() <span class="sc">+</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_grid</span>(<span class="at">alpha =</span> <span class="fl">0.2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="In-class_Ex2b_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is_spacetime_cube</span>(GDPPC)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] FALSE</code></pre>
-</div>
-</div>
-<p>##Compute Gi*</p>
-<p>Derive spatial weight (Got errors! to check again)</p>
-<p>{r} GDPPC_nb &lt;- GDPPC_st %&gt;% activate(“geometry”) %&gt;% mutate(nb= include_self(st_contiguity(geometry)), wt = st_inverse_distance(nb, geometry, scale=1, alpha=1), .before=1) %&gt;% set_nbs(“nb”)</p>
-<p>gi_stars &lt;- GDPPC_nb %&gt;% group_by(Year) %&gt;% mutate(gi_star = local_gstar_perm(GDPPC, nb, wt)) %&gt;% tidyr::unnest(gi_star)</p>
-<section id="to-fill-in-later" class="level5" data-number="2.0.0.1">
-<h5 data-number="2.0.0.1" class="anchored" data-anchor-id="to-fill-in-later"><span class="header-section-number">2.0.0.1</span> to fill in later!</h5>
-<p>cbg &lt;- gi_stars %&gt;%</p>
-<p>ggplot(data = cbg)</p>
-<p>ehsa &lt;- emerging_hotspot_analysis( x = GDPPC_st, .var = “GDPPC”, k = 1, nsim=99)</p>
-<p>no pattern is not equals to cold spot; they are not significantly significant</p>
-</section>
-</section>
-<section id="global-measures-of-spatial-autocorrelation" class="level2" data-number="3">
-<h2 data-number="3" class="anchored" data-anchor-id="global-measures-of-spatial-autocorrelation"><span class="header-section-number">3</span> Global Measures of Spatial Autocorrelation</h2>
-</section>
-<section id="local-autocorrelation" class="level2" data-number="4">
-<h2 data-number="4" class="anchored" data-anchor-id="local-autocorrelation"><span class="header-section-number">4</span> Local Autocorrelation</h2>
-<pre><code></code></pre>
-<p>lisa &lt;- wm_q %&gt;% mutate(local_moran =local_moran(GDPPC, nb, wt, nsim=99), .before=1) %&gt;% unnest(local_moran)</p>
-<p>need to unnest to ungroup the table data frame %&gt;% then syntax to decide between mean and median. look at the distribution. if the distribution is skewed, use median</p>
-</section>
-<section id="emerging-hot-spot-analysis" class="level2" data-number="5">
-<h2 data-number="5" class="anchored" data-anchor-id="emerging-hot-spot-analysis"><span class="header-section-number">5</span> Emerging Hot Spot Analysis</h2>
 
 
 </section>

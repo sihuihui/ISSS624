@@ -68,7 +68,7 @@ Other than joining both data frames, we also use `select()` to pick the relevant
 We typically use a left join with a spatial layer (e.g. hunan) and nonspatial layer (hunan_GDPPC) so that we can retain spatial geometric properties.
 :::
 
-## Visualising the Map
+## Plotting the choropleth Map
 
 We use the following code to visualise the choropleth map of Hunan's 2012 GDPPC.
 
@@ -95,7 +95,7 @@ tm_shape(hunan_GDPPC) +
 
 As learnt in our hands-on exercises, we can define weight matrices based on contiguity (adjacency) or distance.
 
-### Contiguity Weight Matrix 
+### Contiguity Weight Matrix
 
 To compute contiguity weight matrix using **sfdep** package, we perform the following steps:
 
@@ -104,8 +104,8 @@ To compute contiguity weight matrix using **sfdep** package, we perform the foll
 
 To identify the contiguity neighbour list using Queen and Rook method, we use the following code chunks.
 
-:::{.panel-tabset}
-## Queen 
+::: panel-tabset
+## Queen
 
 ```{r}
 nb_queen <- hunan_GDPPC %>% 
@@ -114,39 +114,37 @@ nb_queen <- hunan_GDPPC %>%
 ```
 
 ## Rook
+
 ```{r}
 nb_rook <- hunan_GDPPC %>% 
   mutate(nb=st_contiguity(geometry, queen=FALSE),
          .before=1)
-``` 
+```
 :::
-
 
 Let us take a look at the summary of the first lag neighbour list (i.e. nb) using the following code chunks.
 
-:::{.panel-tabset}
-
-## Queen 
+::: panel-tabset
+## Queen
 
 ```{r}
 summary(nb_queen$nb)
 ```
+
 ## Rook
 
 ```{r}
 summary(nb_rook$nb)
-``` 
+```
 :::
 
-The summary report for Queen Contiguity based weight matrix  shows that there are 88 area units in Hunan province. The most connected area unit has 11 neighbours. There are two are units with only one neighbour.
+The summary report for Queen Contiguity based weight matrix shows that there are 88 area units in Hunan province. The most connected area unit has 11 neighbours. There are two are units with only one neighbour.
 
-The summary report for Rook Contiguity based weight matrix  shows that there are 88 area units in Hunan province. The most connected area unit has 10 neighbours. There are two are units with only one neighbour.
+The summary report for Rook Contiguity based weight matrix shows that there are 88 area units in Hunan province. The most connected area unit has 10 neighbours. There are two are units with only one neighbour.
 
+We can also display the output data frame using the following Methods. For the codes below, we will use `nb_queen` as example.
 
-We can also display the output data frame using the following Methods. For the codes below, we will use ```nb_queen``` as example. 
-
-:::{.panel-tabset}
-
+::: panel-tabset
 ## Option 1 - using the dataframe itself
 
 ```{r}
@@ -157,13 +155,14 @@ nb_queen
 
 ```{r}
 kable(head(nb_queen, n=10))
-``` 
+```
 :::
 
 #### Identifying higher Order Neighbours
-In class, we learnt that other than the immediate neighbours (i.e. those regions along the boundaries of an area), we can also find out their neighbour's neigbours (i.e., higher order contiguity neighbours). We can do this using ```st_nb_lag_cumul()``` of **sfdep** package.This function Creates an encompassing neighbor list of the order specified. For example, if the order is 2 the result contains both 1st and 2nd order neighbors.
 
-In the following code chunk, we will generate the 1st and 2nd order neighbours for each region in Hunan. 
+In class, we learnt that other than the immediate neighbours (i.e. those regions along the boundaries of an area), we can also find out their neighbour's neigbours (i.e., higher order contiguity neighbours). We can do this using `st_nb_lag_cumul()` of **sfdep** package.This function Creates an encompassing neighbor list of the order specified. For example, if the order is 2 the result contains both 1st and 2nd order neighbors.
+
+In the following code chunk, we will generate the 1st and 2nd order neighbours for each region in Hunan.
 
 ```{r}
 nb2_queen <- hunan_GDPPC %>% 
@@ -172,34 +171,36 @@ nb2_queen <- hunan_GDPPC %>%
          .before = 1) 
 ```
 
-Let's take a look at the differences between 1st order only and output with both 1st and 2nd order neighhbours 
+Let's take a look at the differences between 1st order only and output with both 1st and 2nd order neighhbours
 
-:::{.panel-tabset}
-
-## 1st Order Only 
+::: panel-tabset
+## 1st Order Only
 
 ```{r}
 nb <- st_contiguity(sf::st_geometry(hunan_GDPPC))
 summary(nb)
 ```
-## 1st and 2nd Order 
+
+## 1st and 2nd Order
 
 ```{r}
 summary(nb2_queen)
 ```
-::: 
+:::
 
 When higher order neighbours are included, we note that the number of nonzero links and the average number of links increased.
 
 ### Distance- based Weight Matrix
+
 There are three popularly used distance-based spatial weights, they are:
 
 -   fixed distance weights,
 -   adaptive distance weights, and
 -   inverse distance weights (IDW).
 
-#### Fixed Distance weights 
-We will use the following code chunk to determine the upper limit for distance band. This will be needed for the subsequent computation of fixed distance weight matrix. 
+#### Fixed Distance weights
+
+We will use the following code chunk to determine the upper limit for distance band. This will be needed for the subsequent computation of fixed distance weight matrix.
 
 ```{r}
 geo <- sf::st_geometry(hunan_GDPPC)
@@ -207,17 +208,16 @@ nb <- st_knn(geo, longlat=TRUE)
 dists <- unlist(st_nb_dists(geo, nb))
 ```
 
-:::{.callout-note appearance="simple"}
-
+::: {.callout-note appearance="simple"}
 ## Explanation of the functions used above
+
 -   st_geometry(): Get, set, replace or rename geometry from an sf object
 -   st_knn(): Identifies the k nearest neighbors for given point geometry
-- st_nb_dists():From an nb list and point geometry, return a list of distances for each observation's neighbors list.
-- unlist(): Given a list structure, simplifies it to produce a vector which contains all the atomic components which occur in the list. 
+-   st_nb_dists():From an nb list and point geometry, return a list of distances for each observation's neighbors list.
+-   unlist(): Given a list structure, simplifies it to produce a vector which contains all the atomic components which occur in the list.
+:::
 
-::: 
-
-We will derive the summary statistics of the nearest neighbour distances vector (i.e., dists) using the following code chunk. 
+We will derive the summary statistics of the nearest neighbour distances vector (i.e., dists) using the following code chunk.
 
 ```{r}
 summary(dists)
@@ -234,26 +234,26 @@ wm_fd <- hunan_GDPPC %>%
          .before = 1)
 
 ```
-:::{.callout-note appearance="simple"}
 
-## Explanation of the functions used above 
--   st_dist_band: To identify neighbours based on a distance band (i.e., 66km). The output is a list of neighbours (i.e., nb). 
--   st_weights: To calcualte polygon spatial weights of the nb list. Note that: 
-      -   the default style argument is set to "W" for row standardised weights, and 
-      -   the default allow_zero is set to TRUE, assigns zero as lagged value to zone without neighbours. 
-      
-::: 
+::: {.callout-note appearance="simple"}
+## Explanation of the functions used above
 
-Let's take a look at the data frame. 
-      
+-   st_dist_band: To identify neighbours based on a distance band (i.e., 66km). The output is a list of neighbours (i.e., nb).
+-   st_weights: To calcualte polygon spatial weights of the nb list. Note that:
+    -   the default style argument is set to "W" for row standardised weights, and
+    -   the default allow_zero is set to TRUE, assigns zero as lagged value to zone without neighbours.
+:::
+
+Let's take a look at the data frame.
+
 ```{r}
 glimpse(wm_fd)
 
 ```
 
-#### Adaptive Distance weights 
+#### Adaptive Distance weights
 
-We will derive adaptive spatial weights using the following code chunk. 
+We will derive adaptive spatial weights using the following code chunk.
 
 ```{r}
 wm_ad <- hunan_GDPPC %>% 
@@ -264,15 +264,15 @@ wm_ad <- hunan_GDPPC %>%
 
 ```
 
-:::{.callout-note appearance="simple"}
-## Explanation of the functions used above 
--   st_knn(): To identify neighbours based on a k (i.e., k=8 indicates the nearest 8 neighbours). The output is a list of neighbours (i.e., nb). 
+::: {.callout-note appearance="simple"}
+## Explanation of the functions used above
 
-::: 
+-   st_knn(): To identify neighbours based on a k (i.e., k=8 indicates the nearest 8 neighbours). The output is a list of neighbours (i.e., nb).
+:::
 
-#### Inverse Distance weights 
+#### Inverse Distance weights
 
-We will derive an inverse distance weights using the following code chunk. 
+We will derive an inverse distance weights using the following code chunk.
 
 ```{r}
 wm_idw <- hunan_GDPPC %>%
@@ -283,11 +283,8 @@ wm_idw <- hunan_GDPPC %>%
          .before=1)
 ```
 
+::: {.callout-note appearance="simple"}
+## Explanation of the function used above
 
-:::{.callout-note appearance="simple"}
-
-## Explanation of the function used above 
--   st_inverse_distance(): To calculate inverse distance weights of neighbours on the nb list. 
-
-::: 
-
+-   st_inverse_distance(): To calculate inverse distance weights of neighbours on the nb list.
+:::

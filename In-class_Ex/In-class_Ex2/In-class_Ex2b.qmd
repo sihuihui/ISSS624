@@ -15,7 +15,7 @@ editor: visual
 
 ## Overview 
 
-For this task, we will be learning how to compute global and local spatial autocorrelations using the sfdep package.
+For this task, we will be learning how to compute global and local spatial autocorrelations using the **sfdep** package.
 
 ## Getting Started 
 
@@ -65,7 +65,7 @@ Other than joining both data frames, we also use `select()` to pick the relevant
 We typically use a left join with a spatial layer (e.g. hunan) and nonspatial layer (hunan_GDPPC) so that we can retain spatial geometric properties.
 :::
 
-## Plotting the choropleth Map
+## Plotting the Choropleth Map
 
 We use the following code to visualise the choropleth map of Hunan's 2012 GDPPC.
 
@@ -87,6 +87,146 @@ tm_shape(hunan_GDPPC) +
   tm_grid(alpha = 0.2)
 
 ```
+
+## Global Measures of Spatial Association 
+
+
+### Deriving Contiguity Weights (Queen's Method)
+The following code chunk derives the Queen's method contiguity weights. 
+
+```{r}
+wm_q <- hunan_GDPPC %>%
+  mutate(nb = st_contiguity(geometry), 
+         wt = st_weights(nb, 
+                         style = "W"),
+         .before = 1)
+
+```
+
+::: {.callout-note appearance="simple"}
+
+## Explanation of the function(s) used above
+
+-   st_weights() provides 3 arguments: 
+    -   nb: a neighbour list object as creatd by st_neighbours()
+    -   style: Default is "W" for row standardised weights. This value can also be “B”, “C”, “U”, “minmax”, and “S”. B is the basic binary coding, W is row standardised (sums over all links to n), C is globally standardised (sums over all links to n), U is equal to C divided by the number of neighbours (sums over all links to unity), while S is the variance-stabilizing coding scheme proposed by Tiefelsdorf et al. 1999, p. 167-168 (sums over all links to n).
+    -   allow_zero: If TRUE, it assigns zero as lagged value to zone without neighbours. 
+    
+:::
+
+Let us take a look at the data frame generated. 
+
+```{r}
+wm_q
+```
+
+### Computing Global Moran's I
+In the code chunk below, ```global_moran()``` function is used to compute the Moran’s I value. Different from spdep package, the output is a tibble data.frame.
+
+```{r}
+moranI <- global_moran(wm_q$GDPPC,
+                       wm_q$nb,
+                       wm_q$wt)
+
+glimpse(moranI)
+
+```
+
+### Performing Global Moran's I test 
+
+In general, Moran’s I test will be performed instead of just computing the Moran’s I statistics. With sfdep package, Moran’s I test can be performed by using ```global_moran_test()``` as shown in the code chunk below.
+
+```{r}
+global_moran_test(wm_q$GDPPC, 
+                  wm_q$nb,
+                  wm_q$wt)
+
+```
+
+:::{.callout-note}
+
+-   The default for ```alternative``` argument is "two.sided". Other supported arguments are "greater" or "less". 
+-   By default, the ```randomizaton``` argument is TRUE. If FALSE, it assumes normality. 
+
+:::
+
+### Performning Global Moran's I permutation test 
+
+In practice, monte carlo simulation should be used to perform the statistical test. For sfdep, it is supported by ```globel_moran_perm()```.
+
+:::{.callout-note}
+It is a good practice to use ```set.seed()``` before performing simulation. This is to ensure that the computation is reproducible.
+:::
+
+```{r}
+set.seed(1234)
+global_moran_perm(wm_q$GDPPC,
+                  wm_q$nb,
+                  wm_q$wt, 
+                  nsim=99)
+```
+Since the p value is <2.2e-16, which is lower than the significance level of 0.05, we can reject the null hypothesis that the spatial patterns are random. Because the Moran's I statistic is greater than 0, we can infer that the spatial distribution shows signs of clustering. 
+
+
+:::{.callout-note}
+The numbers of simulation is alway equal to nsim + 1. This mean in nsim = 99. This mean 100 simulation will be performed.
+:::
+
+### Computing Local Moran's I
+We can compute Local Moran's I of GDPPC at county level using ```local_moran()``` of sfdep package. 
+
+```{r}
+lisa <- wm_q %>% 
+  mutate(local_moran = local_moran(GDPPC, nb, wt, nsim = 99),
+         .before=1) %>% 
+  unnest(local_moran)
+
+```
+
+Let us take a look at the output. 
+
+```{r}
+lisa
+
+```
+The output of ```local_moran()``` is an sf data.frame containing the columns ii, eii, var_ii, z_ii, p_ii, p_ii_sim, and p_folded_sim.
+
+-   ii: local moran statistic
+-   eii: expectation of local moran statistic; for localmoran_perm(), it refers to the permutation sample means
+-   var.ii:variance of local moran statistic;  for localmoran_perm(), it refers to the permutation sample standard deviations
+-   z_ii: standard deviate of local moran statistic; for localmoran_perm based on permutation sample means and standard deviations 
+-   p_ii:p-value of local moran statistic using pnorm(); for localmoran_perm using standard
+-   p_ii_sim: For localmoran_perm(), rank() and punif() of observed statistic rank for [0, 1] p-values using alternative=
+-   p_folded_sim: he simulation folded [0, 0.5] range ranked p-value (based on https://github.com/pysal/esda/blob/4a63e0b5df1e754b17b5f1205b cadcbecc5e061/esda/crand.py#L211-L213)
+-   skewness: For localmoran_perm, the output of e1071::skewness() for the permutation samples underlying the standard deviates
+
+-   Kurtosis: For localmoran_perm, the output of e1071::kurtosis() for the permutation samples underlying the standard deviates
+
+### Visualising Local Moran's I 
+We can use **tmap** package to prepare a choropleth map using the value in the ii field. 
+
+```{r}
+tmap_mode("plot")
+tm_shape(lisa) +
+  tm_fill("ii") +
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "Local Moran's I of GDPPC", 
+            main.title.size = 0.8)
+```
+
+### Visualising Local Moran's p-value
+
+
+
+### Visualising Local Moran's I and p-value 
+
+
+### Visualising LISA Map 
+
+
+## Hot Spot and Cold Spot Area Analysis (HCSA) 
+
 
 
 

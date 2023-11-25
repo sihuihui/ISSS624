@@ -247,7 +247,7 @@ wm_fd <- hunan_GDPPC %>%
 Let's take a look at the data frame.
 
 ```{r}
-glimpse(wm_fd)
+wm_fd
 
 ```
 

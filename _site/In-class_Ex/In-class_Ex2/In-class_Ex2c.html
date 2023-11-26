@@ -214,7 +214,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#importing-the-data-1" id="toc-importing-the-data-1" class="nav-link" data-scroll-target="#importing-the-data-1"><span class="header-section-number">4.1</span> Importing the data</a></li>
   </ul></li>
   <li><a href="#creating-a-time-series-cube" id="toc-creating-a-time-series-cube" class="nav-link" data-scroll-target="#creating-a-time-series-cube"><span class="header-section-number">5</span> Creating a Time Series Cube</a></li>
-  <li><a href="#computing-gi" id="toc-computing-gi" class="nav-link" data-scroll-target="#computing-gi"><span class="header-section-number">6</span> Computing Gi*</a></li>
+  <li><a href="#computing-gi" id="toc-computing-gi" class="nav-link" data-scroll-target="#computing-gi"><span class="header-section-number">6</span> Computing Gi</a></li>
   <li><a href="#mann-kendall-test" id="toc-mann-kendall-test" class="nav-link" data-scroll-target="#mann-kendall-test"><span class="header-section-number">7</span> Mann-Kendall Test</a></li>
   <li><a href="#arrange-to-show-significant-emerging-hotcold-spots" id="toc-arrange-to-show-significant-emerging-hotcold-spots" class="nav-link" data-scroll-target="#arrange-to-show-significant-emerging-hotcold-spots"><span class="header-section-number">8</span> Arrange to show significant emerging hot/cold spots</a></li>
   <li><a href="#performing-emerging-hotspot-analysis" id="toc-performing-emerging-hotspot-analysis" class="nav-link" data-scroll-target="#performing-emerging-hotspot-analysis"><span class="header-section-number">9</span> Performing Emerging Hotspot Analysis</a></li>
@@ -252,7 +252,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">November 25, 2023</p>
+      <p class="date-modified">November 26, 2023</p>
     </div>
   </div>
     
@@ -374,15 +374,36 @@ $ GDPPC  &lt;dbl&gt; 3469, 24612, 14659, 11687, 13406, 8546, 10944, 8040, 7383, 
 </section>
 <section id="creating-a-time-series-cube" class="level2" data-number="5">
 <h2 data-number="5" class="anchored" data-anchor-id="creating-a-time-series-cube"><span class="header-section-number">5</span> Creating a Time Series Cube</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(GDPPC)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>'data.frame':   1496 obs. of  3 variables:
+ $ Year  : int  2005 2005 2005 2005 2005 2005 2005 2005 2005 2005 ...
+ $ County: chr  "Longshan" "Changsha" "Wangcheng" "Ningxiang" ...
+ $ GDPPC : num  3469 24612 14659 11687 13406 ...</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>GDPPC[<span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">lapply</span>(GDPPC[<span class="dv">1</span>], as.numeric)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(GDPPC)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>'data.frame':   1496 obs. of  3 variables:
+ $ Year  : num  2005 2005 2005 2005 2005 ...
+ $ County: chr  "Longshan" "Changsha" "Wangcheng" "Ningxiang" ...
+ $ GDPPC : num  3469 24612 14659 11687 13406 ...</code></pre>
+</div>
+</div>
 <p>We use <code>spacetime()</code> of sfdep to create a space time cube.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>GDPPC_st <span class="ot">&lt;-</span> <span class="fu">spacetime</span>(GDPPC, hunan,</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">.loc_col =</span> <span class="st">"County"</span>,</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">.time_col =</span> <span class="st">"Year"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>GDPPC_st <span class="ot">&lt;-</span> <span class="fu">spacetime</span>(GDPPC, hunan,</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">.loc_col =</span> <span class="st">"County"</span>,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">.time_col =</span> <span class="st">"Year"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can use <code>is_spacetime_cube()</code> of <strong>sfedep</strong> package to verify if GDPPC_st is indeed a space time cube object.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is_spacetime_cube</span>(GDPPC_st)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is_spacetime_cube</span>(GDPPC_st)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] TRUE</code></pre>
 </div>
@@ -390,7 +411,62 @@ $ GDPPC  &lt;dbl&gt; 3469, 24612, 14659, 11687, 13406, 8546, 10944, 8040, 7383, 
 <p>The TRUE return confirms that GDPPC_st object is indeed an space time cube.</p>
 </section>
 <section id="computing-gi" class="level2" data-number="6">
-<h2 data-number="6" class="anchored" data-anchor-id="computing-gi"><span class="header-section-number">6</span> Computing Gi*</h2>
+<h2 data-number="6" class="anchored" data-anchor-id="computing-gi"><span class="header-section-number">6</span> Computing Gi</h2>
+<p>First we will ocmpute an inverse distance weight matrix.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>GDPPC_nb <span class="ot">&lt;-</span> GDPPC_st <span class="sc">%&gt;%</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">activate</span>(<span class="st">"geometry"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">nb =</span> <span class="fu">include_self</span>(<span class="fu">st_contiguity</span>(geometry)),</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">wt =</span> <span class="fu">st_inverse_distance</span>(nb, geometry,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">scale =</span> <span class="dv">1</span>,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">alpha =</span> <span class="dv">1</span>),</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">.before =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_nbs</span>(<span class="st">"nb"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_wts</span>(<span class="st">"wt"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>activate() of dplyr package is used to activate the geometry context</li>
+<li>mutate() of dplyr package is used to create 2 columns nb and wt.</li>
+<li>Then we will activate the data context again and copy over the nb and wt columns to each time-slice using set_nbs() and set_wts().
+<ul>
+<li>Note that row order is very important so do not rearrange the observations after using set_nbs() or set_wts().</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<p>The following output shows that this dataset now has neighbours and weighrs for each time-slice</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(GDPPC_nb)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Year  County GDPPC                   nb
+36 2005 Anxiang  8184   1, 2, 3, 4, 57, 85
+37 2005 Hanshou  6560 1, 2, 57, 58, 78, 85
+42 2005  Jinshi  9956       1, 3, 4, 5, 85
+38 2005      Li  8394        1, 3, 4, 5, 6
+39 2005   Linli  8850       3, 4, 5, 6, 85
+41 2005  Shimen  9244  4, 5, 6, 69, 75, 85
+                                                                       wt
+36 0.00000000, 0.01526149, 0.03515537, 0.02176677, 0.02836978, 0.01029857
+37 0.01526149, 0.00000000, 0.01601100, 0.01911052, 0.02327058, 0.01591694
+42             0.03515537, 0.00000000, 0.04581089, 0.04116397, 0.01208437
+38             0.02176677, 0.04581089, 0.00000000, 0.04637578, 0.01585302
+39             0.04116397, 0.04637578, 0.00000000, 0.01896212, 0.01351099
+41 0.01585302, 0.01896212, 0.00000000, 0.02710909, 0.01140718, 0.01080890</code></pre>
+</div>
+</div>
+<p>We can now use these new columns to calculate the local Gi* for each location. We can do this by grouping Year and using local_gstar_perm() of sfdep package. After which, we use unnest() to unnest gi_star column of the newly created gi_stars data frame.</p>
+<p>Erroreous code:</p>
+<p>gi_stars &lt;- GDPPC_nb %&gt;% group_by(Year) %&gt;% mutate(gi_star = local_gstar_perm( GDPPC, nb, wt)) %&gt;% tidyr::unnest(gi_star)</p>
 </section>
 <section id="mann-kendall-test" class="level2" data-number="7">
 <h2 data-number="7" class="anchored" data-anchor-id="mann-kendall-test"><span class="header-section-number">7</span> Mann-Kendall Test</h2>

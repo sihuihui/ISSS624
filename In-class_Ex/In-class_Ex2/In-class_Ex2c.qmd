@@ -55,7 +55,7 @@ From the above outcome, we know that `hunan`data is simple feature (sf) data fra
 ### Importing the data
 
 ```{r}
-GDPPC <- read.csv("data/aspatial/Hunan_GDPPC.csv")
+GDPPC <- read_csv("data/aspatial/Hunan_GDPPC.csv")
 ```
 
 Let us take a look at the GDPPC data.
@@ -68,26 +68,6 @@ kable(head(GDPPC))
 
 ## Creating a Time Series Cube
 
-Checking that the Year column is a numeric data type. 
-
-```{r}
-str(GDPPC)
-
-```
-We can convert Year to numeric using the following code. 
-
-```{r}
-
-GDPPC[1] <- lapply(GDPPC[1], as.numeric)
-```
-
-Checking that the Year column is a numeric data type. 
-
-```{r}
-str(GDPPC)
-
-```
-
 We use `spacetime()` of sfdep to create a space time cube.
 
 ```{r}
@@ -96,19 +76,18 @@ GDPPC_st <- spacetime(GDPPC, hunan,
                  .time_col = "Year")
 ```
 
+:::{.callout-note}
+Note that the "time" variable needs to be in 'int' or 'num' format when using ```spacetime()```. 
+:::
+
 We can use `is_spacetime_cube()` of **sfedep** package to verify if GDPPC_st is indeed a space time cube object.
 
 ```{r}
 is_spacetime_cube(GDPPC_st)
 ```
-
 The TRUE return confirms that GDPPC_st object is indeed an space time cube.
 
-```{r}
-GDPPC_st
-```
-
-## Computing Gi*
+## Computing Gi\*
 
 First we will compute an inverse distance weight matrix.
 
@@ -122,6 +101,7 @@ GDPPC_nb <- GDPPC_st %>%
   set_nbs("nb") %>% 
   set_wts("wt")
 ```
+
 
 ::: callout-note
 -   activate() of dplyr package is used to activate the geometry context
@@ -137,21 +117,130 @@ head(GDPPC_nb)
 
 ```
 
+
 We can now use these new columns to calculate the local Gi\* for each location. We can do this by grouping Year and using `local_gstar_perm()` of **sfdep** package. After which, we use `unnest()` to unnest gi_star column of the newly created gi_stars data frame.
 
-Erroreous code:
 
+```{r}
 
-gi_stars <- GDPPC_nb %>%
+gi_stars <- GDPPC_nb %>% 
   group_by(Year) %>% 
   mutate(gi_star = local_gstar_perm(GDPPC, nb, wt)) %>% 
   tidyr::unnest(gi_star)
 
+```
+
 
 ## Mann-Kendall Test
+With these Gi* measures, we can then evaluate each location for a trend using the Mann-Kendall test. The following code chunk using Changsha county. 
+
+```{r}
+cbg <- gi_stars %>% 
+  ungroup() %>% 
+  filter(County == "Changsha") |>
+  select(County, Year, gi_star)
+```
+
+Next, we plot the result using ggplot2 functions. 
+
+```{r}
+ggplot(data = cbg, 
+       aes(x = Year, y = gi_star)) +
+  geom_line() +
+  theme_light() 
+```
+
+
+```{r}
+p <- ggplot(data = cbg, 
+       aes(x = Year, y = gi_star)) +
+  geom_line() +
+  theme_light() 
+
+ggplotly(p)
+```
+
+```{r}
+cbg %>% 
+  summarise(mk = list(
+    unclass(Kendall::MannKendall(gi_star)))) %>%
+  tidyr::unnest_wider(mk)
+
+```
+
+In the above result, sl is the p-value, which is 0.007416964. This result tells us that there is a slight upward but insignificant trend.
+
+We can replicate this for each location by using ```group_by()``` of dplyr package.
+
+```{r}
+ehsa <- gi_stars %>%
+  group_by(County) %>%
+  summarise(mk = list(unclass(Kendall::MannKendall(gi_star)))) %>%
+  tidyr::unnest_wider(mk)
+
+```
 
 ## Arrange to show significant emerging hot/cold spots
+Now we will arrange to share the significant emerging hot/cold spots using the following code chunk. 
+
+```{r}
+emerging <- ehsa %>% 
+  arrange(sl, abs(tau)) %>% 
+  slice(1:5)
+```
 
 ## Performing Emerging Hotspot Analysis
 
+We will now perform EHSA analysing using ```emerging_hotspot_analysis()``` of **sfdep** package. It takes a spacetime object (i.e., GDPPC_st)and the variable of interest (i.e., GDPPC) for .var arugment. The k argument is used to specify the number of time lags which is set to 1 by default. Lastly, nsim map numbers of simulation to be performed. 
 
+
+```{r}
+ehsa <- emerging_hotspot_analysis(
+  x = GDPPC_st,
+  .var = "GDPPC",
+  k = 1,
+  nsim = 99
+)
+
+```
+
+
+## Visualising the distribution of EHSA classes 
+
+We use ggplot2 functions to plot the distribution of EHSA classes as a bar chart. 
+
+```{r}
+
+ggplot(data = ehsa, 
+       aes(x=classification)) + geom_bar()
+
+```
+
+The figure above shows that sporadic cold spots class has the highest number of county.
+
+## Visualising EHSA 
+
+Before we visualise the geographic distribution of EHSA classes, we need to join both ```hunan``` and ```ehsa``` data together using the following code chunk. 
+
+```{r}
+hunan_ehsa <- hunan %>%
+  left_join(ehsa,
+            by = join_by(County == location))
+
+```
+
+
+Then, we will use tmap functions to plot a categorical choropleth map using the following code chunk.
+
+```{r}
+ehsa_sig <- hunan_ehsa %>%
+  filter(p_value < 0.05)
+tmap_mode("plot")
+tm_shape(hunan_ehsa) + 
+  tm_polygons() +
+  tm_borders(alpha = 0.5) + 
+  tm_shape(ehsa_sig)+
+  tm_fill("classification") +
+  tm_borders(alpha = 0.4)
+
+```

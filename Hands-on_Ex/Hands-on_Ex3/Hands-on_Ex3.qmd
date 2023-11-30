@@ -14,10 +14,343 @@ editor: visual
 
 ## Overview
 
-In this hands-on exercise, we will learn how to build an origin/destination matrix using *Passenger Volume by Origin Destination Bus Stops* data set downloaded from LTA DataMall. 
+In this hands-on exercise, we will learn how to build an origin/destination (OD) matrix using *Passenger Volume by Origin Destination Bus Stops* data set downloaded from LTA DataMall. 
+
+Spatial interaction represent the flow of people, material, or information between locations in geographical space. It encompasses everything from freight shipments, energy flows, and the global trade in rare antiquities, to flight schedules, rush hour woes, and pedestrian foot traffic.
+
+Each spatial interaction, as an analogy for a set of movements, is composed of a discrete origin/destination pair. Each pair can be represented as a cell in a matrix where rows are related to the locations (centroids) of origin, while columns are related to locations (centroids) of destination. Such a matrix is commonly known as an OD matrix, or a spatial interaction matrix.
+
+By the end of this hands-on exercise, we will be able to:
+
+-   to construct desire lines geospatial data from the OD data, and
+
+-   to visualise passenger volume by origin and destination bus stops by using the desire lines data.
 
 ## Getting Started
 
 ### Packages
 
-### Importing Data
+We import the relevant packages using the following code chunk.
+
+```{r}
+pacman::p_load(tmap, sf, DT, stplanr,
+               performance,
+               ggpubr, tidyverse)
+
+```
+
+### Importing Aspatial Data
+
+We will import the `Passenger Volume by Origin Destination Bus Stops` data set downloaded from [LTA DataMall](https://datamall.lta.gov.sg/content/datamall/en.html "LTA DataMall") by using `read_csv()` of **readr** package, which is part of **tidyverse** package.
+
+::: panel-tabset
+## Codes
+
+```{r} 
+odbus <- read_csv("data/aspatial/origin_destination_bus_202310.csv")
+
+```
+
+## Imported Data
+
+```{r} 
+glimpse(odbus)
+
+```
+:::
+
+From the above, we see that **ORIGIN_PT_CODE** and **DESTINATION_PT_CODE** are character data type. We should convert these two columns from characters into factors because these two columns contains the bus stop numbers and we will need these bus stop numbers to get the bus stop locations in subsequent steps. We will use `as.factor()` to convert the data from character to factor.
+
+```{r} 
+odbus$ORIGIN_PT_CODE <- as.factor(odbus$ORIGIN_PT_CODE) 
+odbus$DESTINATION_PT_CODE <- as.factor(odbus$DESTINATION_PT_CODE)
+```
+
+## Do you know?
+
+In R, factors allow for ordered categories with a fixed set of acceptable values. Typically, we would convert a column from character or numeric class to a factor if we want to set an intrinsic order to the values ("levels") so they can be displayed non-alphabetically in plots and tables.
+
+If you are interested to read more about factors, this [webpage](https://r4ds.had.co.nz/factors.html "R for Data Science (2e)") has more interesting information and references.
+
+#### Extracting the Study Data
+For the purpose of this exercise, we will extract commuting flows on weekday and between 6 and 9 o’clock.
+
+```{r}
+odbus6_9 <- odbus %>%
+  filter(DAY_TYPE == "WEEKDAY") %>%
+  filter(TIME_PER_HOUR >= 6 &
+           TIME_PER_HOUR <= 9) %>%
+  group_by(ORIGIN_PT_CODE,
+           DESTINATION_PT_CODE) %>%
+  summarise(TRIPS = sum(TOTAL_TRIPS))
+```
+The table below shows the content of odbus6_9
+
+```{r}
+datatable(odbus6_9)
+
+```
+
+
+We will save the output in rds format for future used.
+
+```{r}
+write_rds(odbus6_9, "data/rds/odbus6_9.rds")
+```
+
+The code chunk below will be used to import the save odbus6_9.rds into R environment.
+```{r}
+
+odbus6_9 <- read_rds("data/rds/odbus6_9.rds")
+```
+
+
+### Importing Geospatial Data
+
+For the purpose of this exercise, two geospatial data will be used. They are:
+
+-   BusStop: This data provides the location of bus stop as at last quarter of 2023.
+-   MPSZ-2019: This data provides the sub-zone boundary of URA Master Plan 2019.
+
+Both data sets are in ESRI shapefile format.
+
+::: panel-tabset
+## Codes
+
+```{r}
+#| eval: false
+busstop <- st_read(dsn = "data/spatial", layer = "BusStop") %>%
+  st_transform(crs = 3414)
+
+```
+
+## Output
+
+```{r}
+#| echo: false
+busstop <- st_read(dsn = "data/spatial", layer = "BusStop") %>%
+  st_transform(crs = 3414)
+
+```
+:::
+
+From the above, we know that the `busstop` data is a point feature data frame. There are a total of 5161 features and 3 fields, and it uses the **svy21** projected coordinates system.
+
+We will now bring in the master plan subzone dataset using the code chunk below.
+
+::: panel-tabset
+## Codes
+
+```{r}
+#| eval: false
+mpsz <- st_read(dsn = "data/spatial", layer = "MPSZ-2019") %>%
+  st_transform(crs = 3414)
+
+```
+
+## Output
+
+```{r}
+#| echo: false
+mpsz <- st_read(dsn = "data/spatial", layer = "MPSZ-2019") %>%
+  st_transform(crs = 3414)
+
+```
+:::
+
+From the above, we know that the `MPSZ-2019` data is a multipolygon feature data frame. There are a total of 332 features and 6 fields, and it uses the **WGS84** geographic coordinates system.
+
+## Geospatial Data Wrangling
+
+### Combining busstop and mpsz
+
+We will now populate the planning subzone code (**SUBZONE_C**) of `mpsz` dataframe (multipolyon feature) into `busstop` (point feature) dataframe.
+
+::: panel-tabset
+## Codes
+
+```{r}
+busstop_mpsz <- st_intersection(busstop, mpsz) %>%
+  select(BUS_STOP_N, SUBZONE_C) %>%
+  st_drop_geometry()
+```
+
+## Data
+
+```{r}
+datatable(busstop_mpsz)
+```
+:::
+
+We will save the output into rds format for future use.
+
+```{r}
+write_rds(busstop_mpsz, "data/rds/busstop_mpsz.rds")
+```
+
+We will then append the planning subzone code (**SUBZONE_C**) from `busstop_mpsz` data frame onto `odbus6_9` dataframe using the following code:
+
+::: panel-tabset
+## Codes
+
+```{r}
+od <- left_join(odbus6_9,busstop_mpsz,
+                by = c("ORIGIN_PT_CODE" = "BUS_STOP_N")) %>%
+  rename(ORIGIN_BS = ORIGIN_PT_CODE,
+         ORIGIN_SZ = SUBZONE_C,
+         DESTIN_BS = DESTINATION_PT_CODE)
+```
+
+## Data
+
+```{r}
+datatable(od)
+```
+:::
+
+Let us check for duplicate records:
+
+::: panel-tabset
+## Codes
+
+```{r}
+duplicate <- od %>% 
+  group_by_all() %>%
+  filter(n()>1) %>%
+  ungroup()
+```
+
+## Output
+
+```{r}
+glimpse(duplicate)
+```
+:::
+
+From the above, we know that there are duplicate records. Hence, we will use the following code chunk to retain only the unique records.
+
+::: panel-tabset
+## Codes
+
+```{r}
+od <- unique(od)
+```
+
+## Data
+
+```{r}
+datatable(od)
+```
+:::
+
+Let us confirm if there are any duplicate records in the above dataframe:
+
+::: panel-tabset
+## Codes
+
+```{r}
+duplicate2 <- od %>%
+  group_by_all() %>%
+  filter(n()>1) %>%
+  ungroup()
+
+```
+
+## Output
+
+```{r}
+glimpse(duplicate2)
+```
+:::
+
+Since there are no rows returned, it means that `origin_data` has no duplicates and we will now update the `origin_data` data frame with the planning subzone codes found in `mpsz` using the following code chunk.
+
+Next, we will update od_data data frame cwith the planning subzone codes.
+
+
+```{r}
+od_data <- left_join(od, busstop_mpsz, 
+                               by = c("DESTIN_BS" = "BUS_STOP_N"))
+```
+
+```{r}
+duplicate <- od_data %>%
+  group_by_all() %>%
+  filter(n()>1) %>%
+  ungroup()
+
+```
+
+
+```{r}
+
+od_data <- unique(od_data)
+
+
+```
+
+```{r}
+od_data <- od_data %>%
+  rename(DESTIN_SZ = SUBZONE_C) %>%
+  drop_na() %>%
+  group_by(ORIGIN_SZ, DESTIN_SZ) %>%
+  summarise(MORNING_PEAK = sum(TRIPS))
+```
+
+```{r}
+write_rds(od_data, "data/rds/od_data.rds")
+```
+
+
+## Visualising Spatial Interactions 
+
+In this section, you will learn how to prepare a desire line by using stplanr package.
+
+
+We will not plot the intra-zonal flows. The code chunk below will be used to remove intra-zonal flows.
+```{r}
+
+od_data1 <- od_data[od_data$ORIGIN_SZ!=od_data$DESTIN_SZ,]
+
+```
+
+We will use od2line() of stplanr package to create the desire lines. 
+
+```{r}
+flowline <- od2line(flow = od_data1,
+                    zones = mpsz, 
+                    zone_code = "SUBZONE_C")
+```
+
+To visualise the resulting desire lines, we use the following code chunk. 
+
+```{r}
+
+tm_shape(mpsz) + 
+  tm_polygons() +
+  flowline %>%
+  tm_shape() + 
+  tm_lines(lwd = "MORNING_PEAK", 
+           style = "quantile",
+           scale = c(0.1, 1, 3, 5, 7,10),
+           n = 6, alpha = 0.3)
+```
+
+
+
+
+As the flow data is messy and highly skewed, we use the following code chunk to focus on selected flows which are greater than or equal to 500 as shown below. 
+
+```{r}
+tm_shape(mpsz) +
+  tm_polygons() + 
+  flowline %>% 
+  filter(MORNING_PEAK >= 5000) %>%
+  tm_shape() + 
+  tm_lines(lwd = "MORNING_PEAK", 
+           style = "quantile",
+           scale = c(0.1, 1, 3, 5, 7, 10),
+           n = 6, 
+           alpha = 0.3)
+
+```

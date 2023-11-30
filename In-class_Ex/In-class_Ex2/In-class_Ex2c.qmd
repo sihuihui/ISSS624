@@ -15,7 +15,9 @@ editor: visual
 
 ## Overview
 
-Emerging Hot Spot Analysis (EHSA) is a spatio-temporal analysis method for revealing and describing how hot spot and cold spot areas evolve over time. The analysis consist of four main steps:
+For this task , we will be learning how to perform Emerging Hot Spot Analysis (EHSA) using the **sfdep** package.
+
+EHSA is a spatio-temporal analysis method for revealing and describing how hot spot and cold spot areas evolve over time. The analysis consist of four main steps:
 
 -   Building a space-time cube,
 

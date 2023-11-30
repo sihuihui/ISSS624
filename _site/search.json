@@ -767,14 +767,14 @@
     "href": "In-class_Ex/In-class_Ex2/In-class_Ex2c.html",
     "title": "In-Class Exercise 2C: Emerging Hot Spot Analysis",
     "section": "",
-    "text": "Emerging Hot Spot Analysis (EHSA) is a spatio-temporal analysis method for revealing and describing how hot spot and cold spot areas evolve over time. The analysis consist of four main steps:\n\nBuilding a space-time cube,\nCalculating Getis-Ord local Gi* statistic for each bin by using an FDR correction,\nEvaluating these hot and cold spot trends by using Mann-Kendall trend test,\nCategorising each study area location by referring to the resultant trend z-score and p-value for each location with data, and with the hot spot z-score and p-value for each bin."
+    "text": "For this task , we will be learning how to perform Emerging Hot Spot Analysis (EHSA) using the sfdep package.\nEHSA is a spatio-temporal analysis method for revealing and describing how hot spot and cold spot areas evolve over time. The analysis consist of four main steps:\n\nBuilding a space-time cube,\nCalculating Getis-Ord local Gi* statistic for each bin by using an FDR correction,\nEvaluating these hot and cold spot trends by using Mann-Kendall trend test,\nCategorising each study area location by referring to the resultant trend z-score and p-value for each location with data, and with the hot spot z-score and p-value for each bin."
   },
   {
     "objectID": "In-class_Ex/In-class_Ex2/In-class_Ex2c.html#overview",
     "href": "In-class_Ex/In-class_Ex2/In-class_Ex2c.html#overview",
     "title": "In-Class Exercise 2C: Emerging Hot Spot Analysis",
     "section": "",
-    "text": "Emerging Hot Spot Analysis (EHSA) is a spatio-temporal analysis method for revealing and describing how hot spot and cold spot areas evolve over time. The analysis consist of four main steps:\n\nBuilding a space-time cube,\nCalculating Getis-Ord local Gi* statistic for each bin by using an FDR correction,\nEvaluating these hot and cold spot trends by using Mann-Kendall trend test,\nCategorising each study area location by referring to the resultant trend z-score and p-value for each location with data, and with the hot spot z-score and p-value for each bin."
+    "text": "For this task , we will be learning how to perform Emerging Hot Spot Analysis (EHSA) using the sfdep package.\nEHSA is a spatio-temporal analysis method for revealing and describing how hot spot and cold spot areas evolve over time. The analysis consist of four main steps:\n\nBuilding a space-time cube,\nCalculating Getis-Ord local Gi* statistic for each bin by using an FDR correction,\nEvaluating these hot and cold spot trends by using Mann-Kendall trend test,\nCategorising each study area location by referring to the resultant trend z-score and p-value for each location with data, and with the hot spot z-score and p-value for each bin."
   },
   {
     "objectID": "In-class_Ex/In-class_Ex2/In-class_Ex2c.html#getting-started",

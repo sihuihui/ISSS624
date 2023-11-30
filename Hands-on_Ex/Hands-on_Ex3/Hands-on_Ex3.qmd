@@ -1,5 +1,5 @@
 ---
-title: "Hands-on Exercise 2A: Processing and Visualising Flow Data"
+title: "Hands-on Exercise 3: Processing and Visualising Flow Data"
 author: "Goh Si Hui"
 date: 2023/11/30
 date-format: long
@@ -46,14 +46,14 @@ We will import the `Passenger Volume by Origin Destination Bus Stops` data set d
 ::: panel-tabset
 ## Codes
 
-```{r} 
+```{r}
 odbus <- read_csv("data/aspatial/origin_destination_bus_202310.csv")
 
 ```
 
 ## Imported Data
 
-```{r} 
+```{r}
 glimpse(odbus)
 
 ```
@@ -61,21 +61,20 @@ glimpse(odbus)
 
 From the above, we see that **ORIGIN_PT_CODE** and **DESTINATION_PT_CODE** are character data type. We should convert these two columns from characters into factors because these two columns contains the bus stop numbers and we will need these bus stop numbers to get the bus stop locations in subsequent steps. We will use `as.factor()` to convert the data from character to factor.
 
-```{r} 
+```{r}
 odbus$ORIGIN_PT_CODE <- as.factor(odbus$ORIGIN_PT_CODE) 
 odbus$DESTINATION_PT_CODE <- as.factor(odbus$DESTINATION_PT_CODE)
 ```
 
-:::{.callout-info}
-
+::: callout-info
 In R, factors allow for ordered categories with a fixed set of acceptable values. Typically, we would convert a column from character or numeric class to a factor if we want to set an intrinsic order to the values ("levels") so they can be displayed non-alphabetically in plots and tables.
 
 If you are interested to read more about factors, this [webpage](https://r4ds.had.co.nz/factors.html "R for Data Science (2e)") has more interesting information and references.
-
 :::
 
 #### Extracting the Study Data
-For the purpose of this exercise, we will extract commuting flows on weekday and between 6 and 9 o’clock.
+
+For the purpose of this exercise, we will extract commuting flows on weekday and between 6 and 9 o'clock.
 
 ```{r}
 odbus6_9 <- odbus %>%
@@ -86,13 +85,13 @@ odbus6_9 <- odbus %>%
            DESTINATION_PT_CODE) %>%
   summarise(TRIPS = sum(TOTAL_TRIPS))
 ```
+
 The table below shows the content of odbus6_9
 
 ```{r}
 datatable(odbus6_9)
 
 ```
-
 
 We will save the output in rds format for future used.
 
@@ -101,11 +100,11 @@ write_rds(odbus6_9, "data/rds/odbus6_9.rds")
 ```
 
 The code chunk below will be used to import the save odbus6_9.rds into R environment.
+
 ```{r}
 
 odbus6_9 <- read_rds("data/rds/odbus6_9.rds")
 ```
-
 
 ### Importing Geospatial Data
 
@@ -269,7 +268,6 @@ Since there are no rows returned, it means that `origin_data` has no duplicates 
 
 Next, we will update od_data data frame cwith the planning subzone codes.
 
-
 ```{r}
 od_data <- left_join(od, busstop_mpsz, 
                                by = c("DESTIN_BS" = "BUS_STOP_N"))
@@ -282,7 +280,6 @@ duplicate <- od_data %>%
   ungroup()
 
 ```
-
 
 ```{r}
 
@@ -303,20 +300,19 @@ od_data <- od_data %>%
 write_rds(od_data, "data/rds/od_data.rds")
 ```
 
-
-## Visualising Spatial Interactions 
+## Visualising Spatial Interactions
 
 In this section, you will learn how to prepare a desire line by using stplanr package.
 
-
 We will not plot the intra-zonal flows. The code chunk below will be used to remove intra-zonal flows.
+
 ```{r}
 
 od_data1 <- od_data[od_data$ORIGIN_SZ!=od_data$DESTIN_SZ,]
 
 ```
 
-We will use od2line() of stplanr package to create the desire lines. 
+We will use od2line() of stplanr package to create the desire lines.
 
 ```{r}
 flowline <- od2line(flow = od_data1,
@@ -324,7 +320,7 @@ flowline <- od2line(flow = od_data1,
                     zone_code = "SUBZONE_C")
 ```
 
-To visualise the resulting desire lines, we use the following code chunk. 
+To visualise the resulting desire lines, we use the following code chunk.
 
 ```{r}
 
@@ -338,10 +334,7 @@ tm_shape(mpsz) +
            n = 6, alpha = 0.3)
 ```
 
-
-
-
-As the flow data is messy and highly skewed, we use the following code chunk to focus on selected flows which are greater than or equal to 500 as shown below. 
+As the flow data is messy and highly skewed, we use the following code chunk to focus on selected flows which are greater than or equal to 500 as shown below.
 
 ```{r}
 tm_shape(mpsz) +

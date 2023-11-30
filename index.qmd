@@ -6,6 +6,7 @@ listing:
     contents:
     - "Hands-on_Ex/Hands-on_Ex1/*.qmd"
     - "Hands-on_Ex/Hands-on_Ex2/*.qmd"
+    - "Hands-on_Ex/Hands-on_Ex3/*.qmd"
     type: grid 
 
   - id: in-class

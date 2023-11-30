@@ -66,11 +66,13 @@ odbus$ORIGIN_PT_CODE <- as.factor(odbus$ORIGIN_PT_CODE)
 odbus$DESTINATION_PT_CODE <- as.factor(odbus$DESTINATION_PT_CODE)
 ```
 
-## Do you know?
+:::{.callout-info}
 
 In R, factors allow for ordered categories with a fixed set of acceptable values. Typically, we would convert a column from character or numeric class to a factor if we want to set an intrinsic order to the values ("levels") so they can be displayed non-alphabetically in plots and tables.
 
 If you are interested to read more about factors, this [webpage](https://r4ds.had.co.nz/factors.html "R for Data Science (2e)") has more interesting information and references.
+
+:::
 
 #### Extracting the Study Data
 For the purpose of this exercise, we will extract commuting flows on weekday and between 6 and 9 o’clock.

@@ -1,0 +1,23 @@
+---
+title: "Hands-on Exercise 2A: Processing and Visualising Flow Data"
+author: "Goh Si Hui"
+date: 2023/11/30
+date-format: long
+date-modified: "last-modified"
+format: html 
+execute: 
+  echo: true
+  eval: true
+  warning: false
+editor: visual 
+---
+
+## Overview
+
+In this hands-on exercise, we will learn how to build an origin/destination matrix using *Passenger Volume by Origin Destination Bus Stops* data set downloaded from LTA DataMall. 
+
+## Getting Started
+
+### Packages
+
+### Importing Data

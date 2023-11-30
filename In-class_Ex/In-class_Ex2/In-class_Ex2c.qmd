@@ -76,8 +76,8 @@ GDPPC_st <- spacetime(GDPPC, hunan,
                  .time_col = "Year")
 ```
 
-:::{.callout-note}
-Note that the "time" variable needs to be in 'int' or 'num' format when using ```spacetime()```. 
+::: callout-note
+Note that the "time" variable needs to be in 'int' or 'num' format when using `spacetime()`.
 :::
 
 We can use `is_spacetime_cube()` of **sfedep** package to verify if GDPPC_st is indeed a space time cube object.
@@ -85,6 +85,7 @@ We can use `is_spacetime_cube()` of **sfedep** package to verify if GDPPC_st is 
 ```{r}
 is_spacetime_cube(GDPPC_st)
 ```
+
 The TRUE return confirms that GDPPC_st object is indeed an space time cube.
 
 ## Computing Gi\*
@@ -102,7 +103,6 @@ GDPPC_nb <- GDPPC_st %>%
   set_wts("wt")
 ```
 
-
 ::: callout-note
 -   activate() of dplyr package is used to activate the geometry context
 -   mutate() of dplyr package is used to create 2 columns nb and wt.
@@ -117,9 +117,7 @@ head(GDPPC_nb)
 
 ```
 
-
 We can now use these new columns to calculate the local Gi\* for each location. We can do this by grouping Year and using `local_gstar_perm()` of **sfdep** package. After which, we use `unnest()` to unnest gi_star column of the newly created gi_stars data frame.
-
 
 ```{r}
 
@@ -130,9 +128,9 @@ gi_stars <- GDPPC_nb %>%
 
 ```
 
-
 ## Mann-Kendall Test
-With these Gi* measures, we can then evaluate each location for a trend using the Mann-Kendall test. The following code chunk using Changsha county. 
+
+With these Gi\* measures, we can then evaluate each location for a trend using the Mann-Kendall test. The following code chunk using Changsha county.
 
 ```{r}
 cbg <- gi_stars %>% 
@@ -141,7 +139,7 @@ cbg <- gi_stars %>%
   select(County, Year, gi_star)
 ```
 
-Next, we plot the result using ggplot2 functions. 
+Next, we plot the result using ggplot2 functions.
 
 ```{r}
 ggplot(data = cbg, 
@@ -149,7 +147,6 @@ ggplot(data = cbg,
   geom_line() +
   theme_light() 
 ```
-
 
 ```{r}
 p <- ggplot(data = cbg, 
@@ -170,7 +167,7 @@ cbg %>%
 
 In the above result, sl is the p-value, which is 0.007416964. This result tells us that there is a slight upward but insignificant trend.
 
-We can replicate this for each location by using ```group_by()``` of dplyr package.
+We can replicate this for each location by using `group_by()` of dplyr package.
 
 ```{r}
 ehsa <- gi_stars %>%
@@ -181,7 +178,8 @@ ehsa <- gi_stars %>%
 ```
 
 ## Arrange to show significant emerging hot/cold spots
-Now we will arrange to share the significant emerging hot/cold spots using the following code chunk. 
+
+Now we will arrange to share the significant emerging hot/cold spots using the following code chunk.
 
 ```{r}
 emerging <- ehsa %>% 
@@ -191,8 +189,7 @@ emerging <- ehsa %>%
 
 ## Performing Emerging Hotspot Analysis
 
-We will now perform EHSA analysing using ```emerging_hotspot_analysis()``` of **sfdep** package. It takes a spacetime object (i.e., GDPPC_st)and the variable of interest (i.e., GDPPC) for .var arugment. The k argument is used to specify the number of time lags which is set to 1 by default. Lastly, nsim map numbers of simulation to be performed. 
-
+We will now perform EHSA analysing using `emerging_hotspot_analysis()` of **sfdep** package. It takes a spacetime object (i.e., GDPPC_st)and the variable of interest (i.e., GDPPC) for .var arugment. The k argument is used to specify the number of time lags which is set to 1 by default. Lastly, nsim map numbers of simulation to be performed.
 
 ```{r}
 ehsa <- emerging_hotspot_analysis(
@@ -204,10 +201,9 @@ ehsa <- emerging_hotspot_analysis(
 
 ```
 
+## Visualising the distribution of EHSA classes
 
-## Visualising the distribution of EHSA classes 
-
-We use ggplot2 functions to plot the distribution of EHSA classes as a bar chart. 
+We use ggplot2 functions to plot the distribution of EHSA classes as a bar chart.
 
 ```{r}
 
@@ -218,9 +214,9 @@ ggplot(data = ehsa,
 
 The figure above shows that sporadic cold spots class has the highest number of county.
 
-## Visualising EHSA 
+## Visualising EHSA
 
-Before we visualise the geographic distribution of EHSA classes, we need to join both ```hunan``` and ```ehsa``` data together using the following code chunk. 
+Before we visualise the geographic distribution of EHSA classes, we need to join both `hunan` and `ehsa` data together using the following code chunk.
 
 ```{r}
 hunan_ehsa <- hunan %>%
@@ -228,7 +224,6 @@ hunan_ehsa <- hunan %>%
             by = join_by(County == location))
 
 ```
-
 
 Then, we will use tmap functions to plot a categorical choropleth map using the following code chunk.
 

@@ -1,0 +1,499 @@
+---
+title: "Take-Home Exercise 1: Geospatial Analytics for Public Good"
+author: "Goh Si Hui"
+date: 2023/11/26
+date-format: long
+date-modified: "last-modified"
+format: html 
+execute: 
+  echo: true
+  eval: true
+  warning: false
+editor: visual 
+---
+
+## Overview
+
+### Introduction
+
+As city-wide urban infrastructures such as buses, taxis, public utilities and roads become digital, data can be collected and used as a framework for tracking movement patterns through space and time. These massive movement data collected are likely to contain structure and patterns that provide useful information about characteristics of the measured phenomena. The identification, analysis and comparison of such patterns will provide greater insights on human movement and behaviours within a city. These understandings will potentially contribute to a better urban management and useful information for urban transport services providers both from the private and public sector to formulate informed decision to gain competitive advantage.
+
+### Objectives
+
+Exploratory Spatial Data Analysis (ESDA) hold tremendous potential to address complex problems facing society. In this take home exercise, I will be applying appropriate Local Indicators of Spatial Association (LISA) to undercover the spatial and spatio-temporal mobility patterns of public bus passengers in Singapore.
+
+### Packages used
+
+For this exercise, we will be using the following packages:
+
+-   **sf**: to import and handle geospatial data,
+
+-   **tidyverse**: to handle and wrangle attribute data,
+
+-   **knitr**: to generate tables for matrices,
+
+-   **sfdep**: to compute spatial weights, global and local spatial autocorrelation statistics; and
+
+-   **tmap**: to prepare and plot cartographic quality choropleth map.
+
+```{r}
+#| code-fold: true
+#| code-summary: "Code"
+pacman::p_load(sf, sfdep, tmap, tidyverse, knitr)
+```
+
+## Data Preparation
+
+For the purpose of this take-home exercise, we will be using two dataset:
+
+-   Passenger Volume by Origin Destination Bus Stops - this is an aspatial dataset in csv file format. It contains information on the number of passenger trips from origin destination bus stops.
+
+-   Bus Stop Location - this is a geospatial dataset.It provides information from all the bus stops currently serviced by buses, including the bus stop code and location coordinates.
+
+### Importing the Data
+
+Firstly, we will import the `Passenger Volume by Origin Destination Bus Stops` dataset downloaded from LTA DataMall on 18 Nov 2023 using `read_csv()` of **readr** package.
+
+```{r}
+odbus_oct <- read_csv("data/aspatial/origin_destination_bus_202310.csv")
+```
+
+We will now use `st_read()` to import the geospatial data.
+
+```{r}
+busstop <- st_read(dsn = "data/geospatial", 
+layer = "BusStop")
+```
+
+### Data Wrangling 
+
+We first examine the imported aspatial data using `glimpse()`.
+
+```{r}
+glimpse(odbus_oct)
+```
+
+A quick check of odbus tibble data frame shows that the values in `ORIGIN_PT_CODE` and `DESTINATON_PT_CODE` are in **character** data type. We will use `as.factor()` to convert `ORIGIN_PT_CODE` and `DESTINATION_PT_CODE` into **factor** data type.
+
+```{r}
+odbus_oct$ORIGIN_PT_CODE <- as.factor(odbus_oct$ORIGIN_PT_CODE)
+odbus_oct$DESTINATION_PT_CODE <- as.factor(odbus_oct$DESTINATION_PT_CODE) 
+```
+
+Let us check the `odbus_oct` data frame again.
+
+```{r}
+glimpse(odbus_oct)
+```
+
+Let us first check the `YEAR_MONTH` to ensure it is all trips made in October 2023. 
+
+```{r}
+unique(odbus_oct$YEAR_MONTH)
+```
+Using `unique()` function, we can find the unique values in a column. Based on the above output, we know that all the trips are made in October 2023. 
+
+Next we want to check the unique values in column `PT_TYPE`
+
+```{r}
+unique(odbus_oct$PT_TYPE)
+```
+Based on the above output, we know that all the trips are made by the public transport type- Bus. 
+
+Next, we want to know more about the origin bus stops. 
+```{r}
+length(unique(odbus_oct$ORIGIN_PT_CODE))
+```
+
+Check for any duplicate records 
+```{r}
+duplicate <- odbus_oct %>%
+  group_by_all() %>%
+  filter(n()>1) %>%
+  ungroup()
+```
+
+check if there are any bus stops with no trips 
+```{r}
+summary(odbus_oct$TOTAL_TRIPS)
+```
+
+```{r}
+total_trips <- odbus_oct %>% 
+  group_by(DAY_TYPE) %>%
+  summarise(TOTAL = sum(TOTAL_TRIPS))
+  
+ggplot(total_trips) + 
+  geom_col(aes(x=DAY_TYPE, y=TOTAL))
+```
+
+```{r}
+weekday_trips <- odbus_oct %>% 
+  filter(DAY_TYPE == "WEEKDAY") %>%
+  group_by(TIME_PER_HOUR) %>%
+  summarise(TOTAL = sum(TOTAL_TRIPS))
+  
+ggplot(weekday_trips) + 
+  geom_col(aes(x=TIME_PER_HOUR, y=TOTAL))
+```
+
+```{r}
+weekend_trips <- odbus_oct %>% 
+  filter(DAY_TYPE == "WEEKENDS/HOLIDAY") %>%
+  group_by(TIME_PER_HOUR) %>%
+  summarise(TOTAL = sum(TOTAL_TRIPS))
+  
+ggplot(weekend_trips) + 
+  geom_col(aes(x=TIME_PER_HOUR, y=TOTAL))
+```
+
+```{r}
+origin_TOTAL <- odbus_oct %>% 
+  group_by(ORIGIN_PT_CODE) %>%
+  summarise(TOTAL = sum(TOTAL_TRIPS)) 
+```
+
+```{r}
+glimpse(origin_TOTAL)
+```
+
+```{r}
+origin_WDMP <- odbus_oct %>% 
+  filter(DAY_TYPE == "WEEKDAY") %>% 
+  filter(TIME_PER_HOUR >= 6 &
+           TIME_PER_HOUR <= 9) %>%
+  group_by(ORIGIN_PT_CODE) %>%
+  summarise(WDMP = sum(TOTAL_TRIPS))
+```
+
+```{r}
+glimpse(origin_WDMP)
+```
+
+Joining them together
+
+```{r}
+origin_TRIPS <- left_join(origin_TOTAL, origin_WDMP)
+```
+
+```{r}
+glimpse(origin_TRIPS)
+```
+
+```{r}
+origin_WDAP <- odbus_oct %>% 
+  filter(DAY_TYPE == "WEEKDAY") %>% 
+  filter(TIME_PER_HOUR >= 17 &
+           TIME_PER_HOUR <= 20) %>%
+  group_by(ORIGIN_PT_CODE) %>%
+  summarise(WDAP = sum(TOTAL_TRIPS))
+```
+
+```{r}
+glimpse(origin_WDAP)
+```
+
+```{r}
+origin_TRIPS <- left_join(origin_TRIPS, origin_WDAP)
+
+```
+
+```{r}
+glimpse(origin_TRIPS)
+```
+
+```{r}
+origin_WEMP <- odbus_oct %>% 
+  filter(DAY_TYPE == "WEEKENDS/HOLIDAY") %>% 
+  filter(TIME_PER_HOUR >= 11 &
+           TIME_PER_HOUR <= 14) %>%
+  group_by(ORIGIN_PT_CODE) %>%
+  summarise(WEMP = sum(TOTAL_TRIPS))
+```
+
+```{r}
+glimpse(origin_WEMP)
+```
+
+```{r}
+origin_TRIPS <- left_join(origin_TRIPS, origin_WEMP)
+
+```
+
+```{r}
+glimpse(origin_TRIPS)
+```
+
+```{r}
+origin_WEEP <- odbus_oct %>% 
+  filter(DAY_TYPE == "WEEKENDS/HOLIDAY") %>% 
+  filter(TIME_PER_HOUR >= 16 &
+           TIME_PER_HOUR <= 19) %>%
+  group_by(ORIGIN_PT_CODE) %>%
+  summarise(WEEP = sum(TOTAL_TRIPS))
+```
+
+```{r}
+glimpse(origin_WEEP)
+```
+
+```{r}
+origin_TRIPS <- left_join(origin_TRIPS, origin_WEEP)
+glimpse(origin_TRIPS)
+```
+
+Check for missing values in `origin_TRIPS` dataframe
+
+```{r}
+missing <- sapply(origin_TRIPS, function(x)sum(is.na(x)))
+missing
+```
+
+```{r}
+origin_TRIPS %>% 
+  map(is.na) %>%
+  map(sum)
+
+```
+
+```{r}
+origin_TRIPS <- origin_TRIPS %>% 
+  replace(is.na(.), 0) 
+
+```
+
+```{r}
+origin_TRIPS %>% 
+  map(is.na) %>%
+  map(sum)
+
+```
+
+Let us take a look at the geospatial data imported. 
+```{r}
+busstop
+
+```
+From the above we know that the `busstop` data is a simple feature data frame. It consists of 5161 features, which are point geometry type. We note that it has 3 fields and the projected CRS is SVY21.
+
+```{r}
+busstop <- st_transform(busstop, crs = 3414)
+busstop
+
+```
+
+Dropping columns that we do not need
+
+```{r}
+busstop <- busstop %>%
+  select(1,3)
+glimpse(busstop)
+```
+
+```{r}
+plot(busstop)
+
+```
+
+
+For this exercise, we will be computing the passenger trips generated by origin at the hexagon level. Before we join the busstop location and geometry with the passenger trips data in `origin_TRIPS` dataframe, we will generate the hexagon grid first. 
+
+
+First, we will make a hexagon grid over the busstop datapoints. 
+```{r}
+#make hex grid
+hex_grid <- st_make_grid(busstop, c(500,500), crs = 3414, what = "polygons", square = FALSE)
+hex_grid
+```
+
+
+```{r}
+#make it to sf and add grid id
+hex_grid_sf <- st_sf(hex_grid) %>%
+  mutate(grid_id = 1:length(lengths(hex_grid)))
+
+```
+
+
+```{r}
+hex_grid_sf
+```
+
+```{r}
+plot(hex_grid_sf)
+```
+
+```{r}
+hex_grid_sf$SG <- lengths(st_intersects(hex_grid_sf, busstop))
+```
+
+
+```{r}
+
+sgmap <- filter(hex_grid_sf, SG>0)
+sgmap
+```
+
+```{r}
+plot(sgmap)
+```
+
+```{r}
+busstop_sgmap <- st_intersection(busstop, sgmap) 
+busstop_sgmap 
+```
+
+```{r}
+busstop_grid_id <- st_intersection(busstop, sgmap) %>%
+  st_drop_geometry()
+busstop_grid_id
+```
+
+```{r}
+write_rds(busstop_grid_id, "data/rds/busstop_grid_id.csv")  
+```
+
+```{r}
+busstop_trips1 <- left_join(busstop_grid_id,origin_TRIPS,
+                           by = c("BUS_STOP_N" = "ORIGIN_PT_CODE")) %>%
+  rename(ORIGIN_BS = BUS_STOP_N) 
+
+busstop_trips1
+```
+
+count number of bus stops in busstop_trips 
+
+```{r}
+busstop_trips2 <- busstop_trips1 %>% 
+  group_by(grid_id)%>%
+  summarise(TOTALBS_PER_GRID = n(), 
+            TOTALTRIPS_PER_GRID = sum(TOTAL),
+            TOTALWDMP_PER_GRID = sum(WDMP),
+            TOTALWDAP_PER_GRID = sum(WDAP), 
+            TOTALWEMP_PER_GRID = sum(WEMP),
+            TOTALWEEP_PER_GRID = sum(WEEP))
+
+
+```
+
+
+```{r}
+origintrip_hex <- left_join(sgmap,busstop_trips2,
+                            by = "grid_id")
+origintrip_hex
+```
+
+```{r}
+glimpse(origintrip_hex)
+```
+Plot some charts here to check if several busstops were in the grid.
+
+
+
+```{r}
+tmap_mode("view")
+tm_shape(origintrip_hex)+
+  tm_fill("TOTALBS_PER_GRID", 
+          style = "quantile", 
+          palette = "Blues",
+          title = "Total Passenger trips") +
+  tm_layout(main.title = "Total Passenger Trips from Origin Bus Stops in October 2023",
+            main.title.position = "center",
+            main.title.size = 1.2,
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", size = 2) +
+  tm_scale_bar() +
+  tm_grid(alpha =0.2) +
+  tm_credits("Source: Passenger trips data from LTA", 
+             position = c("left", "bottom"))
+
+```
+
+```{r}
+tmap_mode("plot")
+tm_shape(origintrip_hex)+
+  tm_fill("TOTALWDMP_PER_GRID", 
+          style = "quantile", 
+          palette = "Blues",
+          title = "Passenger Trips") +
+  tm_layout(main.title = "Passenger Trips during Weekday AM Peak in Oct 2023",
+            main.title.position = "center",
+            main.title.size = 1.2,
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", size = 2) +
+  tm_scale_bar() +
+  tm_grid(alpha =0.2) +
+  tm_credits("Source: Passenger trips data from LTA", 
+             position = c("left", "bottom"))
+
+```
+
+```{r}
+tmap_mode("plot")
+tm_shape(origintrip_hex)+
+  tm_fill("TOTALWDAP_PER_GRID", 
+          style = "quantile", 
+          palette = "Blues",
+          title = "Passenger Trips") +
+  tm_layout(main.title = "Passenger trips during Weekday PM Peak in Oct 2023",
+            main.title.position = "center",
+            main.title.size = 1.2,
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", size = 2) +
+  tm_scale_bar() +
+  tm_grid(alpha =0.2) +
+  tm_credits("Source: Passenger trips data from LTA", 
+             position = c("left", "bottom"))
+
+```
+
+```{r}
+tm_shape(origintrip_hex)+
+  tm_fill("TOTALWEMP_PER_GRID", 
+          style = "quantile", 
+          palette = "Blues",
+          title = "Passenger Trips") +
+  tm_layout(main.title = "Passenger trips during Weekend AM Peak in Oct 2023",
+            main.title.position = "center",
+            main.title.size = 1.2,
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", size = 2) +
+  tm_scale_bar() +
+  tm_grid(alpha =0.2) +
+  tm_credits("Source: Passenger trips data from LTA", 
+             position = c("left", "bottom"))
+
+```
+
+```{r}
+tm_shape(origintrip_hex)+
+  tm_fill("TOTALWEEP_PER_GRID", 
+          style = "quantile", 
+          palette = "Blues",
+          title = "Passenger Trips") +
+  tm_layout(main.title = "Passenger trips during Weekend PM Peak in Oct 2023",
+            main.title.position = "center",
+            main.title.size = 1.2,
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", size = 2) +
+  tm_scale_bar() +
+  tm_grid(alpha =0.2) +
+  tm_credits("Source: Passenger trips data from LTA", 
+             position = c("left", "bottom"))
+
+```

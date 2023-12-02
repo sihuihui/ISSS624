@@ -414,7 +414,8 @@ Note that we the code chunk above uses addition even though the general formula 
 :::
 
 ### R squared Function
-To measure how much variation of the trips can be accounted by the model, we write the following function to calcuate the R squared value. 
+
+To measure how much variation of the trips can be accounted by the model, we write the following function to calcuate the R squared value.
 
 ```{r}
 CalcRSquared <- function(observed,estimated){
@@ -432,14 +433,13 @@ CalcRSquared(uncSIM$data$TRIPS, uncSIM$fitted.values)
 
 ```
 
-
 ```{r}
 r2_mcfadden(uncSIM)
 ```
 
-### Origin (Production) constrained SIM 
+### Origin (Production) constrained SIM
 
-In this section, we will fit an origin constrained SIM. 
+In this section, we will fit an origin constrained SIM.
 
 The general formula of Origin Constrained Spatial Interaction Model
 
@@ -447,7 +447,8 @@ $$
 \lambda{i}{j}= exp(k + \mu{i} + \alpha\ln W{j} - \beta \ln d{i}{j})
 $$
 
-:::{.panel-tabset}
+::: panel-tabset
+## Codes
 
 ```{r}
 
@@ -460,6 +461,7 @@ orcSIM <- glm(formula = TRIPS ~
               na.action = na.exclude)
 
 ```
+
 ## Output
 
 ```{r}
@@ -467,8 +469,7 @@ orcSIM <- glm(formula = TRIPS ~
 summary(orcSIM)
 
 ```
-::: 
-
+:::
 
 We can examine how the constraints hold for destinations this time using the following code.
 
@@ -477,16 +478,18 @@ CalcRSquared(orcSIM$data$TRIPS, orcSIM$fitted.values)
 
 ```
 
-### Destination Constrained 
+### Destination Constrained
 
-In this section, we will fit a destination constrained SIM. 
+In this section, we will fit a destination constrained SIM.
 
 The general formula of Destination Constrained Spatial Interaction Model
 
 $$
 \lambda{i}{j}= exp(k + \mu\ln V{i} + \alpha{i} - \beta \ln d{i}{j})
 $$
-:::{.panel-tabset}
+
+::: panel-tabset
+### Codes 
 
 ```{r}
 
@@ -499,14 +502,13 @@ decSIM <- glm(formula = TRIPS ~
               na.action = na.exclude)
 
 ```
-## Output
+
+### Output 
 
 ```{r}
-
 summary(decSIM)
-
 ```
-::: 
+:::
 
 We can examine how the constraints hold for destinations using the following code.
 
@@ -514,17 +516,18 @@ We can examine how the constraints hold for destinations using the following cod
 CalcRSquared(decSIM$data$TRIPS, decSIM$fitted.values)
 ```
 
-### Doubly Constrained 
+### Doubly Constrained
 
-In this section, we will fit a doubly constrained SIM. 
+In this section, we will fit a doubly constrained SIM.
 
 The general formula of Doubly Constrained Spatial Interaction Model
-
 
 $$
 \lambda{i}{j}= exp(k + \mu{i} + \alpha{i} - \beta \ln d{i}{j})
 $$
-:::{.panel-tabset}
+
+::: panel-tabset
+## Codes
 
 ```{r}
 
@@ -537,6 +540,7 @@ dbcSIM <- glm(formula = TRIPS ~
               na.action = na.exclude)
 
 ```
+
 ## Output
 
 ```{r}
@@ -546,20 +550,20 @@ summary(dbcSIM)
 ```
 :::
 
-We can examine how the constraints hold for destinations using the following code. 
+We can examine how the constraints hold for destinations using the following code.
 
 ```{r}
 CalcRSquared(dbcSIM$data$TRIPS, dbcSIM$fitted.values)
 
 ```
 
-We note that there is a relatively higher improvement in the R squared value. 
+We note that there is a relatively higher improvement in the R squared value.
 
 ### Model Comparison
 
-We will learn how to use `compare_performance()` of **performance** package in this section. 
+We will learn how to use `compare_performance()` of **performance** package in this section.
 
-First, we create a list called `model_list` using the following code chunk. 
+First, we create a list called `model_list` using the following code chunk.
 
 ```{r}
 model_list <- list(unconstrained=uncSIM,
@@ -569,20 +573,21 @@ model_list <- list(unconstrained=uncSIM,
 
 ```
 
-Then, we will compute the Root Mean Squared Error (RMSE) of all the models in the `model_list` using the following code chunk. 
+Then, we will compute the Root Mean Squared Error (RMSE) of all the models in the `model_list` using the following code chunk.
 
 ```{r}
 compare_performance(model_list,
                     metrics = "RMSE")
 
 ```
+
 The output above reveals that doubly constrained SIM is the best model among all the four SIMs because it has the smallest RMSE value of 1487.111.
 
-### Visualing Fitted 
+### Visualing Fitted
 
-In this section, we will learn how to visual the observed values and the fitted values. 
+In this section, we will learn how to visual the observed values and the fitted values.
 
-First, we will extract the fitted values from each model using the following code chunk. 
+First, we will extract the fitted values from each model using the following code chunk.
 
 ```{r}
 df <- as.data.frame(uncSIM$fitted.values) %>%
@@ -590,7 +595,7 @@ df <- as.data.frame(uncSIM$fitted.values) %>%
 
 ```
 
-Next, we will join the values to `SIM_data` dataframe. 
+Next, we will join the values to `SIM_data` dataframe.
 
 ```{r}
 SIM_data <- SIM_data %>%
@@ -642,8 +647,7 @@ SIM_data <- SIM_data %>%
   rename(dbcTRIPS = "dbcSIM$fitted.values")
 ```
 
-We will now plot the charts showing the observed and fitted values for each SIM. 
-
+We will now plot the charts showing the observed and fitted values for each SIM.
 
 ```{r}
 unc_p <- ggplot(data = SIM_data,
@@ -674,4 +678,3 @@ ggarrange(unc_p, orc_p, dec_p, dbc_p,
           ncol = 2,
           nrow = 2)
 ```
-

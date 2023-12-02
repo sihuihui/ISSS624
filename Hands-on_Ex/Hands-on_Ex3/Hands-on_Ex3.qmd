@@ -161,6 +161,12 @@ mpsz <- st_read(dsn = "data/spatial", layer = "MPSZ-2019") %>%
 
 From the above, we know that the `MPSZ-2019` data is a multipolygon feature data frame. There are a total of 332 features and 6 fields, and it uses the **WGS84** geographic coordinates system.
 
+Let us keep it as an rds file for future use.
+
+```{r}
+mpsz <- write_rds(mpsz, "data/rds/mpsz.rds")
+```
+
 ## Geospatial Data Wrangling
 
 ### Combining busstop and mpsz

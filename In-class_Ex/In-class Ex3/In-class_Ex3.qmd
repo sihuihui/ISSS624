@@ -1,0 +1,205 @@
+---
+title: "In-class Exercise 3: Calibrting Spatial Interaction"
+author: "Goh Si Hui"
+date: 2023/12/02
+date-format: long
+date-modified: "last-modified"
+format: html 
+execute: 
+  echo: true
+  eval: true
+  warning: false
+editor: visual 
+---
+
+## Overview
+
+In this in-class exercise, we will learn how to calibrate SIM to determine factors affecting the public bus passenger flows during the morning peak in Singapore.
+
+## Getting Started
+
+### Packages
+
+We import the relevant packages using the following code chunk.
+
+```{r}
+pacman::p_load(tmap, sf, sp, DT, performance, reshape2, ggpubr, tidyverse) 
+```
+
+sf: to handle geospatial data
+
+sp: handle geospatial data in
+
+tmap: to visualise maps
+
+dt: create dynamic tables
+
+performance:
+
+reshape2: to transform data between wide and long formats.
+
+ggpubr: to create the multiple plots into one
+
+tidyverse: handle aspatial data
+
+### Importing Data
+
+This exercise is a continuation of Hands-on Exercise 3 and the following data will be used:
+
+-   od_data.rds - weekday morning peak passenger flows at planning subzone level
+
+-   mpsz.rds - URA Master Plan 2019 Planning Subzone boundary in simple feature tibble data frame format.
+
+-   pop.csv - an attribute data
+
+save in rds: for reproducibility, and to retain in R format, including the geography column.
+
+## Computing Distance Matrix
+
+the distance between 2 points. centroid of the region is used as the representation (see slide 5 of lesson notes). There are other ways to calculate the center of a zone.
+
+```{r}
+mpsz <- read_rds("data/rds/mpsz.rds")
+mpsz
+```
+
+### Converting from sf data table to Spatial Polygons DataFrame 
+
+```{r}
+mpsz_sp <- as(mpsz, "Spatial")
+mpsz_sp
+```
+
+No longer a tibble dataframe. we get a list
+
+Computing the Distance Matrix
+
+```{r}
+dist <- spDists(mpsz_sp, 
+                longlat = FALSE)
+
+```
+spdist will give you a matrix.
+longlat is FALSE cos there is already a projection, not in longtitude and latitude 
+use sp because it is faster than sf 
+
+Diagonal is zero, only need half of the matrix
+
+
+```{r}
+head(dist, n=c(10, 10))
+```
+plot only the first 10 rows and cols of the matrix since the entire matrix is very large
+
+
+###Labelling Column and Row Headers of a Distance Matrix
+
+```{r}
+sz_names <- mpsz$SUBZONE_C
+```
+We will end up with a list of values. 
+
+We will the attach SUBZONE_C to row and column for distance matrix matching ahead.
+
+```{r}
+colnames(dist) <- paste0(sz_names)
+rownames(dist) <- paste0(sz_names)
+```
+
+Pivoting Distance Value by Subzone_C
+Next, we will pivot the distance matrix into a long table by using the row and column subzone codes
+
+```{r}
+distPair <- melt(dist) %>%
+  rename(dist = value)
+head(distPair, 10)
+```
+melt is from reshape2. takes dist matrix and convert it to a long table. 
+
+
+### Updating intra-zonal distances 
+we are going to append a constant value to replace the intra-zonal distance of 0.
+
+
+```{r}
+distPair %>%
+  filter(dist > 0) %>%
+  summary()
+```
+check what is the minimum distance. use a number smaller than 173.80
+
+interzonal -> zone to zone so 173.80 / 2 to get the distance from centroid to the boundary of the zone.
+
+```{r}
+
+distPair$dist <- ifelse(distPair$dist == 0,
+                        50, distPair$dist)
+```
+
+
+```{r}
+distPair %>%
+  summary()
+```
+
+```{r}
+distPair <- distPair %>%
+  rename(orig = Var1,
+         dest = Var2)
+
+```
+
+
+```{r}
+write_rds(distPair, "data/rds/disPair.rds")
+```
+
+##Preparing Flow Data 
+
+```{r}
+od_data <- read_rds("data/rds/od_data.rds")
+```
+
+
+```{r}
+flow_data <- od_data %>%
+  group_by(ORIGIN_SZ, DESTIN_SZ) %>% 
+  summarize(TRIPS = sum(MORNING_PEAK)) 
+```
+
+
+```{r}
+head(flow_data, 10)
+```
+
+###Separating intra-flow from passenger volume df 
+
+```{r}
+flow_data$FlowNoIntra <- ifelse(
+  flow_data$ORIGIN_SZ == flow_data$DESTIN_SZ, 
+  0, flow_data$TRIPS)
+flow_data$offset <- ifelse(
+  flow_data$ORIGIN_SZ == flow_data$DESTIN_SZ, 
+  0.000001, 1)
+```
+
+
+###Combining passenger volume data with distance value 
+
+```{r}
+flow_data$ORIGIN_SZ <- as.factor(flow_data$ORIGIN_SZ)
+flow_data$DESTIN_SZ <- as.factor(flow_data$DESTIN_SZ)
+
+```
+
+```{r}
+flow_data1 <- flow_data %>%
+  left_join (distPair,
+             by = c("ORIGIN_SZ" = "orig",
+                    "DESTIN_SZ" = "dest"))
+```
+
+
+flow data is using code and note name. so go to MPSZ 
+drop some columns 
+rename subzone to sz 

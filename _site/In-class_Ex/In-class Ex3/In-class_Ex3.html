@@ -165,6 +165,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex2/In-class_Ex2c.html" rel="" target="">
  <span class="dropdown-text">In-class Exercise 2C</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex3/In-class_3.qmd" rel="" target="">
+ <span class="dropdown-text">In-class Exercise 3</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -506,6 +510,10 @@ max values  :    YUNNAN,    YSSZ09,     YISHUN,         YS,    WEST REGION,     
 <span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"DESTIN_SZ"</span> <span class="ot">=</span> <span class="st">"dest"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>flow data is using code and note name. so go to MPSZ drop some columns rename subzone to sz</p>
+<p>flow_data1 &lt;- flow_data1 %&gt;% left_join(pop, by = c(DESTIN_SZ = “SZ”)) %&gt;% rename(DESTIN_AGE7_12 = AGE7_12, DESTIN_AGE13_24 = AGE13_24, DESTIN_AGE25_64 = AGE25_64) %&gt;% select(-c(PA, SZ_NAME))</p>
+<p>explicting uses origin subzone code</p>
+<p>for poisson regression, values cannot be zero cos got log function this is considered feature engineering cos we want it to work for our model distance is inverse over here. if log(dist) is positive, it is wrong. shd be negative look at AIC, there is no r2.</p>
+<p>double constraints closer to the line.</p>
 
 
 </section>

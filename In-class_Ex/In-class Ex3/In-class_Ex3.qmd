@@ -203,3 +203,27 @@ flow_data1 <- flow_data %>%
 flow data is using code and note name. so go to MPSZ 
 drop some columns 
 rename subzone to sz 
+
+
+
+
+flow_data1 <- flow_data1 %>%
+  left_join(pop,
+            by = c(DESTIN_SZ = "SZ")) %>%
+  rename(DESTIN_AGE7_12 = AGE7_12,
+         DESTIN_AGE13_24 = AGE13_24,
+         DESTIN_AGE25_64 = AGE25_64) %>%
+  select(-c(PA, SZ_NAME))
+
+
+explicting uses origin subzone code 
+
+
+
+
+for poisson regression, values cannot be zero cos got log function 
+this is considered feature engineering cos we want it to work for our model 
+distance is inverse over here. if log(dist) is positive, it is wrong. shd be negative
+look at AIC, there is no r2. 
+
+double constraints closer to the line. 

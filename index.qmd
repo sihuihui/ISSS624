@@ -15,6 +15,10 @@ listing:
     - "In-class_Ex/In-class_Ex2/*.qmd"
     - "In-class_Ex/In-class_Ex3/*.qmd"
     type: grid
+    
+  - id: take-home
+    contents:
+    - "Take-home_Ex/Take-home_Ex1/*.qmd"
 
 toc: false 
 number-sections: false
@@ -32,4 +36,9 @@ Welcome! In this website, I will be sharing my learning journey on applied geosp
 ## In-Class Exercises
 
 ::: {#in-class}
+:::
+
+## Take-Home Exercises 
+
+::: {#take-home}
 :::

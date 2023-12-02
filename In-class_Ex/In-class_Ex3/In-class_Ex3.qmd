@@ -1,5 +1,5 @@
 ---
-title: "In-class Exercise 3: Calibrting Spatial Interaction"
+title: "In-class Exercise 3: Calibrating Spatial Interaction Models"
 author: "Goh Si Hui"
 date: 2023/12/02
 date-format: long
@@ -14,7 +14,11 @@ editor: visual
 
 ## Overview
 
-In this in-class exercise, we will learn how to calibrate SIM to determine factors affecting the public bus passenger flows during the morning peak in Singapore.
+In this in-class exercise, we will learn how to calibrate Spatial Interaction Models (SIM) to determine factors affecting the public bus passenger flows during the morning peak in Singapore.
+
+::: callout-note
+Calibration is the process of adjusting parameters in the model to try and get the estimates to agree with the observed data as much as possible. Adjusting the parameters is the sort of iterative process that computers are particularly good at and the goodness-of-fit statistics can be used to indicate when the optimum solution is found. Historically this process required a researcher with the requisite programming skills to write a computer algorithm to iteratively adjust each parameter, check the goodness-of-fit, and then start all over again until the goodness-of-fit statistic was maximised/minimised. (Adam Dennett, 2018)
+:::
 
 ## Getting Started
 
@@ -26,21 +30,21 @@ We import the relevant packages using the following code chunk.
 pacman::p_load(tmap, sf, sp, DT, performance, reshape2, ggpubr, tidyverse) 
 ```
 
-sf: to handle geospatial data
+-   **sf**: provides simple features access for R
 
-sp: handle geospatial data in
+-   **sp**: Classes and Methods for spatial data
 
-tmap: to visualise maps
+-   **tmap**: generates thematic maps
 
-dt: create dynamic tables
+-   **dt**: creates dynamic tables
 
-performance:
+-   **performance**: assesses model quality, which are not directly provided by R's 'base' or 'stats' packages
 
-reshape2: to transform data between wide and long formats.
+-   **reshape2**: transforms data between wide and long formats.
 
-ggpubr: to create the multiple plots into one
+-   **ggpubr**: creates the multiple plots into one
 
-tidyverse: handle aspatial data
+-   **tidyverse**: handles aspatial data
 
 ### Importing Data
 
@@ -50,97 +54,127 @@ This exercise is a continuation of Hands-on Exercise 3 and the following data wi
 
 -   mpsz.rds - URA Master Plan 2019 Planning Subzone boundary in simple feature tibble data frame format.
 
--   pop.csv - an attribute data
+-   pop.csv - an attribute data downloaded from Singstat.
 
-save in rds: for reproducibility, and to retain in R format, including the geography column.
+::: callout-note
+RDS (R Data Serialization) files are a common format for saving R objects in RStudio, and they allow you to preserve the state of an object between R sessions. Saving your R object as an RDS file in R can be useful for sharing your work with others, replicating your analysis, or simply storing your work for later use.
+:::
 
 ## Computing Distance Matrix
 
-the distance between 2 points. centroid of the region is used as the representation (see slide 5 of lesson notes). There are other ways to calculate the center of a zone.
+In this section, you will learn how to compute a distance matrix by using URA Master Plan 2019 Planning Subzone boundary in which you saved as an rds file called `mpsz`.In spatial interaction, a distance matrix is a table that shows the distance between pairs of locations.
+
+We will fiture import mpsz.rds into R using the folloiwng code chunk.
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+
 mpsz <- read_rds("data/rds/mpsz.rds")
 mpsz
 ```
 
-### Converting from sf data table to Spatial Polygons DataFrame 
+::: callout-Note
+Note that mpsz is a sf tibble dataframe object class.
+:::
+
+### Converting from sf data table to Spatial Polygons DataFrame
+
+There are at least two ways to compute the required distance matrix. One is based on **sf** and the other is based on **sp**. We will be using function from the **sp** package because past experience had shown that computing distance matrix using **sf** package's function took relatively longer time than **sp**, especially when the data set is large.
+
+We will use `as.Spatial()` to convert `mpsz` from a sf tibble data frame to SpatialPolygonsDataFrame of sp object.
 
 ```{r}
 mpsz_sp <- as(mpsz, "Spatial")
 mpsz_sp
 ```
 
-No longer a tibble dataframe. we get a list
+::: callout-Note
+From the above output, we see that mpsz is no longer a tibble dataframe but a list.
+:::
 
-Computing the Distance Matrix
+### Computing the Distance Matrix
+
+We will use `spDist()` of **sp** package to compute the Euclidean distance between the centroids of the planning subzones. We need to calculate the distance between 2 centroids of a pair of spatial polygons because a pair of spatial polygons represent the origin and destination of movement and a centroid is an absration of the attributes of a zone at a point. Hence, by measuring the distance between 2 centroids of a pair of spatial polygons, it represents the movement occurring between an origin location and a destination location.
 
 ```{r}
 dist <- spDists(mpsz_sp, 
                 longlat = FALSE)
-
 ```
-spdist will give you a matrix.
-longlat is FALSE cos there is already a projection, not in longtitude and latitude 
-use sp because it is faster than sf 
 
-Diagonal is zero, only need half of the matrix
+In the above code chunk, `longlat=` is FALSE because there is already a projection and the geometry is not in longtitude and latitude.
 
+::: callout-Note
+Notice that: - the output `dist` is a matrix object class of R. - the diagonals (representing intra-distances) are zeroes. - the column headers and row headers are not labeled with the planning subzone codes.
+:::
+
+We use the following code chunk to display the top 10 column and rows of the matrix because it is very large.
 
 ```{r}
 head(dist, n=c(10, 10))
 ```
-plot only the first 10 rows and cols of the matrix since the entire matrix is very large
 
+### Labelling the column and row headers of a distance matrix
 
-###Labelling Column and Row Headers of a Distance Matrix
+We will perform the following steps to label the column and row headers of the distance matrix with planning subzone codes.
+
+First, we will create a list sorted according to the distance matrix by planning subzone code.
 
 ```{r}
 sz_names <- mpsz$SUBZONE_C
 ```
-We will end up with a list of values. 
 
-We will the attach SUBZONE_C to row and column for distance matrix matching ahead.
+Next, we will the attach SUBZONE_C to row and column for distance matrix matching ahead.
 
 ```{r}
 colnames(dist) <- paste0(sz_names)
 rownames(dist) <- paste0(sz_names)
 ```
 
-Pivoting Distance Value by Subzone_C
-Next, we will pivot the distance matrix into a long table by using the row and column subzone codes
+### Pivoting Distance Value by Subzone_C
+
+Next, we will pivot the distance matrix into a long table using the row and column subzone codes shown in the following code chunk.
 
 ```{r}
 distPair <- melt(dist) %>%
   rename(dist = value)
 head(distPair, 10)
 ```
-melt is from reshape2. takes dist matrix and convert it to a long table. 
 
+::: callout-Note
+-   `melt` is from **reshape2** package. It takes the dist matrix and convert it to a long table.
+-   The within zone distance is 0.
+:::
 
-### Updating intra-zonal distances 
-we are going to append a constant value to replace the intra-zonal distance of 0.
+### Updating intra-zonal distances
 
+In this section, we are going to append a constant value to replace the intra-zonal distance of 0.
+
+First, we will select and find out the minimum value of the distance by using `summary()`.
 
 ```{r}
 distPair %>%
   filter(dist > 0) %>%
   summary()
 ```
-check what is the minimum distance. use a number smaller than 173.80
 
-interzonal -> zone to zone so 173.80 / 2 to get the distance from centroid to the boundary of the zone.
+From the above output, we note that the minimum distance us 173.80. Hence we will derive a number smaller than 173.80 divided by 2 to get the minimum distance from the centriod to the boundary of the zone. We divided the minimum distance observed by 2 because the interzonal distance is between 2 zones.
+
+In this case, we will use a constant distance value of 50m and add it into the intra-zones distance.
 
 ```{r}
-
 distPair$dist <- ifelse(distPair$dist == 0,
                         50, distPair$dist)
 ```
 
+We check the result using the following code.
 
 ```{r}
 distPair %>%
   summary()
 ```
+
+We also rename the origin and destination fields using the following code chunk
 
 ```{r}
 distPair <- distPair %>%
@@ -149,17 +183,21 @@ distPair <- distPair %>%
 
 ```
 
+Lastly, we will save the dataframe into an rds for future use.
 
 ```{r}
 write_rds(distPair, "data/rds/disPair.rds")
 ```
 
-##Preparing Flow Data 
+## Preparing Flow Data
+
+We first import the `od_data` into R environment.
 
 ```{r}
 od_data <- read_rds("data/rds/od_data.rds")
 ```
 
+Then, we compute the total passenger trip between and within planning subzones sing the following code chunk. The ouput is `flow_data`.
 
 ```{r}
 flow_data <- od_data %>%
@@ -167,12 +205,13 @@ flow_data <- od_data %>%
   summarize(TRIPS = sum(MORNING_PEAK)) 
 ```
 
-
 ```{r}
 head(flow_data, 10)
 ```
 
-###Separating intra-flow from passenger volume df 
+### Separating intra-flow from passenger volume df
+
+We use the following code chunk to add 3 new fields into the `flow_data` dataframe.
 
 ```{r}
 flow_data$FlowNoIntra <- ifelse(
@@ -183,14 +222,17 @@ flow_data$offset <- ifelse(
   0.000001, 1)
 ```
 
+### Combining passenger volume data with distance value
 
-###Combining passenger volume data with distance value 
+Before we can join flow_data and distPair, wethe convert data value type of ORIGIN_SZ and DESTIN_SZ fields of flow_data dataframe into factor data type.
 
 ```{r}
 flow_data$ORIGIN_SZ <- as.factor(flow_data$ORIGIN_SZ)
 flow_data$DESTIN_SZ <- as.factor(flow_data$DESTIN_SZ)
 
 ```
+
+Then we will use `left_join()` of **dplyr** to join `flow_data` and `disPair`. The output is `flow_data1`.
 
 ```{r}
 flow_data1 <- flow_data %>%
@@ -199,31 +241,12 @@ flow_data1 <- flow_data %>%
                     "DESTIN_SZ" = "dest"))
 ```
 
+flow data is using code and note name. so go to MPSZ drop some columns rename subzone to sz
 
-flow data is using code and note name. so go to MPSZ 
-drop some columns 
-rename subzone to sz 
+flow_data1 \<- flow_data1 %\>% left_join(pop, by = c(DESTIN_SZ = "SZ")) %\>% rename(DESTIN_AGE7_12 = AGE7_12, DESTIN_AGE13_24 = AGE13_24, DESTIN_AGE25_64 = AGE25_64) %\>% select(-c(PA, SZ_NAME))
 
+explicting uses origin subzone code
 
+for poisson regression, values cannot be zero cos got log function this is considered feature engineering cos we want it to work for our model distance is inverse over here. if log(dist) is positive, it is wrong. shd be negative look at AIC, there is no r2.
 
-
-flow_data1 <- flow_data1 %>%
-  left_join(pop,
-            by = c(DESTIN_SZ = "SZ")) %>%
-  rename(DESTIN_AGE7_12 = AGE7_12,
-         DESTIN_AGE13_24 = AGE13_24,
-         DESTIN_AGE25_64 = AGE25_64) %>%
-  select(-c(PA, SZ_NAME))
-
-
-explicting uses origin subzone code 
-
-
-
-
-for poisson regression, values cannot be zero cos got log function 
-this is considered feature engineering cos we want it to work for our model 
-distance is inverse over here. if log(dist) is positive, it is wrong. shd be negative
-look at AIC, there is no r2. 
-
-double constraints closer to the line. 
+double constraints closer to the line.

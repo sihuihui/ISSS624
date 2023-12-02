@@ -437,4 +437,241 @@ CalcRSquared(uncSIM$data$TRIPS, uncSIM$fitted.values)
 r2_mcfadden(uncSIM)
 ```
 
+### Origin (Production) constrained SIM 
+
+In this section, we will fit an origin constrained SIM. 
+
+The general formula of Origin Constrained Spatial Interaction Model
+
+$$
+\lambda{i}{j}= exp(k + \mu{i} + \alpha\ln W{j} - \beta \ln d{i}{j})
+$$
+
+:::{.panel-tabset}
+
+```{r}
+
+orcSIM <- glm(formula = TRIPS ~ 
+                 ORIGIN_SZ +
+                 log(DESTIN_AGE25_64) +
+                 log(dist),
+              family = poisson(link = "log"),
+              data = SIM_data,
+              na.action = na.exclude)
+
+```
+## Output
+
+```{r}
+
+summary(orcSIM)
+
+```
+::: 
+
+
+We can examine how the constraints hold for destinations this time using the following code.
+
+```{r}
+CalcRSquared(orcSIM$data$TRIPS, orcSIM$fitted.values)
+
+```
+
+### Destination Constrained 
+
+In this section, we will fit a destination constrained SIM. 
+
+The general formula of Destination Constrained Spatial Interaction Model
+
+$$
+\lambda{i}{j}= exp(k + \mu\ln V{i} + \alpha{i} - \beta \ln d{i}{j})
+$$
+:::{.panel-tabset}
+
+```{r}
+
+decSIM <- glm(formula = TRIPS ~ 
+                DESTIN_SZ + 
+                log(ORIGIN_AGE25_64) + 
+                log(dist),
+              family = poisson(link = "log"),
+              data = SIM_data,
+              na.action = na.exclude)
+
+```
+## Output
+
+```{r}
+
+summary(decSIM)
+
+```
+::: 
+
+We can examine how the constraints hold for destinations using the following code.
+
+```{r}
+CalcRSquared(decSIM$data$TRIPS, decSIM$fitted.values)
+```
+
+### Doubly Constrained 
+
+In this section, we will fit a doubly constrained SIM. 
+
+The general formula of Doubly Constrained Spatial Interaction Model
+
+
+$$
+\lambda{i}{j}= exp(k + \mu{i} + \alpha{i} - \beta \ln d{i}{j})
+$$
+:::{.panel-tabset}
+
+```{r}
+
+dbcSIM <- glm(formula = TRIPS ~ 
+                ORIGIN_SZ + 
+                DESTIN_SZ + 
+                log(dist),
+              family = poisson(link = "log"),
+              data = SIM_data,
+              na.action = na.exclude)
+
+```
+## Output
+
+```{r}
+
+summary(dbcSIM)
+
+```
+:::
+
+We can examine how the constraints hold for destinations using the following code. 
+
+```{r}
+CalcRSquared(dbcSIM$data$TRIPS, dbcSIM$fitted.values)
+
+```
+
+We note that there is a relatively higher improvement in the R squared value. 
+
+### Model Comparison
+
+We will learn how to use `compare_performance()` of **performance** package in this section. 
+
+First, we create a list called `model_list` using the following code chunk. 
+
+```{r}
+model_list <- list(unconstrained=uncSIM,
+                   originConstrained=orcSIM,
+                   destinationConstrained=decSIM,
+                   doublyConstrained=dbcSIM)
+
+```
+
+Then, we will compute the Root Mean Squared Error (RMSE) of all the models in the `model_list` using the following code chunk. 
+
+```{r}
+compare_performance(model_list,
+                    metrics = "RMSE")
+
+```
+The output above reveals that doubly constrained SIM is the best model among all the four SIMs because it has the smallest RMSE value of 1487.111.
+
+### Visualing Fitted 
+
+In this section, we will learn how to visual the observed values and the fitted values. 
+
+First, we will extract the fitted values from each model using the following code chunk. 
+
+```{r}
+df <- as.data.frame(uncSIM$fitted.values) %>%
+  round(digits = 0)
+
+```
+
+Next, we will join the values to `SIM_data` dataframe. 
+
+```{r}
+SIM_data <- SIM_data %>%
+  cbind(df) %>%
+  rename(uncTRIPS = "uncSIM$fitted.values")
+
+```
+
+Repeat the same steps for Origin Constrained SIM (i.e. orcSIM)
+
+```{r}
+df <- as.data.frame(orcSIM$fitted.values) %>%
+  round(digits = 0)
+
+```
+
+```{r}
+SIM_data <- SIM_data %>%
+  cbind(df) %>%
+  rename(orcTRIPS = "orcSIM$fitted.values")
+
+```
+
+Repeat the same steps for Destination Constrained SIM (i.e. decSIM)
+
+```{r}
+df <- as.data.frame(decSIM$fitted.values) %>%
+  round(digits = 0)
+
+```
+
+```{r}
+SIM_data <- SIM_data %>%
+  cbind(df) %>%
+  rename(decTRIPS = "decSIM$fitted.values")
+
+```
+
+Repeat the same steps for Doubly Constrained SIM (i.e. dbcSIM)
+
+```{r}
+df <- as.data.frame(dbcSIM$fitted.values) %>%
+  round(digits = 0)
+```
+
+```{r}
+SIM_data <- SIM_data %>%
+  cbind(df) %>%
+  rename(dbcTRIPS = "dbcSIM$fitted.values")
+```
+
+We will now plot the charts showing the observed and fitted values for each SIM. 
+
+
+```{r}
+unc_p <- ggplot(data = SIM_data,
+                aes(x = uncTRIPS,
+                    y = TRIPS)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+orc_p <- ggplot(data = SIM_data,
+                aes(x = orcTRIPS,
+                    y = TRIPS)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+dec_p <- ggplot(data = SIM_data,
+                aes(x = decTRIPS,
+                    y = TRIPS)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+dbc_p <- ggplot(data = SIM_data,
+                aes(x = dbcTRIPS,
+                    y = TRIPS)) +
+  geom_point() +
+  geom_smooth(method = lm)
+
+ggarrange(unc_p, orc_p, dec_p, dbc_p,
+          ncol = 2,
+          nrow = 2)
+```
 

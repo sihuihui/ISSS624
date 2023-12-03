@@ -784,7 +784,13 @@ wm_fd %>%
 
 ### Weekday Morning Peak Hour Period
 
-We then compute LISA using the fixed distance weight matrix and `local_moran()` function for Weekday Morning Peak Hour. `local_moran()` will create a data frame column which contains a number of informative variables such as mean, median or pysal calculations. 
+We then compute LISA using the fixed distance weight matrix and `local_moran()` function for Weekday Morning Peak Hour. `local_moran()` will create a data frame column which contains a number of informative variables such as mean, median or pysal calculations. Local Moran’s I  allows us to identify clusters of the following types:
+
+-   High-High: areas of high values with neighbors of high values,
+-   High-Low: areas of high values with neighbors of low values,
+-   Low-High: areas of low values with neighbors of high values,
+-   Low-Low: areas of low values with neighbors of low values.
+
 
 ```{r}
 #| code-fold: true
@@ -797,7 +803,7 @@ lisa_fd_WDMP <- wm_fd %>%
 
 ```
 
-
+We then plot the `ii` values and `p_ii_sim` values computed from `lisa_fd_WDMP` side by side for ease of comparison. 
 
 ```{r}
 #| code-fold: true
@@ -824,6 +830,9 @@ tmap_arrange(map1, map2, ncol = 2)
 
 ```
 
+From the chart with `ii` values, we see that majority of the map is covered with values 0.0 and above, meaning that majority of the passenger trips of these hexagon cells seem to indicate clustering since it is higher than 0. However, with the values from `p_ii_sim`, we can see the only certain areas have significant p values. The areas with significant p values (i.e. p-values < 0.05) are in the North, Northwest, North east and west. 
+
+To further our analysis, we plot the following LISA cluster map. 
 ```{r}
 #| code-fold: true
 #| code-summary: "Show the Code"
@@ -844,16 +853,15 @@ tm_shape(lisa_sig_WDMP) +
 
 #### Analysis 
 
-Local Moran’s I  allows us to identify clusters of the following types:
+Th red highlighted regions are the high-high area. This means that they have high values for passenger trips and they also have neighbours that have high values (hence high-high). The red areas corresponds to the areas in the above `p_ii_sim` chart where the northern, north-western and north-eastern parts of Singapore with significant values. These areas are high-high clusters because they have high residential populations, so in weekday morning peak hour period, residents from these area tend to travel out for work or school.   
 
--   High-High: areas of high values with neighbors of high values,
--   High-Low: areas of high values with neighbors of low values,
--   Low-High: areas of low values with neighbors of high values,
--   Low-Low: areas of low values with neighbors of low values.
+The green highlighted regions are the low-low areas and they are on the far west and eastern sides of Singapore. Low-low area means that they have low values for passenger trips and they also have neighbours with low values (hence low-low). From what we know, the extreme western and eastern parts of Singapore do not have much residential areas and are usually occupied by military camps or factories. Since our study focuses on passenger trips generated from origin bus stops, we would tend to see lower passenger trips originating from these places during weekday morning peak hours. 
 
-Th red highlighted regions are the high-high area. This means that they have high values for passenger trips and they also have neighbours that have high values (hence high-high). THe green highlighted regions are the low-low areas. This means that they have low values for passenger trips and they also have neighbours with low values (hence low-low). Both the high-high and low-low regions contribute significantly to a positive spatial autocorrelation outcome.  For those high-low and low-high areas, they are considered outliners, which are indicated in purple and yellow cells. These areas contribute significantly to a negative autocorrelation outcome. 
+Both the high-high and low-low regions contribute significantly to a positive spatial autocorrelation outcome.  For those high-low and low-high areas, they are considered outliers, which are indicated in purple and yellow cells. These areas contribute significantly to a negative autocorrelation outcome. 
 
 ### Weekday Afternoon Peak Hour Period
+
+We compute LISA using the fixed distance weight matrix and `local_moran()` function for Weekday Afternoon Peak Hour.
 
 ```{r}
 #| code-fold: true
@@ -865,6 +873,8 @@ lisa_fd_WDAP <- wm_fd %>%
   unnest(local_moran)
 
 ```
+
+We then plot the `ii` values and `p_ii_sim` values computed from `lisa_fd_WDAP` side by side for ease of comparison. 
 
 ```{r}
 #| code-fold: true
@@ -888,7 +898,9 @@ tmap_arrange(map1, map2, ncol = 2)
 
 
 ```
+Similar to the Weekday morning peak hour period, when we plot the `ii` values derived from local Moran I, the `ii` values tend to be around -1 to 1, with a few hexagon cells showing very high (`ii` values > 1) or very low (`ii` values < -1) values. When the `p_ii_sim` values for Weekday afternoon peak hour is plotted, we see that there are only a few areas with significant p values. In the above output, we note that the south-eastern, western and a part of north-western areas of Singapore have significant p values (p value < 0.05), indicating presence of local clusters. 
 
+To further our analysis, we plot the following LISA cluster map. 
 ```{r}
 #| code-fold: true
 #| code-summary: "Show the Code"
@@ -903,6 +915,14 @@ tm_shape(lisa_sig_WDAP) +
   tm_borders(alpha = 0.4)
 ```
 
+We note that the high-high clusters are all located in the south-eastern areas of Singapore, which could be due to these passenger trips are generated from origin bus stops in central business district areas. There are also low-high clusters found in the south-eastern areas of Singapore. This could be due to the origin bus stops located at the outskirts of the business districts. 
+
+The low-low clusters are in the western, northwestern and 2 hexagon cells in the eastern side of Singapore. These areas could have low passenger trips and neighbours with low passenger trips because the origin bus stops are located near industrial estates and military camps where the working hours could be different (e.g. shift work has different reporting hours). Interestingly within these low-low clusters, there are some high-low clusters. These hexagon cells could contain the key bus stops that ferries people in and out of the area. For example, if these high-low clusters have bus stops with popular bus services which cut across different residential estates, it could lead to higher passenger trips generated from these bus stops. 
+
+
+### Weekend Morning Peak Period 
+We compute LISA using the fixed distance weight matrix and `local_moran()` function for Weekend Morning Peak Hour.
+
 ```{r}
 #| code-fold: true
 #| code-summary: "Show the Code"
@@ -913,6 +933,8 @@ lisa_fd_WEMP <- wm_fd %>%
   unnest(local_moran)
 
 ```
+
+We then plot the `ii` values and `p_ii_sim` values computed from `lisa_fd_WEMP` side by side for ease of comparison. 
 
 ```{r}
 #| code-fold: true
@@ -937,6 +959,9 @@ tmap_arrange(map1, map2, ncol = 2)
 
 ```
 
+As compared to the Weekday afternoon peak period chart with `p_ii_sim` values, the southern and south-eastern parts of Singaporen
+
+
 ```{r}
 #| code-fold: true
 #| code-summary: "Show the Code"
@@ -951,6 +976,11 @@ tm_shape(lisa_sig_WEMP) +
   tm_borders(alpha = 0.4)
 ```
 
+
+
+### Weekend Evening Peak Period 
+
+
 ```{r}
 #| code-fold: true
 #| code-summary: "Show the Code"
@@ -961,6 +991,8 @@ lisa_fd_WEEP <- wm_fd %>%
   unnest(local_moran)
 
 ```
+
+We then plot the `ii` values and `p_ii_sim` values computed from `lisa_fd_WEEP` side by side for ease of comparison. 
 
 ```{r}
 #| code-fold: true

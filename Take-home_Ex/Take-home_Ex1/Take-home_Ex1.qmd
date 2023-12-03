@@ -768,7 +768,7 @@ glimpse(wm_idw)
 
 ::: 
 
-
+For the purpose of this exericse, we will focus on computing Local Moran's I using the Fixed Distance Weight Matrix. While the adaptive distance weight matrix ensures that no unit of area has no neighbour, it is difficult to idenfity the value of k that reflects the true underlying spatial relationships. As for Inverse weight distance matrices, while it is intuitive to 
 
 ### Computing Local Moran's I using Fixed Distance Weight Matrix
 
@@ -968,4 +968,16 @@ tm_shape(lisa_sig_WEEP) +
 
 ## Conclusion and Future Work
 
+We have done exploratory spatial data analysis on the datasets given in this exercise. 
+If there were more time, we can explore the following: 
+-   	If there are any differences when using Jenkins and other data classification methods when visualising the geographical distribution of passenger trips across Singapore. 
+-   	Compare the LISA computed from other distance-based weight matrices (e.g. IDW and adaptive distance weight matrices).
+-	    Explore the origin and destination bus stops so that we can find more on the travelling patterns and where people are travelling towards.
+-   	Explore the travel patterns between buses and trains. 
+
 ## References
+
+-   Tin Seong, K. (2023). Local Measures of Spatial Autocorrelation. In R for Geospatial Data Science and Analytics. https://r4gdsa.netlify.app/chap10.html#computing-gi-statistics 
+-   Spatial dependence for simple features. (n.d.). https://sfdep.josiahparry.com/ 
+-   SIRENT - Singapore Satellite Positioning Reference Network - Plane Coordinate System - SVY21. (n.d.). https://app.sla.gov.sg/sirent/About/PlaneCoordinateSystem
+-   tmap OpenStreetMap basemap in greyscale. (n.d.). Geographic Information Systems Stack Exchange. https://gis.stackexchange.com/questions/378369/tmap-openstreetmap-basemap-in-greyscale 

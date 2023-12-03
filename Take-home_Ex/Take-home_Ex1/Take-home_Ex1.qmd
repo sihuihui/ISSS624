@@ -20,62 +20,96 @@ As city-wide urban infrastructures such as buses, taxis, public utilities and ro
 
 ### Objectives
 
-Exploratory Spatial Data Analysis (ESDA) hold tremendous potential to address complex problems facing society. In this take home exercise, I will be applying appropriate Local Indicators of Spatial Association (LISA) to undercover the spatial and spatio-temporal mobility patterns of public bus passengers in Singapore.
+Exploratory Spatial Data Analysis (ESDA) hold tremendous potential to address complex problems facing society. In this takeihome exercise, I will be applying appropriate Local Indicators of Spatial Association (LISA) to undercover the spatial and spatio-temporal mobility patterns of public bus passengers in Singapore.
 
 ### Packages used
 
 For this exercise, we will be using the following packages:
 
--   **sf**: to import and handle geospatial data,
+-   **sf** - to import and handle geospatial data
 
--   **tidyverse**: to handle and wrangle attribute data,
+-   **tidyverse** - to handle and wrangle attribute data
 
--   **knitr**: to generate tables for matrices,
+-   **knitr** - to generate tables for matrices
 
--   **sfdep**: to compute spatial weights, global and local spatial autocorrelation statistics; and
+-   **sfdep** - to compute spatial weights, global and local spatial autocorrelation statistics
 
--   **tmap**: to prepare and plot cartographic quality choropleth map.
+-   **tmap** - to prepare and plot cartographic quality choropleth maps
 
 ```{r}
 #| code-fold: true
 #| code-summary: "Show the Code"
-pacman::p_load(sf, sfdep, tmap, tidyverse, knitr)
+pacman::p_load(sf, sfdep, tmap, tidyverse, knitr, patchwork)
 ```
 
 ## Data Preparation
 
-For the purpose of this take-home exercise, we will be using two dataset:
+For the purpose of this take-home exercise, we will be using two datasets:
 
--   Passenger Volume by Origin Destination Bus Stops - this is an aspatial dataset in csv file format. It contains information on the number of passenger trips from origin destination bus stops.
+-   `Passenger Volume by Origin Destination Bus Stops` - this is an aspatial dataset in csv file format. It contains information on the number of passenger trips by weekdays and weekends from origin destination bus stops. I used the October 2023 dataset downloaded from [LTA DataMall](https://datamall.lta.gov.sg/content/datamall/en.html) on 18 Nov 2023 for the purpose of this exercise.
 
--   Bus Stop Location - this is a geospatial dataset.It provides information from all the bus stops currently serviced by buses, including the bus stop code and location coordinates.
+::: {.callout-note}
+`Passenger Volume by Origin Destination Bus Stops` dataset is updated monthly at LTA Datamall. Using the [API](https://datamall.lta.gov.sg/content/dam/datamall/datasets/LTA_DataMall_API_User_Guide.pdf) provided by LTA Datamall, we can download up to the latest 3 months data. 
+:::
 
-### Importing the Data
 
-Firstly, we will import the `Passenger Volume by Origin Destination Bus Stops` dataset downloaded from LTA DataMall on 18 Nov 2023 using `read_csv()` of **readr** package.
+-   `Bus Stop Location` - this is a geospatial dataset in shapefile format. It provides information from all the bus stops currently serviced by buses, including the bus stop code and location coordinates.I downloaded the `Bus Stop Location` dataset that was updated on July 2023 from [LTA DataMall](https://datamall.lta.gov.sg/content/datamall/en.html) on 18 Nov 2023 for the purpose of this exercise.
+
+::: {.callout-note}
+`Bus Stop Location` dataset is updated quarterly at LTA Datamall.  
+:::
+
+### Importing the Data into R Environment 
+
+Firstly, we import the aspatial data `Passenger Volume by Origin Destination Bus Stops` dataset using `read_csv()` of **readr** package, which is part of the **tidyverse** family of packages. We use `st_read()` from **sf** package to import the geospatial data `Bus Stop Location`.
+
+
+::: {.panel-tabset}
+## Aspatial Data
 
 ```{r}
 odbus_oct <- read_csv("data/aspatial/origin_destination_bus_202310.csv")
 ```
-
-We will now use `st_read()` to import the geospatial data.
+## Geospatial Data
 
 ```{r}
-busstop <- st_read(dsn = "data/geospatial", 
-layer = "BusStop")
+busstop <- st_read(dsn = "data/geospatial",layer = "BusStop")
 ```
+::: 
+
 
 ### Data Wrangling
 
-We first examine the imported aspatial data using `glimpse()`.
+#### Aspatial Data
+
+We first examine the imported aspatial data `odbus_oct` using `glimpse()`.
+
+:::{.panel-tabset}
+## Snapshot of Data 
 
 ```{r}
-glimpse(odbus_oct)
+#| code-fold: true
+#| code-summary: "Show the Code"
+head(odbus_oct)
 ```
 
-A quick check of `odbus` tibble data frame shows that the values in `ORIGIN_PT_CODE` and `DESTINATON_PT_CODE` are in **character** data type. We will use `as.factor()` to convert `ORIGIN_PT_CODE` and `DESTINATION_PT_CODE` into **factor** data type. **Explain why it is important to convert to factor data type.**
+## About the Variables 
+
+YEAR_MONTH - The year and month which the data was collected. `2023-10` means that the data was collected on October 2023. 
+DAY_TYPE - Tells us the type of the day which the trip occurred. If DAY_TYPE is Weekday, it means that the trip occurred on a Weekday (i.e., any day from Monday to Friday). 
+TIME_PER_HOUR - 
+PT_TYPE -
+ORIGIN_PT_CODE - 
+DESTINATION_PT_CODE - 
+TOTAL_TRIPS - 
+
+::: 
+
+A quick check of `odbus_oct` tibble data frame using `glimpse()` shows that the values in `ORIGIN_PT_CODE` and `DESTINATON_PT_CODE` are in **character** data type. Since these two columns contain the origin bus stop codes and destination bus stop codes and they actually take on a limited number of different values (unlike strings), we convert `ORIGIN_PT_CODE` and `DESTINATION_PT_CODE` into **factor** data type using `as.factor()`. 
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 odbus_oct$ORIGIN_PT_CODE <- as.factor(odbus_oct$ORIGIN_PT_CODE)
 odbus_oct$DESTINATION_PT_CODE <- as.factor(odbus_oct$DESTINATION_PT_CODE) 
 ```
@@ -83,41 +117,51 @@ odbus_oct$DESTINATION_PT_CODE <- as.factor(odbus_oct$DESTINATION_PT_CODE)
 Let us check the `odbus_oct` data frame again.
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 glimpse(odbus_oct)
 ```
 
-Let us first check the `YEAR_MONTH` to ensure it is all trips made in October 2023.
+Using `unique()` function, we can find the unique values in a column. Let us first check the `YEAR_MONTH`, `DAY_TYPE`, `TIME_PER_HOUR` and `PT_TYPE` to ensure the data contains bus trips made in October 2023, and there are no other unexpected values for DAY_TYPE and TIME_PER_HOUR. 
 
+::: {.panel-tabset}
+## YEAR_MONTH
 ```{r}
 unique(odbus_oct$YEAR_MONTH)
 ```
 
-Using `unique()` function, we can find the unique values in a column. Based on the above output, we know that all the trips are made in October 2023.
-
-Next we want to check the unique values in column `PT_TYPE`
-
-```{r}
-unique(odbus_oct$PT_TYPE)
-```
-
-Based on the above output, we know that all the trips are made by the public transport type- Bus.
-
+## DAY_TYPE 
 ```{r}
 unique(odbus_oct$DAY_TYPE)
 ```
 
+## TIME_PER_HOUR
 ```{r}
 unique(odbus_oct$TIME_PER_HOUR)
+
+#To count the hours
+length(unique(odbus_oct$TIME_PER_HOUR))
+
 ```
 
-Next, we want to know more about the origin bus stops.
+## PT_TYPE
+```{r}
+unique(odbus_oct$PT_TYPE)
+```
+::: 
+
+From the above output, we know that the data only contains **bus** trips made in **October 2023**. The DAY_TYPES have 2 categories: **WEEKDAYS** and **WEEKENDS/HOLIDAY**. TIME_PER_HOUR have 23 categories because there is no value of "3" in TIME_PER_HOUR variable. 
+
+Next, we find out there are 5073 bus stops in the dataset using the following code chunk. 
 
 ```{r}
 length(unique(odbus_oct$ORIGIN_PT_CODE))
 ```
 
-Check for any duplicate records
+We also check for duplicate records in the dataset and found that there are no duplicate records since the `duplicate` data frame has no rows. 
 
+:::{.panel-tabset}
+## Codes 
 ```{r}
 duplicate <- odbus_oct %>%
   group_by_all() %>%
@@ -126,59 +170,94 @@ duplicate <- odbus_oct %>%
 ```
 
 
-check if there are any bus stops with no trips
+## Output 
+```{r}
+duplicate
+```
 
+::: 
+
+We also check if there are any missing values and observations with 0 total trips in the dataset because this would affect our subsequent steps, especially when we are going to conduct Local Spatial Autocorrelation Analysis. 
+
+:::{.panel-tabset}
+## Check for Missing Values 
+```{r}
+odbus_oct %>% 
+  map(is.na) %>%
+  map(sum)
+
+```
+
+## Check for TOTAL_TRIPS with 0 value
 ```{r}
 summary(odbus_oct$TOTAL_TRIPS)
 ```
 
-Trips based on day type
+:::
+From the above output, we know that there are no missing values and no observations with 0 trips. 
+
+
+We visualise the dataset to get more understanding of the trips and the Day Type.  
+
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
+
 total_trips <- odbus_oct %>% 
   group_by(DAY_TYPE) %>%
   summarise(TOTAL = sum(TOTAL_TRIPS))
   
-ggplot(total_trips) + 
-  geom_col(aes(x=DAY_TYPE, y=TOTAL))
-```
+g_total_trips <- ggplot(total_trips) + 
+  geom_col(aes(x=DAY_TYPE, y=TOTAL)) + 
+  ggtitle('Total Passenger Trips in Oct 2023') 
 
-Trips based on Time per hour (Weekdays)
-
-```{r}
 weekday_trips <- odbus_oct %>% 
   filter(DAY_TYPE == "WEEKDAY") %>%
   group_by(TIME_PER_HOUR) %>%
-  summarise(TOTAL = sum(TOTAL_TRIPS))
+  summarise(TOTAL = sum(TOTAL_TRIPS)) 
   
-ggplot(weekday_trips) + 
-  geom_col(aes(x=TIME_PER_HOUR, y=TOTAL))
-```
+g_weekday_trips <- ggplot(weekday_trips) + 
+  geom_col(aes(x=TIME_PER_HOUR, y=TOTAL)) + 
+  ggtitle('Total Passenger Trips generated on Weekdays of Oct 2023')
 
-Trips based on Time per hour (Weekends/ Holidays)
-
-```{r}
 weekend_trips <- odbus_oct %>% 
   filter(DAY_TYPE == "WEEKENDS/HOLIDAY") %>%
   group_by(TIME_PER_HOUR) %>%
   summarise(TOTAL = sum(TOTAL_TRIPS))
   
-ggplot(weekend_trips) + 
-  geom_col(aes(x=TIME_PER_HOUR, y=TOTAL))
+g_weekend_trips <- ggplot(weekend_trips) + 
+  geom_col(aes(x=TIME_PER_HOUR, y=TOTAL)) + 
+  ggtitle('Total Passenger Trips generated on Weekends of Oct 2023')
+
+g_total_trips + (g_weekday_trips | g_weekend_trips)
+
 ```
+
+Weekday generate more passenger trips as compared to Weekends/Holidays. We also note that on Weekedays, the passenger peaks at 7am - 8am and 6pm - 7pm. While weekends/ holidays generally has less trips than weekdays but its peaks are less distinctive, indicating that the flow of passengers are generally more constant. 
 
 #### Extracting Data for this exercise
 
+For the purpose of this exercise, we are going to focus on the passenger trips generated by origin bus stops during the following Peak Hour Periods:
+-   Weekday Morning Peak - 9am to 9am 
+-   Weekday Afternoon Peak - 5pm to 8pm 
+-   Weekend/holiday Morning Peak - 11am to 2pm 
+-   Weekend/holiday Evening Peak - 4pm to 7pm 
+
+We will use `group_by()`, `summarise()` and `sum()` to derive the passenger trips generated by origin bus stops during the abovementioned peak periods. 
+
+:::{.panel-tabset}
+
+### Total Passenger Trips 
 ```{r}
 origin_TOTAL <- odbus_oct %>% 
   group_by(ORIGIN_PT_CODE) %>%
   summarise(TOTAL = sum(TOTAL_TRIPS)) 
-```
 
-```{r}
 glimpse(origin_TOTAL)
 ```
 
+### Weekday Morning Peak Hour 
 ```{r}
 origin_WDMP <- odbus_oct %>% 
   filter(DAY_TYPE == "WEEKDAY") %>% 
@@ -186,36 +265,11 @@ origin_WDMP <- odbus_oct %>%
            TIME_PER_HOUR <= 9) %>%
   group_by(ORIGIN_PT_CODE) %>%
   summarise(WDMP = sum(TOTAL_TRIPS))
-```
 
-```{r}
 glimpse(origin_WDMP)
 ```
 
-Notice that there are less origin bus stops in this dataframe
-
-```{r}
-origin_TRIPS <- left_join(origin_TOTAL, origin_WDMP)
-```
-
-```{r}
-glimpse(origin_TRIPS)
-```
-
-Find out the bus stops without trips on WDMP
-
-```{r}
-origin_TRIPS %>%
-  map(is.na) %>% 
-  map(sum)
-```
-
-
-```{r}
-origin_TRIPS %>% 
-  filter(is.na(origin_TRIPS$WDMP)) 
-```
-
+### Weekday Afternoon Peak Hour
 
 ```{r}
 origin_WDAP <- odbus_oct %>% 
@@ -224,28 +278,11 @@ origin_WDAP <- odbus_oct %>%
            TIME_PER_HOUR <= 20) %>%
   group_by(ORIGIN_PT_CODE) %>%
   summarise(WDAP = sum(TOTAL_TRIPS))
-```
 
-
-```{r}
 glimpse(origin_WDAP)
 ```
 
-```{r}
-origin_TRIPS <- left_join(origin_TRIPS, origin_WDAP)
-
-```
-
-```{r}
-glimpse(origin_TRIPS)
-```
-
-```{r}
-origin_TRIPS %>% 
-  filter(is.na(origin_TRIPS$WDAP)) 
-```
-
-
+### Weekend Morning Peak Hour
 ```{r}
 origin_WEMP <- odbus_oct %>% 
   filter(DAY_TYPE == "WEEKENDS/HOLIDAY") %>% 
@@ -253,32 +290,11 @@ origin_WEMP <- odbus_oct %>%
            TIME_PER_HOUR <= 14) %>%
   group_by(ORIGIN_PT_CODE) %>%
   summarise(WEMP = sum(TOTAL_TRIPS))
-```
 
-
-```{r}
 glimpse(origin_WEMP)
 ```
 
-
-```{r}
-origin_TRIPS <- left_join(origin_TRIPS, origin_WEMP)
-
-```
-
-
-```{r}
-glimpse(origin_TRIPS)
-```
-
-
-```{r}
-origin_TRIPS %>% 
-  filter(is.na(origin_TRIPS$WEMP)) 
-
-```
-
-
+### Weekend Evening Peak Hour 
 ```{r}
 origin_WEEP <- odbus_oct %>% 
   filter(DAY_TYPE == "WEEKENDS/HOLIDAY") %>% 
@@ -286,83 +302,119 @@ origin_WEEP <- odbus_oct %>%
            TIME_PER_HOUR <= 19) %>%
   group_by(ORIGIN_PT_CODE) %>%
   summarise(WEEP = sum(TOTAL_TRIPS))
+
+glimpse(origin_WEEP) 
 ```
 
+::: 
 
+Notice that as compared to the number of origin bus stops in `origin_TOTAL`, there are less origin bus stops in origin_WDMP, origin_WDAP, origin_WEMP and origin_WEEP. This could be due to some bus stops with no trips generated at origin bus stops during the peak periods which we are interested in. 
+
+Nonetheless, this is something we should take note in our subsequent step when we join these dataframes together. To ensure all 5073 bus stops are not dropped due to 0 trips generated during peak hour, `origin_TOTAL` should be on the left hand side of the left join. 
+
+
+:::{.panel-tabset}
+
+### Join with Weekday Morning Peak 
 ```{r}
-glimpse(origin_WEEP)
+#| code-fold: true
+#| code-summary: "Show the Code"
+
+origin_TRIPS <- left_join(origin_TOTAL, origin_WDMP)
+glimpse(origin_TRIPS)
 ```
 
 
+### Join with Weekday Afternoon Peak 
+```{r}
+origin_TRIPS <- left_join(origin_TRIPS, origin_WDAP)
+glimpse(origin_TRIPS)
+
+```
+
+### Join with Weekend Morning Peak 
+```{r}
+origin_TRIPS <- left_join(origin_TRIPS, origin_WEMP)
+glimpse(origin_TRIPS)
+
+```
+
+### Join with Weekend Evening Peak 
 
 ```{r}
 origin_TRIPS <- left_join(origin_TRIPS, origin_WEEP)
 glimpse(origin_TRIPS)
 ```
 
-```{r}
-origin_TRIPS %>% 
-  filter(is.na(origin_TRIPS$WEEP)) 
+::: 
 
-```
+After joining these tables, we check for missing values in the final dataframe `origin_TRIPS` and observed that there are missing values in WDMP, WDAP, WEMP and WEEP columns, which is probably due to there were no trips generated at origin bus stops during these peak hour periods. 
 
-Check for missing values in `origin_TRIPS` dataframe
+:::{.panel-tabset}
 
+### Check for Columns with Missing Values 
 ```{r}
 origin_TRIPS %>% 
   map(is.na) %>%
   map(sum)
 
 ```
-
-Filter out rows with NA 
-
+### Filter out rows with missing values 
 ```{r}
 origin_TRIPS[rowSums(is.na(origin_TRIPS)) > 0, ] 
 ```
+::: 
 
-Fill in all NA values with 0.
+We use the following code chunk to fill all the missing values with 0 for easier handling in subsequent steps. 
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
+
 origin_TRIPS <- origin_TRIPS %>% 
   replace(is.na(.), 0) 
 
 ```
 
+
+#### Geospatial Data 
+
 Let us take a look at the geospatial data imported.
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 busstop
 
 ```
 
-From the above output, we know that the `busstop` is a simple feature data frame. It consists of 5161 features, which are point geometry type. We note that it has 3 fields and the projected CRS is SVY21.
+From the above output, we know that the `busstop` is a simple feature data frame. It consists of 5161 features, which are point geometry type.We note that it has 3 fields and the projected CRS is SVY21.
 
-Let us check the coordinate system further using the following code. 
+::: {.callout-caution collapse="false"}
+This dataset has 5161 busstops while our aspatial dataset has 5073 busstops. This should be something to take note in our subsequent steps.
+:::
+
+First, let us check the coordinate system using the following code.
+
 ```{r}
+
+#| code-fold: true
+#| code-summary: "Show the Code"
 st_crs(busstop)
 
 ```
 
-Although `busstop` data frame is projected in svy21, at the end of the print, it indicates that the EPSG is 9001. This is a wrong EPSG code because the correct EPSG code for svy21 should be 3414.Hence, we need to assign the correct ESPG code to `busstop` data frame using the `st_set_crs()` of **sf** package. 
+Although `busstop` data frame is projected in svy21, at the end of the output, it indicates that the EPSG is 9001. This is a wrong EPSG code because the correct EPSG code for svy21 should be 3414.Hence, we need to assign the correct ESPG code to `busstop` data frame using the `st_set_crs()` of **sf** package.
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 busstop3414 <- st_set_crs(busstop, 3414)
-```
-```{r}
-busstop3414 
-```
-
-
-Let us check the CSR again
-
-```{r}
 st_crs(busstop3414)
-
 ```
 
 
-Dropping columns that we do not need
+We use the following code to select columns that we want for the 
 
 ```{r}
 busstop3414 <- busstop3414 %>%
@@ -370,47 +422,50 @@ busstop3414 <- busstop3414 %>%
 glimpse(busstop3414)
 ```
 
-```{r}
-plot(busstop3414)
+### Generating Hexagon Grid 
 
-```
+For this exercise, we will be computing the passenger trips generated by origin at the hexagon level. Before we join the busstop location with the passenger trips data in `origin_TRIPS` dataframe, we will generate the hexagon grid first.
 
-For this exercise, we will be computing the passenger trips generated by origin at the hexagon level. Before we join the busstop location and geometry with the passenger trips data in `origin_TRIPS` dataframe, we will generate the hexagon grid first.
-
-First, we will make a hexagon grid over the busstop datapoints.
+First, we will make a hexagon tessellation using `busstop3414` to define the bounding box of the tessellation. As the hexagon layer that we want is 250m (the perpendicular distance between the centre of the hexagon and its edges), and the   `cellsize` parameter in `st_make_grid` requires the length to be the distance to be between opposite edges, we multiply 250m by 2 to get 500m, which is the distance between opposite edges of a hexagon. In the code chunk below, we also specify the `crs = 3414` since we are using the SVY21 coordinate reference system and set `square = FALSE` to return a hexagon grid (rather than a square grid). 
 
 ```{r}
-#make hex grid
+#| code-fold: true
+#| code-summary: "Show the Code"
 hex_grid <- st_make_grid(busstop3414, c(500,500), crs = 3414, what = "polygons", square = FALSE)
 hex_grid
 ```
 
+Next, we convert `hex_grid` from a sfc_POLYGON object to sf object for easier handling and add an unique ID to each cell. Each cell is a hexagon and in subsequent steps, we will check the number of bus stops within each hexagon. 
+
 ```{r}
-#make it to sf and add grid id
+#| code-fold: true
+#| code-summary: "Show the Code"
 hex_grid_sf <- st_sf(hex_grid) %>%
   mutate(grid_id = 1:length(lengths(hex_grid)))
 
-```
-
-```{r}
 hex_grid_sf
 ```
 
+We then use `st_intersects()` to find out which points (i.e., origin bus stops in our case) are lying inside each grid. As we want to know how many bus stops are within each hexagon grid, we use `lengths()` to return the number of each element of the list then attach it as a column back to `hex_grid_sf` data frame.
+
 ```{r}
-plot(hex_grid_sf)
+#| code-fold: true
+#| code-summary: "Show the Code"
+hex_grid_sf$BS_count <- lengths(st_intersects(hex_grid_sf, busstop3414))
 ```
 
-```{r}
-hex_grid_sf$SG <- lengths(st_intersects(hex_grid_sf, busstop3414))
-```
+As there are some hexagon cells without any bus stops inside, we use the following code chunk to remove these cells, retain only hexagon cells with bus stops inside and generate a new sf data frame called `sgmap`. 
 
 ```{r}
-
-sgmap <- filter(hex_grid_sf, SG>0)
+#| code-fold: true
+#| code-summary: "Show the Code"
+sgmap <- filter(hex_grid_sf, BS_count>0)
 sgmap
 ```
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 plot(sgmap)
 ```
 
@@ -418,17 +473,24 @@ plot(sgmap)
 busstop_sgmap <- st_intersection(busstop3414, sgmap) 
 busstop_sgmap 
 ```
-
+We then use `st_intersection()` to perform point (i.e., `busstop3414` data frame) and polygon (`sgmap` data frame) overlay and the output will be in point sf object. 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 busstop_grid_id <- st_intersection(busstop3414, sgmap) %>%
   st_drop_geometry()
 busstop_grid_id
 ```
 
+We save this output into rds format for future use. 
+
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 write_rds(busstop_grid_id, "data/rds/busstop_grid_id.rds")  
 ```
 
+We then join the bus stop information, hexagon grid id with the passenger trips in `origin_TRIPS` so that the data frame has information on passenger trips. We name this output data frame as `busstop_trips`. 
 ```{r}
 busstop_trips <- left_join(busstop_grid_id,origin_TRIPS,
                            by = c("BUS_STOP_N" = "ORIGIN_PT_CODE")) %>%
@@ -437,7 +499,61 @@ busstop_trips <- left_join(busstop_grid_id,origin_TRIPS,
 busstop_trips
 ```
 
-check for missing values
+We use the following code chunk to check for duplicates in `busstop_trips`. 
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
+
+duplicate1 <- busstop_trips %>%
+  group_by_all() %>%
+  filter(n()>1) %>%
+  ungroup()
+
+duplicate1
+```
+
+From the above output, we note that there are duplicate rows. Hence we will use `unique()` to retain the unique records. 
+
+```{r}
+busstop_trips <- unique(busstop_trips)
+```
+
+We use the following code chunk to verify that there are no more duplicating records. 
+```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
+duplicate2 <- busstop_trips %>%
+  group_by_all() %>%
+  filter(n()>1) %>%
+  ungroup()
+
+duplicate2
+```
+Since the above output does not return any duplicates, we can confirm that the data frame has no duplicating records. 
+
+Next, we check if there are any missing values in the data frame and filter out those rows with these missing values for further verification. 
+
+:::{.panel-tabset}
+
+### Check for Missing Values 
+```{r}
+busstop_trips %>% 
+  map(is.na) %>%
+  map(sum)
+```
+
+### Filter out Rows with Missing Values 
+```{r}
+busstop_trips[rowSums(is.na(busstop_trips)) > 0, ] 
+```
+::: 
+
+From the output, we note that there are 8 bus stops without location description but they contain passenger trips. Hence We will retain these rows because they still have passenger trip information and our analysis will be at the hexagon layer level so missing location description does not have much impact on our analysis since we know these bus stops belong to which hexagon cell. As for those bus stops that have missing passenger trips, we will fill it with 0.
+
+```{r}
+busstop_trips$LOC_DESC <- replace(busstop_trips$LOC_DESC, is.na(busstop_trips$LOC_DESC), "NO_DESC") 
+```
 
 ```{r}
 busstop_trips %>% 
@@ -445,104 +561,76 @@ busstop_trips %>%
   map(sum)
 ```
 
-filter out rows with these missing values
-```{r}
-busstop_trips[rowSums(is.na(busstop_trips)) > 0, ] 
-```
-
-
-check what are these busstops that do not have values 
-
-
-check for duplicates 
+We use the following code chunk to fill all the missing values with 0 for easier handling in subsequent steps. 
 
 ```{r}
-duplicate1 <- busstop_trips %>%
-  group_by_all() %>%
-  filter(n()>1) %>%
-  ungroup()
+#| code-fold: true
+#| code-summary: "Show the Code"
+
+busstop_trips <- busstop_trips %>% 
+  replace(is.na(.), 0) 
 
 ```
 
 ```{r}
-duplicate1
+#| code-fold: true
+#| code-summary: "Show the Code"
+busstop_trips %>% 
+  map(is.na) %>%
+  map(sum)
 ```
 
-```{r}
-busstop_trips <- unique(busstop_trips)
-```
+We use the following code chunk to generate a new data frame `busstop_trips1` which will contain the total passenger trips generated by the origin bus stops within each hexagon cell. 
 
 ```{r}
-duplicate2 <- busstop_trips %>%
-  group_by_all() %>%
-  filter(n()>1) %>%
-  ungroup()
-
-```
-
-
-count number of bus stops in busstop_trips
-
-```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 busstop_trips1 <- busstop_trips %>% 
   group_by(grid_id)%>%
-  summarise(TOTALBS_PER_GRID = n(), 
-            TOTALTRIPS_PER_GRID = sum(TOTAL),
+  summarise(TOTALTRIPS_PER_GRID = sum(TOTAL),
             TOTALWDMP_PER_GRID = sum(WDMP),
             TOTALWDAP_PER_GRID = sum(WDAP), 
             TOTALWEMP_PER_GRID = sum(WEMP),
             TOTALWEEP_PER_GRID = sum(WEEP))
-
-
 ```
 
+We then join the passenger trips information for each grid with the hexagon grid's geometry information found in the sf dataframe `sgmap` using `left_join()` on the common column `grid_id`. 
+
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 origintrip_hex <- left_join(sgmap,busstop_trips1,
                             by = "grid_id")
 head(origintrip_hex)
 ```
 
 ```{r}
-glimpse(origintrip_hex)
+#| code-fold: true
+#| code-summary: "Show the Code"
+summary(origintrip_hex)
 ```
 
-Plot some charts here to check if several busstops were in the grid.
-
-```{r}
-ggplot(origintrip_hex, aes(x=TOTALBS_PER_GRID)) + 
-  geom_histogram()
-```
 
 ## GeoVisualisation
 
-```{r}
-tmap_mode("plot")
-tm_shape(origintrip_hex)+
-  tm_fill("TOTALBS_PER_GRID", 
-          style = "quantile", 
-          palette = "Blues",
-          title = "Total Bus Stops") +
-  tm_layout(main.title = "Total Passenger Trips from Origin Bus Stops in October 2023",
-            main.title.position = "center",
-            main.title.size = 1.2,
-            legend.height = 0.45, 
-            legend.width = 0.35,
-            frame = TRUE) +
-  tm_borders(alpha = 0.5) +
-  tm_compass(type="8star", size = 2) +
-  tm_scale_bar() +
-  tm_grid(alpha =0.2) +
-  tm_credits("Source: Passenger trips data from LTA", 
-             position = c("left", "bottom"))
+Using the `origintrip_hex` dataframe generated from previous section, we plot the geographical distribution of the passenger trips using **tmap** package. 
 
-```
+### Comparing Weekday Morning and Afternoon Peak Hours 
 
 ```{r}
-tmap_mode("plot")
-tm_shape(origintrip_hex)+
+
+#| code-fold: true
+#| code-summary: "Show the Code"
+
+tiles ='https://maps-{s}.onemap.sg/v3/Grey/{z}/{x}/{y}.png'
+
+tmap_mode("view")
+
+WDMP <- tm_basemap(server = tiles)+ 
+  tm_shape(origintrip_hex)+
   tm_fill("TOTALWDMP_PER_GRID", 
           style = "quantile", 
-          palette = "Blues",
+          palette = "Greens",
           title = "Passenger Trips") +
   tm_layout(main.title = "Passenger Trips during Weekday AM Peak in Oct 2023",
             main.title.position = "center",
@@ -554,14 +642,10 @@ tm_shape(origintrip_hex)+
   tm_compass(type="8star", size = 2) +
   tm_scale_bar() +
   tm_grid(alpha =0.2) +
-  tm_credits("Source: Passenger trips data from LTA", 
+  tm_credits("Source: Passenger trips data and BUs Stop Locations from LTA Datamall", 
              position = c("left", "bottom"))
 
-```
-
-```{r}
-tmap_mode("plot")
-tm_shape(origintrip_hex)+
+WDAP <- tm_basemap(server = tiles)+ tm_shape(origintrip_hex)+
   tm_fill("TOTALWDAP_PER_GRID", 
           style = "quantile", 
           palette = "Blues",
@@ -576,16 +660,25 @@ tm_shape(origintrip_hex)+
   tm_compass(type="8star", size = 2) +
   tm_scale_bar() +
   tm_grid(alpha =0.2) +
-  tm_credits("Source: Passenger trips data from LTA", 
+  tm_credits("Source: Passenger trips data and BUs Stop Locations from LTA Datamall", 
              position = c("left", "bottom"))
 
+tmap_arrange(WDMP, WDAP, ncol = 2)
 ```
 
+
+
+### Comparing Weekend Morning and Evening Peak Hours
 ```{r}
-tm_shape(origintrip_hex)+
+#| code-fold: true
+#| code-summary: "Show the Code"
+
+tmap_mode("view")
+WEMP <- tm_basemap(server = tiles)+
+  tm_shape(origintrip_hex)+
   tm_fill("TOTALWEMP_PER_GRID", 
           style = "quantile", 
-          palette = "Blues",
+          palette = "Greens",
           title = "Passenger Trips") +
   tm_layout(main.title = "Passenger trips during Weekend AM Peak in Oct 2023",
             main.title.position = "center",
@@ -600,10 +693,8 @@ tm_shape(origintrip_hex)+
   tm_credits("Source: Passenger trips data from LTA", 
              position = c("left", "bottom"))
 
-```
-
-```{r}
-tm_shape(origintrip_hex)+
+WEEP <- tm_basemap(server = tiles)+
+  tm_shape(origintrip_hex)+
   tm_fill("TOTALWEEP_PER_GRID", 
           style = "quantile", 
           palette = "Blues",
@@ -621,17 +712,26 @@ tm_shape(origintrip_hex)+
   tm_credits("Source: Passenger trips data from LTA", 
              position = c("left", "bottom"))
 
+tmap_arrange(WEMP, WEEP, ncol = 2)
 ```
+
+:::{.callout-note appearance = "simple"}
+## Observations 
+
+-   Trips in Weekend Morning Peak hours seems to higher concentration 
+
+::: 
 
 ## Local Indicators of Spatial Association (LISA) Analysis
 
-Local Indicators of Spatial Association or LISA are statistics that evaluate the existence of clusters in the spatial arrangement of a given variable. 
+Local Indicators of Spatial Association or LISA are statistics that evaluate the existence of clusters in the spatial arrangement of a given variable.
 
 ```{r}
 head(origintrip_hex)
 ```
 
-Deriving neighbours based on Fixed Distance
+### Deriving neighbours based on Fixed Distance
+
 ```{r}
 geo <- sf::st_geometry(origintrip_hex)
 nb <- st_knn(geo, longlat = TRUE)
@@ -650,11 +750,12 @@ wm_fd <- origintrip_hex %>%
                wt = st_weights(nb),
                .before = 1)
 ```
+
 ```{r}
 glimpse(wm_fd)
 ```
 
-Adaptive distance weights
+### Adaptive distance weights
 
 ```{r}
 wm_ad <- origintrip_hex %>% 
@@ -669,7 +770,7 @@ wm_ad <- origintrip_hex %>%
 glimpse(wm_ad)
 ```
 
-Inverse Distance Weights 
+### Inverse Distance Weights
 
 ```{r}
 wm_idw <- origintrip_hex %>%
@@ -685,7 +786,7 @@ wm_idw <- origintrip_hex %>%
 glimpse(wm_idw) 
 ```
 
-Computing Local Moran's I 
+### Computing Local Moran's I using Fixed Distance Weight Matrix 
 
 ```{r}
 wm_fd %>%
@@ -693,7 +794,7 @@ wm_fd %>%
   map(sum)
 ```
 
-fill in with 0 
+fill in with 0
 
 ```{r}
 wm_fd <- wm_fd %>% 
@@ -701,46 +802,20 @@ wm_fd <- wm_fd %>%
 
 ```
 
-
 ```{r}
 wm_fd %>%
   map(is.na) %>% 
   map(sum)
 ```
 
-
 ```{r}
 lisa_fd_WDMP <- wm_fd %>% 
-  mutate(local_moran = local_moran(TOTALWDMP_PER_GRID, zero.policy=FALSE,
+  mutate(local_moran = local_moran(TOTALWDMP_PER_GRID, zero.policy=TRUE,
                                    nb, wt, nsim = 99),
          .before = 1) %>%
   unnest(local_moran)
 
 ```
-
-
-```{r}
-tmap_mode("plot")
-tm_shape(lisa_fd_WDMP) +
-  tm_fill("ii") + 
-  tm_borders(alpha = 0.5) +
-  tm_view(set.zoom.limits = c(6,8)) +
-  tm_layout(main.title = "local Moran's I of WDMP",
-            main.title.size = 0.8)
-
-```
-
-
-```{r}
-tmap_mode("plot")
-tm_shape(lisa_fd_WDMP) +
-  tm_fill("p_ii_sim") + 
-  tm_borders(alpha = 0.5) +
-   tm_layout(main.title = "p-value of local Moran's I",
-            main.title.size = 0.8)
-
-```
-
 
 ```{r}
 tmap_mode("plot")
@@ -763,7 +838,6 @@ tmap_arrange(map1, map2, ncol = 2)
 
 ```
 
-
 ```{r}
 lisa_sig_WDMP <- lisa_fd_WDMP  %>%
   filter(p_ii_sim < 0.05)
@@ -775,7 +849,6 @@ tm_shape(lisa_sig_WDMP) +
   tm_fill("mean") + 
   tm_borders(alpha = 0.4)
 ```
-
 
 ```{r}
 lisa_fd_WDAP <- wm_fd %>% 
@@ -908,3 +981,7 @@ tm_shape(lisa_sig_WEEP) +
   tm_fill("mean") + 
   tm_borders(alpha = 0.4)
 ```
+
+## Conclusion and Future Work
+
+## References

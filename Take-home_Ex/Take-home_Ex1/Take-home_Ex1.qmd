@@ -212,7 +212,7 @@ weekday_trips <- odbus_oct %>%
   
 g_weekday_trips <- ggplot(weekday_trips) + 
   geom_col(aes(x=TIME_PER_HOUR, y=TOTAL)) + 
-  ggtitle('Total Passenger Trips generated on Weekdays of Oct 2023')
+  ggtitle('Weekday Passenger Trips')
 
 weekend_trips <- odbus_oct %>% 
   filter(DAY_TYPE == "WEEKENDS/HOLIDAY") %>%
@@ -221,9 +221,9 @@ weekend_trips <- odbus_oct %>%
   
 g_weekend_trips <- ggplot(weekend_trips) + 
   geom_col(aes(x=TIME_PER_HOUR, y=TOTAL)) + 
-  ggtitle('Total Passenger Trips generated on Weekends of Oct 2023')
+  ggtitle('Weekend Passenger Trips')
 
-g_total_trips + (g_weekday_trips | g_weekend_trips)
+g_total_trips / (g_weekday_trips | g_weekend_trips)
 
 ```
 
@@ -705,7 +705,7 @@ Overall, on weekends, the pattern of having high volume of passenger trips from 
 
 ## Local Indicators of Spatial Association (LISA) Analysis
 
-Local Indicators of Spatial Association (LISA) are statistics that evaluate the existence of clusters in the spatial arrangement of a given variable.
+Local measures of spatial association are statistics used to detect variations of a variable of interest across space when the spatial relationship of the variable is not constant across the study region, known as spatial non-stationarity or spatial heterogeneity. Unlike global measures that summarize the overall spatial autocorrelation of the study area in one single value, local measures of spatial association identify local clusters (observations nearby have similar attribute values) or spatial outliers (observations nearby have different attribute values). 
 
 ### Deriving neighbours using Distance-based weight matrices 
 
@@ -768,31 +768,27 @@ glimpse(wm_idw)
 
 ::: 
 
-For the purpose of this exericse, we will focus on computing Local Moran's I using the Fixed Distance Weight Matrix. While the adaptive distance weight matrix ensures that no unit of area has no neighbour, it is difficult to idenfity the value of k that reflects the true underlying spatial relationships. As for Inverse weight distance matrices, while it is intuitive to 
+For the purpose of this exercise, we will focus on computing Local Moran's I using the Fixed Distance Weight Matrix. Fixed distance weight matrices  While the adaptive distance weight matrix ensures that no unit of area has no neighbour, it is difficult to idenfity the value of k that reflects the true underlying spatial relationships. As for Inverse weight distance matrices, while it is intuitive to have higher weights for distances nearer to the area of interest, it results in a harder to interpret chart and results. 
 
 ### Computing Local Moran's I using Fixed Distance Weight Matrix
 
+First, we check the Fixed Distance Weight Matrix generated from the above section for any missing values. 
+
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 wm_fd %>%
   map(is.na) %>% 
   map(sum)
 ```
 
-fill in with 0
+### Weekday Morning Peak Hour Period
+
+We then compute LISA using the fixed distance weight matrix and `local_moran()` function for Weekday Morning Peak Hour. `local_moran()` will create a data frame column which contains a number of informative variables such as mean, median or pysal calculations. 
 
 ```{r}
-wm_fd <- wm_fd %>% 
-  replace(is.na(.), 0) 
-
-```
-
-```{r}
-wm_fd %>%
-  map(is.na) %>% 
-  map(sum)
-```
-
-```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 lisa_fd_WDMP <- wm_fd %>% 
   mutate(local_moran = local_moran(TOTALWDMP_PER_GRID, zero.policy=TRUE,
                                    nb, wt, nsim = 99),
@@ -801,16 +797,22 @@ lisa_fd_WDMP <- wm_fd %>%
 
 ```
 
+
+
 ```{r}
-tmap_mode("plot")
-map1 <- tm_shape(lisa_fd_WDMP) +
+#| code-fold: true
+#| code-summary: "Show the Code"
+tmap_mode("view")
+map1 <- tm_basemap(server = tiles)+ 
+  tm_shape(lisa_fd_WDMP) +
   tm_fill("ii") + 
   tm_borders(alpha = 0.5) +
-  tm_view(set.zoom.limits = c(6,8)) +
-  tm_layout(main.title = "local Moran's I of GDPPC",
+
+  tm_layout(main.title = "local Moran's I",
             main.title.size = 0.8)
 
-map2 <- tm_shape(lisa_fd_WDMP) +
+map2 <- tm_basemap(server = tiles)+ 
+  tm_shape(lisa_fd_WDMP) +
   tm_fill("p_ii_sim",
           breaks = c(0, 0.001, 0.01, 0.05, 1),
               labels = c("0.001", "0.01", "0.05", "Not sig")) + 
@@ -823,9 +825,15 @@ tmap_arrange(map1, map2, ncol = 2)
 ```
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
+
+
+
 lisa_sig_WDMP <- lisa_fd_WDMP  %>%
   filter(p_ii_sim < 0.05)
-tmap_mode("plot")
+
+tmap_mode("view")
 tm_shape(lisa_fd_WDMP) +
   tm_polygons() +
   tm_borders(alpha = 0.5) +
@@ -834,7 +842,22 @@ tm_shape(lisa_sig_WDMP) +
   tm_borders(alpha = 0.4)
 ```
 
+#### Analysis 
+
+Local Moran’s I  allows us to identify clusters of the following types:
+
+-   High-High: areas of high values with neighbors of high values,
+-   High-Low: areas of high values with neighbors of low values,
+-   Low-High: areas of low values with neighbors of high values,
+-   Low-Low: areas of low values with neighbors of low values.
+
+Th red highlighted regions are the high-high area. This means that they have high values for passenger trips and they also have neighbours that have high values (hence high-high). THe green highlighted regions are the low-low areas. This means that they have low values for passenger trips and they also have neighbours with low values (hence low-low). Both the high-high and low-low regions contribute significantly to a positive spatial autocorrelation outcome.  For those high-low and low-high areas, they are considered outliners, which are indicated in purple and yellow cells. These areas contribute significantly to a negative autocorrelation outcome. 
+
+### Weekday Afternoon Peak Hour Period
+
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 lisa_fd_WDAP <- wm_fd %>% 
   mutate(local_moran = local_moran(TOTALWDAP_PER_GRID, zero.policy=FALSE,
                                    nb, wt, nsim = 99),
@@ -844,12 +867,12 @@ lisa_fd_WDAP <- wm_fd %>%
 ```
 
 ```{r}
-
-tmap_mode("plot")
+#| code-fold: true
+#| code-summary: "Show the Code"
+tmap_mode("view")
 map1 <- tm_shape(lisa_fd_WDAP) +
   tm_fill("ii") + 
   tm_borders(alpha = 0.5) +
-  tm_view(set.zoom.limits = c(6,8)) +
   tm_layout(main.title = "Local Moran's I for Weekday Afternoon Peak Passenger Trips",
             main.title.size = 0.8)
 
@@ -867,9 +890,11 @@ tmap_arrange(map1, map2, ncol = 2)
 ```
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 lisa_sig_WDAP <- lisa_fd_WDAP  %>%
   filter(p_ii_sim < 0.05)
-tmap_mode("plot")
+tmap_mode("view")
 tm_shape(lisa_fd_WDAP) +
   tm_polygons() +
   tm_borders(alpha = 0.5) +
@@ -879,6 +904,8 @@ tm_shape(lisa_sig_WDAP) +
 ```
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 lisa_fd_WEMP <- wm_fd %>% 
   mutate(local_moran = local_moran(TOTALWEMP_PER_GRID, zero.policy=FALSE,
                                    nb, wt, nsim = 99),
@@ -888,12 +915,12 @@ lisa_fd_WEMP <- wm_fd %>%
 ```
 
 ```{r}
-
-tmap_mode("plot")
+#| code-fold: true
+#| code-summary: "Show the Code"
+tmap_mode("view")
 map1 <- tm_shape(lisa_fd_WEMP) +
   tm_fill("ii") + 
   tm_borders(alpha = 0.5) +
-  tm_view(set.zoom.limits = c(6,8)) +
   tm_layout(main.title = "Local Moran's I for Weekend Morning Peak Passenger Trips",
             main.title.size = 0.8)
 
@@ -911,9 +938,11 @@ tmap_arrange(map1, map2, ncol = 2)
 ```
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 lisa_sig_WEMP <- lisa_fd_WEMP  %>%
   filter(p_ii_sim < 0.05)
-tmap_mode("plot")
+tmap_mode("view")
 tm_shape(lisa_fd_WEMP) +
   tm_polygons() +
   tm_borders(alpha = 0.5) +
@@ -923,6 +952,8 @@ tm_shape(lisa_sig_WEMP) +
 ```
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 lisa_fd_WEEP <- wm_fd %>% 
   mutate(local_moran = local_moran(TOTALWEEP_PER_GRID, zero.policy=FALSE,
                                    nb, wt, nsim = 99),
@@ -932,12 +963,12 @@ lisa_fd_WEEP <- wm_fd %>%
 ```
 
 ```{r}
-
-tmap_mode("plot")
+#| code-fold: true
+#| code-summary: "Show the Code"
+tmap_mode("view")
 map1 <- tm_shape(lisa_fd_WEEP) +
   tm_fill("ii") + 
   tm_borders(alpha = 0.5) +
-  tm_view(set.zoom.limits = c(6,8)) +
   tm_layout(main.title = "Local Moran's I for Weekend Evening Peak Passenger Trips",
             main.title.size = 0.8)
 
@@ -955,9 +986,11 @@ tmap_arrange(map1, map2, ncol = 2)
 ```
 
 ```{r}
+#| code-fold: true
+#| code-summary: "Show the Code"
 lisa_sig_WEEP <- lisa_fd_WEEP  %>%
   filter(p_ii_sim < 0.05)
-tmap_mode("plot")
+tmap_mode("view")
 tm_shape(lisa_fd_WEEP) +
   tm_polygons() +
   tm_borders(alpha = 0.5) +

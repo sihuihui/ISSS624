@@ -39,7 +39,7 @@ Welcome! In this website, I will be sharing my learning journey on applied geosp
 ::: {#in-class}
 :::
 
-## Take-Home Exercises 
+## Take-Home Exercises
 
 ::: {#take-home}
 :::

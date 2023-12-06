@@ -1,0 +1,39 @@
+---
+title: "Hands-On Exercise 4: Geographically Weighted Regression"
+author: "Goh Si Hui"
+date: 2023/12/05
+date-format: long
+date-modified: "last-modified"
+format: html 
+execute: 
+  echo: true
+  eval: true
+  warning: false
+editor: visual
+---
+
+## Overview
+
+In this hands-on exercise, you will learn how to build hedonic pricing models by using Geographically Weighted Regression methods. The dependent variable is the resale prices of condominium in 2015. The independent variables are divided into either structural and locational.
+
+::: {.callout-note appearance="simple"}
+## Geographically weighted regression
+
+Geographically weighted regression (GWR) is a spatial statistical technique that takes non-stationary variables into consideration (e.g., climate; demographic factors; physical environment characteristics) and models the local relationships between these independent variables and an outcome of interest (also known as dependent variable).
+:::
+
+## Packages
+
+## Data Preparation
+
+### Importing Data
+
+### Geospatial Data Wrangling
+
+### Aspatial Data Wrangling
+
+## Exploratory Data Analysis
+
+## Hedonic Price Modelling in R
+
+## Building Hedonic Pricing Models using GWmodel

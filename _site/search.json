@@ -1111,5 +1111,61 @@
     "title": "Take-Home Exercise 1: Geospatial Analytics for Public Good",
     "section": "6 References",
     "text": "6 References\n\nTin Seong, K. (2023). Local Measures of Spatial Autocorrelation. In R for Geospatial Data Science and Analytics. https://r4gdsa.netlify.app/chap10.html#computing-gi-statistics\nSpatial dependence for simple features. (n.d.). https://sfdep.josiahparry.com/\nSIRENT - Singapore Satellite Positioning Reference Network - Plane Coordinate System - SVY21. (n.d.). https://app.sla.gov.sg/sirent/About/PlaneCoordinateSystem\ntmap OpenStreetMap basemap in greyscale. (n.d.). Geographic Information Systems Stack Exchange. https://gis.stackexchange.com/questions/378369/tmap-openstreetmap-basemap-in-greyscale"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex4/Hands-on_Ex4.html",
+    "href": "Hands-on_Ex/Hands-on_Ex4/Hands-on_Ex4.html",
+    "title": "Hands-On Exercise 4: Geographically Weighted Regression",
+    "section": "",
+    "text": "In this hands-on exercise, you will learn how to build hedonic pricing models by using Geographically Weighted Regression methods. The dependent variable is the resale prices of condominium in 2015. The independent variables are divided into either structural and locational.\n\n\n\n\n\n\nGeographically weighted regression\n\n\n\nGeographically weighted regression (GWR) is a spatial statistical technique that takes non-stationary variables into consideration (e.g., climate; demographic factors; physical environment characteristics) and models the local relationships between these independent variables and an outcome of interest (also known as dependent variable)."
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex4/Hands-on_Ex4.html#overview",
+    "href": "Hands-on_Ex/Hands-on_Ex4/Hands-on_Ex4.html#overview",
+    "title": "Hands-On Exercise 4: Geographically Weighted Regression",
+    "section": "",
+    "text": "In this hands-on exercise, you will learn how to build hedonic pricing models by using Geographically Weighted Regression methods. The dependent variable is the resale prices of condominium in 2015. The independent variables are divided into either structural and locational.\n\n\n\n\n\n\nGeographically weighted regression\n\n\n\nGeographically weighted regression (GWR) is a spatial statistical technique that takes non-stationary variables into consideration (e.g., climate; demographic factors; physical environment characteristics) and models the local relationships between these independent variables and an outcome of interest (also known as dependent variable)."
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex4/Hands-on_Ex4.html#geographically-weighted-regression",
+    "href": "Hands-on_Ex/Hands-on_Ex4/Hands-on_Ex4.html#geographically-weighted-regression",
+    "title": "Hands-On Exercise 4: Geographically Weighted Regression",
+    "section": "2 Geographically weighted regression",
+    "text": "2 Geographically weighted regression\nGeographically weighted regression (GWR) is a spatial statistical technique that takes non-stationary variables into consideration (e.g., climate; demographic factors; physical environment characteristics) and models the local relationships between these independent variables and an outcome of interest (also known as dependent variable).\n:::"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex4/Hands-on_Ex4.html#packages",
+    "href": "Hands-on_Ex/Hands-on_Ex4/Hands-on_Ex4.html#packages",
+    "title": "Hands-On Exercise 4: Geographically Weighted Regression",
+    "section": "2 Packages",
+    "text": "2 Packages"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex4/Hands-on_Ex4.html#data-preparation",
+    "href": "Hands-on_Ex/Hands-on_Ex4/Hands-on_Ex4.html#data-preparation",
+    "title": "Hands-On Exercise 4: Geographically Weighted Regression",
+    "section": "3 Data Preparation",
+    "text": "3 Data Preparation\n\n3.1 Importing Data\n\n\n3.2 Geospatial Data Wrangling\n\n\n3.3 Aspatial Data Wrangling"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex4/Hands-on_Ex4.html#exploratory-data-analysis",
+    "href": "Hands-on_Ex/Hands-on_Ex4/Hands-on_Ex4.html#exploratory-data-analysis",
+    "title": "Hands-On Exercise 4: Geographically Weighted Regression",
+    "section": "4 Exploratory Data Analysis",
+    "text": "4 Exploratory Data Analysis"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex4/Hands-on_Ex4.html#hedonic-price-modelling-in-r",
+    "href": "Hands-on_Ex/Hands-on_Ex4/Hands-on_Ex4.html#hedonic-price-modelling-in-r",
+    "title": "Hands-On Exercise 4: Geographically Weighted Regression",
+    "section": "5 Hedonic Price Modelling in R",
+    "text": "5 Hedonic Price Modelling in R"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex4/Hands-on_Ex4.html#building-hedonic-pricing-models-using-gwmodel",
+    "href": "Hands-on_Ex/Hands-on_Ex4/Hands-on_Ex4.html#building-hedonic-pricing-models-using-gwmodel",
+    "title": "Hands-On Exercise 4: Geographically Weighted Regression",
+    "section": "6 Building Hedonic Pricing Models using GWmodel",
+    "text": "6 Building Hedonic Pricing Models using GWmodel"
   }
 ]

@@ -1167,5 +1167,110 @@
     "title": "Hands-On Exercise 4: Geographically Weighted Regression",
     "section": "6 Building Hedonic Pricing Models using GWmodel",
     "text": "6 Building Hedonic Pricing Models using GWmodel"
+  },
+  {
+    "objectID": "Take-home_Ex/Take-home_Ex2/Take-home_Ex2.html",
+    "href": "Take-home_Ex/Take-home_Ex2/Take-home_Ex2.html",
+    "title": "Take-Home Exercise 2: Applied Spatial Interaction Models - A Case Study of Singapore Public Bus Commuter Flows",
+    "section": "",
+    "text": "What are the driving forces behind urban dwellers to weak up early in morning to commute from their home locations to their work places? What are the impact of removing a public bus service on the commuters reside along the corridor of the bus route? These are some questions faced by transport operators and urban managers.\nTo answer these many questions related to urban mobility, traditionally commuters survey would be used. However, conducting commuters survey is costly, time-consuming and laborious. In addition, survey data tend to take a long time to clean and analyse, which can lead to the collected information being out-of-date when the survey report was ready.\nWith the recent trend of massive deployment of pervasive computing technologies such as GPS on the vehicles and SMART cards used by public transport commuters, we will utilise and transform geospatially-referenced data into insightful information, hence generating returns on the investment made to collect and manage this data.\n\n\n\nIn this take-home exercise, we will be using publicly available data and geospatial data science and analysis to answer questions related to urban mobility and how it can be used to support decision-making. In particular, we will be building spatial interaction models to determine factors affecting urban mobility patterns of public bus transit.\n\n\n\nFor this exercise, we will be using the following packages:\n\nsf : to import, integrate, process and transform geospatial data\nsp: to provide classes and methods for spatial data types\nDT:to display R data objects (matrices or data frmaes) as tables on HTML pages\nperformance:to compute measures for assessing model quality\nreshape2:to restructure and aggregate data\ntidyverse: to import, integrate, wrangle and visualise data\ntmap: to create thematic maps\nggpubr: to create and customise ‘ggplot2’- based publication ready plots\n\n\n\nShow the code\npacman::p_load(tmap, sf, sp, DT, performance, reshape2, ggpubr, tidyverse)"
+  },
+  {
+    "objectID": "Take-home_Ex/Take-home_Ex2/Take-home_Ex2.html#overview",
+    "href": "Take-home_Ex/Take-home_Ex2/Take-home_Ex2.html#overview",
+    "title": "Take-Home Exercise 2: Applied Spatial Interaction Models - A Case Study of Singapore Public Bus Commuter Flows",
+    "section": "",
+    "text": "What are the driving forces behind urban dwellers to weak up early in morning to commute from their home locations to their work places? What are the impact of removing a public bus service on the commuters reside along the corridor of the bus route? These are some questions faced by transport operators and urban managers.\nTo answer these many questions related to urban mobility, traditionally commuters survey would be used. However, conducting commuters survey is costly, time-consuming and laborious. In addition, survey data tend to take a long time to clean and analyse, which can lead to the collected information being out-of-date when the survey report was ready.\nWith the recent trend of massive deployment of pervasive computing technologies such as GPS on the vehicles and SMART cards used by public transport commuters, we will utilise and transform geospatially-referenced data into insightful information, hence generating returns on the investment made to collect and manage this data.\n\n\n\nIn this take-home exercise, we will be using publicly available data and geospatial data science and analysis to answer questions related to urban mobility and how it can be used to support decision-making. In particular, we will be building spatial interaction models to determine factors affecting urban mobility patterns of public bus transit.\n\n\n\nFor this exercise, we will be using the following packages:\n\nsf : to import, integrate, process and transform geospatial data\nsp: to provide classes and methods for spatial data types\nDT:to display R data objects (matrices or data frmaes) as tables on HTML pages\nperformance:to compute measures for assessing model quality\nreshape2:to restructure and aggregate data\ntidyverse: to import, integrate, wrangle and visualise data\ntmap: to create thematic maps\nggpubr: to create and customise ‘ggplot2’- based publication ready plots\n\n\n\nShow the code\npacman::p_load(tmap, sf, sp, DT, performance, reshape2, ggpubr, tidyverse)"
+  },
+  {
+    "objectID": "Take-home_Ex/Take-home_Ex2/Take-home_Ex2.html#data-preparation",
+    "href": "Take-home_Ex/Take-home_Ex2/Take-home_Ex2.html#data-preparation",
+    "title": "Take-Home Exercise 2: Applied Spatial Interaction Models - A Case Study of Singapore Public Bus Commuter Flows",
+    "section": "2 Data Preparation",
+    "text": "2 Data Preparation\nFor the purpose of this take-home exercise, we will be using the following datasets downloaded from LTA Datamall, Data.gov.sg and provided by the course instructor:\nGeospatial Data\nAspatial Data\n\n2.1 Importing Data into R\n\n\n2.2 Data Wrangling of aspatial data\n\n\n2.3 Data Wrangling of spatial data"
+  },
+  {
+    "objectID": "Take-home_Ex/Take-home_Ex2/Take-home_Ex2.html#computing-distance-matrix",
+    "href": "Take-home_Ex/Take-home_Ex2/Take-home_Ex2.html#computing-distance-matrix",
+    "title": "Take-Home Exercise 2: Applied Spatial Interaction Models - A Case Study of Singapore Public Bus Commuter Flows",
+    "section": "3 Computing Distance Matrix",
+    "text": "3 Computing Distance Matrix"
+  },
+  {
+    "objectID": "Take-home_Ex/Take-home_Ex2/Take-home_Ex2.html#preparing-flow-data",
+    "href": "Take-home_Ex/Take-home_Ex2/Take-home_Ex2.html#preparing-flow-data",
+    "title": "Take-Home Exercise 2: Applied Spatial Interaction Models - A Case Study of Singapore Public Bus Commuter Flows",
+    "section": "4 Preparing Flow Data",
+    "text": "4 Preparing Flow Data"
+  },
+  {
+    "objectID": "Take-home_Ex/Take-home_Ex2/Take-home_Ex2.html#preparing-origin-and-destination-attributes",
+    "href": "Take-home_Ex/Take-home_Ex2/Take-home_Ex2.html#preparing-origin-and-destination-attributes",
+    "title": "Take-Home Exercise 2: Applied Spatial Interaction Models - A Case Study of Singapore Public Bus Commuter Flows",
+    "section": "5 Preparing Origin and Destination Attributes",
+    "text": "5 Preparing Origin and Destination Attributes"
+  },
+  {
+    "objectID": "Take-home_Ex/Take-home_Ex2/Take-home_Ex2.html#geovisualisation-of-od-flows",
+    "href": "Take-home_Ex/Take-home_Ex2/Take-home_Ex2.html#geovisualisation-of-od-flows",
+    "title": "Take-Home Exercise 2: Applied Spatial Interaction Models - A Case Study of Singapore Public Bus Commuter Flows",
+    "section": "6 Geovisualisation of OD flows",
+    "text": "6 Geovisualisation of OD flows"
+  },
+  {
+    "objectID": "Take-home_Ex/Take-home_Ex2/Take-home_Ex2.html#calibrating-spatial-interaction-models",
+    "href": "Take-home_Ex/Take-home_Ex2/Take-home_Ex2.html#calibrating-spatial-interaction-models",
+    "title": "Take-Home Exercise 2: Applied Spatial Interaction Models - A Case Study of Singapore Public Bus Commuter Flows",
+    "section": "7 Calibrating Spatial Interaction Models",
+    "text": "7 Calibrating Spatial Interaction Models\n\n7.1 Unconstrained Models\n\n\n7.2 Origin constrained\n\n\n7.3 Destination constrained\n\n\n7.4 Doubly constrained Model"
+  },
+  {
+    "objectID": "Take-home_Ex/Take-home_Ex2/data/geospatial/Retails.html",
+    "href": "Take-home_Ex/Take-home_Ex2/data/geospatial/Retails.html",
+    "title": "ISSS624",
+    "section": "",
+    "text": "&lt;!DOCTYPE qgis PUBLIC ‘http://mrcc.com/qgis.dtd’ ‘SYSTEM’&gt;     dataset\n\n\n       GEOGCRS[“WGS 84”,ENSEMBLE[“World Geodetic System 1984 ensemble”,MEMBER[“World Geodetic System 1984 (Transit)”],MEMBER[“World Geodetic System 1984 (G730)”],MEMBER[“World Geodetic System 1984 (G873)”],MEMBER[“World Geodetic System 1984 (G1150)”],MEMBER[“World Geodetic System 1984 (G1674)”],MEMBER[“World Geodetic System 1984 (G1762)”],MEMBER[“World Geodetic System 1984 (G2139)”],ELLIPSOID[“WGS 84”,6378137,298.257223563,LENGTHUNIT[“metre”,1]],ENSEMBLEACCURACY[2.0]],PRIMEM[“Greenwich”,0,ANGLEUNIT[“degree”,0.0174532925199433]],CS[ellipsoidal,2],AXIS[“geodetic latitude (Lat)”,north,ORDER[1],ANGLEUNIT[“degree”,0.0174532925199433]],AXIS[“geodetic longitude (Lon)”,east,ORDER[2],ANGLEUNIT[“degree”,0.0174532925199433]],USAGE[SCOPE[“Horizontal component of 3D system.”],AREA[“World.”],BBOX[-90,-180,90,180]],ID[“EPSG”,4326]] +proj=longlat +datum=WGS84 +no_defs 3452 4326 EPSG:4326 WGS 84 longlat EPSG:7030 true"
+  },
+  {
+    "objectID": "Take-home_Ex/Take-home_Ex2/data/geospatial/Liesure&Recreation.html",
+    "href": "Take-home_Ex/Take-home_Ex2/data/geospatial/Liesure&Recreation.html",
+    "title": "ISSS624",
+    "section": "",
+    "text": "&lt;!DOCTYPE qgis PUBLIC ‘http://mrcc.com/qgis.dtd’ ‘SYSTEM’&gt;     dataset\n\n\n       GEOGCRS[“WGS 84”,ENSEMBLE[“World Geodetic System 1984 ensemble”,MEMBER[“World Geodetic System 1984 (Transit)”],MEMBER[“World Geodetic System 1984 (G730)”],MEMBER[“World Geodetic System 1984 (G873)”],MEMBER[“World Geodetic System 1984 (G1150)”],MEMBER[“World Geodetic System 1984 (G1674)”],MEMBER[“World Geodetic System 1984 (G1762)”],MEMBER[“World Geodetic System 1984 (G2139)”],ELLIPSOID[“WGS 84”,6378137,298.257223563,LENGTHUNIT[“metre”,1]],ENSEMBLEACCURACY[2.0]],PRIMEM[“Greenwich”,0,ANGLEUNIT[“degree”,0.0174532925199433]],CS[ellipsoidal,2],AXIS[“geodetic latitude (Lat)”,north,ORDER[1],ANGLEUNIT[“degree”,0.0174532925199433]],AXIS[“geodetic longitude (Lon)”,east,ORDER[2],ANGLEUNIT[“degree”,0.0174532925199433]],USAGE[SCOPE[“Horizontal component of 3D system.”],AREA[“World.”],BBOX[-90,-180,90,180]],ID[“EPSG”,4326]] +proj=longlat +datum=WGS84 +no_defs 3452 4326 EPSG:4326 WGS 84 longlat EPSG:7030 true"
+  },
+  {
+    "objectID": "Take-home_Ex/Take-home_Ex2/data/geospatial/F&B.html",
+    "href": "Take-home_Ex/Take-home_Ex2/data/geospatial/F&B.html",
+    "title": "ISSS624",
+    "section": "",
+    "text": "&lt;!DOCTYPE qgis PUBLIC ‘http://mrcc.com/qgis.dtd’ ‘SYSTEM’&gt;     dataset\n\n\n       GEOGCRS[“WGS 84”,ENSEMBLE[“World Geodetic System 1984 ensemble”,MEMBER[“World Geodetic System 1984 (Transit)”],MEMBER[“World Geodetic System 1984 (G730)”],MEMBER[“World Geodetic System 1984 (G873)”],MEMBER[“World Geodetic System 1984 (G1150)”],MEMBER[“World Geodetic System 1984 (G1674)”],MEMBER[“World Geodetic System 1984 (G1762)”],MEMBER[“World Geodetic System 1984 (G2139)”],ELLIPSOID[“WGS 84”,6378137,298.257223563,LENGTHUNIT[“metre”,1]],ENSEMBLEACCURACY[2.0]],PRIMEM[“Greenwich”,0,ANGLEUNIT[“degree”,0.0174532925199433]],CS[ellipsoidal,2],AXIS[“geodetic latitude (Lat)”,north,ORDER[1],ANGLEUNIT[“degree”,0.0174532925199433]],AXIS[“geodetic longitude (Lon)”,east,ORDER[2],ANGLEUNIT[“degree”,0.0174532925199433]],USAGE[SCOPE[“Horizontal component of 3D system.”],AREA[“World.”],BBOX[-90,-180,90,180]],ID[“EPSG”,4326]] +proj=longlat +datum=WGS84 +no_defs 3452 4326 EPSG:4326 WGS 84 longlat EPSG:7030 true"
+  },
+  {
+    "objectID": "Take-home_Ex/Take-home_Ex2/data/geospatial/Business.html",
+    "href": "Take-home_Ex/Take-home_Ex2/data/geospatial/Business.html",
+    "title": "ISSS624",
+    "section": "",
+    "text": "&lt;!DOCTYPE qgis PUBLIC ‘http://mrcc.com/qgis.dtd’ ‘SYSTEM’&gt;     dataset\n\n\n       GEOGCRS[“WGS 84”,ENSEMBLE[“World Geodetic System 1984 ensemble”,MEMBER[“World Geodetic System 1984 (Transit)”],MEMBER[“World Geodetic System 1984 (G730)”],MEMBER[“World Geodetic System 1984 (G873)”],MEMBER[“World Geodetic System 1984 (G1150)”],MEMBER[“World Geodetic System 1984 (G1674)”],MEMBER[“World Geodetic System 1984 (G1762)”],MEMBER[“World Geodetic System 1984 (G2139)”],ELLIPSOID[“WGS 84”,6378137,298.257223563,LENGTHUNIT[“metre”,1]],ENSEMBLEACCURACY[2.0]],PRIMEM[“Greenwich”,0,ANGLEUNIT[“degree”,0.0174532925199433]],CS[ellipsoidal,2],AXIS[“geodetic latitude (Lat)”,north,ORDER[1],ANGLEUNIT[“degree”,0.0174532925199433]],AXIS[“geodetic longitude (Lon)”,east,ORDER[2],ANGLEUNIT[“degree”,0.0174532925199433]],USAGE[SCOPE[“Horizontal component of 3D system.”],AREA[“World.”],BBOX[-90,-180,90,180]],ID[“EPSG”,4326]] +proj=longlat +datum=WGS84 +no_defs 3452 4326 EPSG:4326 WGS 84 longlat EPSG:7030 true"
+  },
+  {
+    "objectID": "Take-home_Ex/Take-home_Ex2/data/geospatial/entertn.html",
+    "href": "Take-home_Ex/Take-home_Ex2/data/geospatial/entertn.html",
+    "title": "ISSS624",
+    "section": "",
+    "text": "&lt;!DOCTYPE qgis PUBLIC ‘http://mrcc.com/qgis.dtd’ ‘SYSTEM’&gt;     dataset\n\n\n       GEOGCRS[“WGS 84”,ENSEMBLE[“World Geodetic System 1984 ensemble”,MEMBER[“World Geodetic System 1984 (Transit)”],MEMBER[“World Geodetic System 1984 (G730)”],MEMBER[“World Geodetic System 1984 (G873)”],MEMBER[“World Geodetic System 1984 (G1150)”],MEMBER[“World Geodetic System 1984 (G1674)”],MEMBER[“World Geodetic System 1984 (G1762)”],MEMBER[“World Geodetic System 1984 (G2139)”],ELLIPSOID[“WGS 84”,6378137,298.257223563,LENGTHUNIT[“metre”,1]],ENSEMBLEACCURACY[2.0]],PRIMEM[“Greenwich”,0,ANGLEUNIT[“degree”,0.0174532925199433]],CS[ellipsoidal,2],AXIS[“geodetic latitude (Lat)”,north,ORDER[1],ANGLEUNIT[“degree”,0.0174532925199433]],AXIS[“geodetic longitude (Lon)”,east,ORDER[2],ANGLEUNIT[“degree”,0.0174532925199433]],USAGE[SCOPE[“Horizontal component of 3D system.”],AREA[“World.”],BBOX[-90,-180,90,180]],ID[“EPSG”,4326]] +proj=longlat +datum=WGS84 +no_defs 3452 4326 EPSG:4326 WGS 84 longlat EPSG:7030 true"
+  },
+  {
+    "objectID": "Take-home_Ex/Take-home_Ex2/data/geospatial/FinServ.html",
+    "href": "Take-home_Ex/Take-home_Ex2/data/geospatial/FinServ.html",
+    "title": "ISSS624",
+    "section": "",
+    "text": "&lt;!DOCTYPE qgis PUBLIC ‘http://mrcc.com/qgis.dtd’ ‘SYSTEM’&gt;     dataset\n\n\n       GEOGCRS[“WGS 84”,ENSEMBLE[“World Geodetic System 1984 ensemble”,MEMBER[“World Geodetic System 1984 (Transit)”],MEMBER[“World Geodetic System 1984 (G730)”],MEMBER[“World Geodetic System 1984 (G873)”],MEMBER[“World Geodetic System 1984 (G1150)”],MEMBER[“World Geodetic System 1984 (G1674)”],MEMBER[“World Geodetic System 1984 (G1762)”],MEMBER[“World Geodetic System 1984 (G2139)”],ELLIPSOID[“WGS 84”,6378137,298.257223563,LENGTHUNIT[“metre”,1]],ENSEMBLEACCURACY[2.0]],PRIMEM[“Greenwich”,0,ANGLEUNIT[“degree”,0.0174532925199433]],CS[ellipsoidal,2],AXIS[“geodetic latitude (Lat)”,north,ORDER[1],ANGLEUNIT[“degree”,0.0174532925199433]],AXIS[“geodetic longitude (Lon)”,east,ORDER[2],ANGLEUNIT[“degree”,0.0174532925199433]],USAGE[SCOPE[“Horizontal component of 3D system.”],AREA[“World.”],BBOX[-90,-180,90,180]],ID[“EPSG”,4326]] +proj=longlat +datum=WGS84 +no_defs 3452 4326 EPSG:4326 WGS 84 longlat EPSG:7030 true"
+  },
+  {
+    "objectID": "Take-home_Ex/Take-home_Ex2/data/geospatial/MPSZ-2019.html",
+    "href": "Take-home_Ex/Take-home_Ex2/data/geospatial/MPSZ-2019.html",
+    "title": "ISSS624",
+    "section": "",
+    "text": "&lt;!DOCTYPE qgis PUBLIC ‘http://mrcc.com/qgis.dtd’ ‘SYSTEM’&gt;     dataset\n\n\n        0 0     false"
   }
 ]

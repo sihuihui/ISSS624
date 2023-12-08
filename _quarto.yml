@@ -40,9 +40,6 @@ website:
     right:
       - href: index.qmd
         text: Home
-      - icon: github 
-        href: https://github.com/sihuihui
-        aria-label: GitHub 
       - icon: linkedin 
         href: https://www.linkedin.com/in/gohsihui/ 
         aria-label: LinkedIn

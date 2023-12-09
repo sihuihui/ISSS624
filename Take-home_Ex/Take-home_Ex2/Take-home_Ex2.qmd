@@ -12,9 +12,9 @@ execute:
 editor: visual 
 ---
 
-## Overview 
+## Overview
 
-### Introduction 
+### Introduction
 
 What are the driving forces behind urban dwellers to weak up early in morning to commute from their home locations to their work places? What are the impact of removing a public bus service on the commuters reside along the corridor of the bus route? These are some questions faced by transport operators and urban managers.
 
@@ -22,29 +22,29 @@ To answer these many questions related to urban mobility, traditionally commuter
 
 With the recent trend of massive deployment of pervasive computing technologies such as GPS on the vehicles and SMART cards used by public transport commuters, we will utilise and transform geospatially-referenced data into insightful information, hence generating returns on the investment made to collect and manage this data.
 
-### Objectives 
+### Objectives
 
 In this take-home exercise, we will be using publicly available data and geospatial data science and analysis to answer questions related to urban mobility and how it can be used to support decision-making. In particular, we will be building spatial interaction models to determine factors affecting urban mobility patterns of public bus transit.
 
-### Packages Used 
+### Packages Used
 
 For this exercise, we will be using the following packages:
 
 -   **sf** : to import, integrate, process and transform geospatial data
 
--   **sp**: to provide classes and methods for spatial data types 
+-   **sp**: to provide classes and methods for spatial data types
 
 -   **DT**:to display R data objects (matrices or data frmaes) as tables on HTML pages
 
--   **performance**:to compute measures for assessing model quality 
+-   **performance**:to compute measures for assessing model quality
 
--   **reshape2**:to restructure and aggregate data 
+-   **reshape2**:to restructure and aggregate data
 
 -   **tidyverse**: to import, integrate, wrangle and visualise data
 
 -   **tmap**: to create thematic maps
 
--   **ggpubr**: to create and customise 'ggplot2'- based publication ready plots 
+-   **ggpubr**: to create and customise 'ggplot2'- based publication ready plots
 
 ```{r}
 #| code-fold: true 
@@ -53,36 +53,146 @@ For this exercise, we will be using the following packages:
 pacman::p_load(tmap, sf, sp, DT, performance, reshape2, ggpubr, tidyverse) 
 ```
 
-## Data Preparation 
+## Data Preparation
 
-For the purpose of this take-home exercise, we will be using the following datasets downloaded from LTA Datamall, Data.gov.sg and provided by the course instructor:
+For the purpose of this take-home exercise, we will be using the following datasets downloaded from [LTA Datamall](https://datamall.lta.gov.sg/content/datamall/en.html), [Data.gov.sg](https://beta.data.gov.sg/) and datasets provided by the course instructor.
 
-Geospatial Data 
+-   Geospatial Data
 
+    -   `Bus Stop Location`
 
-Aspatial Data 
+    -   `Train Station`
 
+    -   `Train Station Exit Point`
 
-### Importing Data into R 
+    -   `Master Plan 2019 Subzone Boundary`
 
-### Data Wrangling of aspatial data
+    -   `Business`, `entertn,` `F&B`, `FinServ`, `Leisure&Recreation` and `Retails`
 
-### Data Wrangling of spatial data
+-   Aspatial Data
 
-## Computing Distance Matrix 
+    -   `Passenger Volume by Origin Destination Bus Stops`
 
-## Preparing Flow Data 
+### Importing Data into R
 
-## Preparing Origin and Destination Attributes 
+```{r}
 
-## Geovisualisation of OD flows 
+odbus <- read_csv("data/aspatial/origin_destination_bus_202310.csv")
+```
 
-## Calibrating Spatial Interaction Models 
+```{r}
 
-### Unconstrained Models 
+hdbinfo <- read_csv("data/aspatial/HDBPropertyInformation.csv")
 
-### Origin constrained 
+```
 
-### Destination constrained 
+```{r}
+busstop <- st_read(dsn = "data/geospatial",
+                   layer = "BusStop")
+
+```
+
+```{r}
+mpsz <- st_read(dsn = "data/geospatial",
+                   layer = "MPSZ-2019")
+```
+
+```{r}
+business <- st_read(dsn = "data/geospatial",
+                   layer = "Business")
+
+```
+
+```{r}
+entertain <- st_read(dsn = "data/geospatial",
+                   layer = "entertn")
+```
+
+```{r}
+
+fnb <- st_read(dsn = "data/geospatial",
+                   layer = "F&B")
+
+```
+
+```{r}
+finserv <- st_read(dsn = "data/geospatial",
+                   layer = "FinServ")
+
+```
+
+```{r}
+lnr <- st_read(dsn = "data/geospatial",
+                   layer = "Liesure&Recreation")
+```
+
+```{r}
+mrtstations <- st_read(dsn = "data/geospatial",
+                   layer = "RapidTransitSystemStation")
+
+```
+
+```{r}
+retail <- st_read(dsn = "data/geospatial",
+                   layer = "Retails")
+
+```
+
+```{r}
+
+mrtexits <- st_read(dsn = "data/geospatial",
+                   layer = "Train_Station_Exit_Layer")
+
+```
+
+### Data Wrangling of Aspatial Data
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+glimpse(odbus)
+```
+
+-   Convert to factor
+
+-   Extract the time period we are interested in
+
+-   Save output in rds format for future use
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+glimpse(hdbinfo)
+```
+
+-   follow link to prepare the hdb dataset
+
+### Data Wrangling of Spatial Data
+
+-   check geospatial dataset projection
+
+-   create hexagon grid using MPSZ?
+
+-   left join the final geospatial data with asapatial data
+
+-   check for duplicate records
+
+-   save output in rds format for future use
+
+## Computing Distance Matrix
+
+## Preparing Flow Data
+
+## Preparing Origin and Destination Attributes
+
+## Geovisualisation of OD flows
+
+## Calibrating Spatial Interaction Models
+
+### Unconstrained Models
+
+### Origin constrained
+
+### Destination constrained
 
 ### Doubly constrained Model

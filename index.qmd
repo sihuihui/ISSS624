@@ -19,7 +19,6 @@ listing:
   - id: take-home
     contents:
     - "Take-home_Ex/Take-home_Ex1/*.qmd"
-    - "Take-home_Ex/Take-home_Ex2/*.qmd"
     type: grid
 
 toc: false 

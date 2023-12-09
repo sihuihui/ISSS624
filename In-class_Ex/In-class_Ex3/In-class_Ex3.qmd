@@ -489,7 +489,7 @@ $$
 $$
 
 ::: panel-tabset
-### Codes 
+### Codes
 
 ```{r}
 
@@ -503,7 +503,7 @@ decSIM <- glm(formula = TRIPS ~
 
 ```
 
-### Output 
+### Output
 
 ```{r}
 summary(decSIM)

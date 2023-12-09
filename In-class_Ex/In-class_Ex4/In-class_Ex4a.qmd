@@ -1,0 +1,119 @@
+---
+title: "In-class Exercise 4"
+author: "Goh Si Hui"
+date: 2023/12/09
+date-format: long
+date-modified: "last-modified"
+format: html 
+execute: 
+  echo: true
+  eval: true
+  warning: false
+editor: visual 
+---
+
+## Overview
+
+Perform geocoding using data downloaded form data.gov.sg
+
+calibrating geographically weighted poisson regression
+
+## Downloading the packages
+- httr: to work with URLs and HTTP
+- to fill in the rest later 
+
+```{r}
+pacman::p_load(tidyverse, sf, tmap, httr)
+```
+
+## Geocoding using SLA API
+
+Address geocoding, or simply geocoding 
+
+
+```{r}
+#| eval: false
+
+url <- "https://onemap.gov.sg/api/common/elastic/search"
+csv <- read_csv("data/aspatial/Generalinformationofschools.csv")
+postcodes <- csv$'postal_code'
+
+found <- data.frame()
+not_found <- data.frame()
+
+for (postcode in postcodes) {
+  query <- list('searchVal'=postcode, 'returnGeom'='Y', 'getAddrDetails'='Y', 'pageNum'='1')
+  res <- GET(url, query=query)
+  if ((content(res)$found)!=0){
+    found <- rbind(found, data.frame(content(res))[4:13])
+  } else {
+    not_found = data.frame(postcode)
+  }
+}
+```
+
+using the postal code from the csv, pass it to get the X Y coordinates and lat and long. 
+
+
+
+
+merged = merge(csv , found, by.x='postal_code', by.y = 'results.POSTAL', all = TRUE)
+
+write_csv(merged, file="data/aspatial/schools.csv")
+
+write_csv(not_found, file ="data/aspatial/not_found.csv")
+
+
+
+
+
+
+schools <- read_csv("data/aspatial/schools.csv") %>% 
+  rename(latitude = "results.LATITUDE",
+         longitude = "results.LONGITUDE") %>%
+  select(postal_code,school_name, latitude, longitude) 
+  
+glimpse(schools)
+
+
+
+schools_sf <- st_as_sf(schools, coords = c("longitude", "latitude"), crs=4326) %>%
+  st_transform(crs = 3414)
+
+
+
+crs=4326 is to specify that it is in WGS84 so the function can use the correct projection 
+then we transform it to SVY21 (in metres) using st_transform() 
+
+## Plotting a point simple feature layer 
+
+
+
+
+
+
+tmap_mode("view")
+
+
+tm_shape(schools_sf) +
+  tm_dots() +
+  tm_view(set.zoom.limits = c(11,14))
+
+tmap_mode("plot")
+
+
+
+
+mpsz <- st_read(dsn = "data/geospatial",
+                layer = "MPSZ-2019") %>% 
+  st_transform(crs = 3414)
+
+both must be in the same coordinate system. 
+
+tmap_options(check.and.fix = True) -> to force the polygons to close, fix geometric errors 
+
+plot polygon first then line or point 
+
+attractiveness is at the destination, so when joining the codes, we should point the destination to "DESTIN_SZ" 
+
+check for zero values, because we are going to use log function and log of zero values would give us errors. Those who are zero values, we will give a very small value but less than 1. 

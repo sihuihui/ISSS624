@@ -1,5 +1,5 @@
 ---
-title: "In-class Exercise 4"
+title: "In-class Exercise 4: Geocoding and calibrating spatial interaction models"
 author: "Goh Si Hui"
 date: 2023/12/09
 date-format: long
@@ -14,25 +14,29 @@ editor: visual
 
 ## Overview
 
-Perform geocoding using data downloaded form data.gov.sg
-
-calibrating geographically weighted poisson regression
+In this exercise, we will perform geocoding using SLA OneMap API and prepare the propulsiveness and attractiveness variables onto a flow data so as to calibrate geographically weighted poisson regression
 
 ## Downloading the packages
-- httr: to work with URLs and HTTP
-- to fill in the rest later 
+
+We will use the following packages for this exercise. - httr: to work with URLs and HTTP - tidyverse: to import, wrangle and manipulate asapatial data - sf: to import and provide simple features access for R - tmap: to create thematic maps
 
 ```{r}
 pacman::p_load(tidyverse, sf, tmap, httr)
 ```
 
+## Data
+
+For this exercise, we will be using the `Generalinformationofschools` data
+
 ## Geocoding using SLA API
 
-Address geocoding, or simply geocoding 
+Address geocoding, or simply geocoding, is the process of taking an aspatial description of a location, e.g. a postal code, and returning geographic coordinates e.g. latitude and longitude pair, to identify a location on the Earth's surface.
 
+The following code chunk performs geocoding using [SLA OneMAp API.](https://www.onemap.gov.sg/apidocs/) The input data is in csv file format. We will make use of the `read_csv()` function to bring in the data and use the http call functions of **httr** package to pass the individual records (i.e., postal codes) to the geocoding server at OneMap.
 
 ```{r}
-#| eval: false
+
+#| eval: FALSE 
 
 url <- "https://onemap.gov.sg/api/common/elastic/search"
 csv <- read_csv("data/aspatial/Generalinformationofschools.csv")
@@ -52,68 +56,159 @@ for (postcode in postcodes) {
 }
 ```
 
-using the postal code from the csv, pass it to get the X Y coordinates and lat and long. 
+Using the above code chunk would return us the X and Y coordinates, and the latitude and longitude for each address. Note that due to the OneMap API having a time limit and a limit in the amount of data that we can pass through, some records could fail. Hence, we have also added a dataframe to keep track of those postal codes which did not return us with the geographical coordinates.
 
+The following code chunk combines the school information dataframe (`csv`) with the geographical information returned by OneMap API using `merge()` function and write it as a csv file. The dataframe with a list of postal codes which did not return us with the geographical coordinates `not_found` is also written to a separate csv file.
 
+```{r}
 
-
+#| eval: FALSE 
 merged = merge(csv , found, by.x='postal_code', by.y = 'results.POSTAL', all = TRUE)
-
-write_csv(merged, file="data/aspatial/schools.csv")
-
+write.csv(merged, file="data/aspatial/schools.csv")
 write_csv(not_found, file ="data/aspatial/not_found.csv")
 
+```
 
+Then we will manually search for the geographical coordinates of those postal codes and fill in the information in the `schools.csv`.
 
+## Importing schools dataframe into R
 
+We will now import the schools.csv into R, rename some fields and select the necessary fields that we want.
 
+```{r}
+schools <- read_csv("data/aspatial/schools1.csv") %>% rename(latitude = "results.LATITUDE", longitude = "results.LONGITUDE") %>% select(postal_code,school_name, latitude, longitude)
+```
 
-schools <- read_csv("data/aspatial/schools.csv") %>% 
-  rename(latitude = "results.LATITUDE",
-         longitude = "results.LONGITUDE") %>%
-  select(postal_code,school_name, latitude, longitude) 
-  
+```{r}
 glimpse(schools)
 
+```
 
+## Convert tibble dataframe to a simple feature tibble dataframe 
 
-schools_sf <- st_as_sf(schools, coords = c("longitude", "latitude"), crs=4326) %>%
-  st_transform(crs = 3414)
+We will now convert the schools tibble data frame into a simple feature tibble data frame so that we can make use of the latitude and longitude fields as spatial data.
 
+```{r}
+schools_sf <- st_as_sf(schools, coords = c("longitude", "latitude"), crs=4326) %>% 
+  st_transform(crs=3414)
+```
 
+Note that when using `st_as_sf()` we included the parameter `crs=4326` to specify that it is in WGS84 so the function can use the correct projection. Then we transform it to SVY21 (in metres) using `st_transform()`.
 
-crs=4326 is to specify that it is in WGS84 so the function can use the correct projection 
-then we transform it to SVY21 (in metres) using st_transform() 
+## Plotting a point simple feature layer
 
-## Plotting a point simple feature layer 
+```{r}
+tiles = "https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png" 
+tmap_mode("view") 
 
-
-
-
-
-
-tmap_mode("view")
-
-
-tm_shape(schools_sf) +
-  tm_dots() +
+tm_basemap(server = tiles) + 
+  tm_shape(schools_sf) + 
+  tm_dots() + 
   tm_view(set.zoom.limits = c(11,14))
 
+
+
+
+```
+
+```{r}
 tmap_mode("plot")
+```
 
+:::{.callout-info}
 
+We added "tmap_mode("plot") at the end so that the subsequent maps would be in plot mode, rather than view mode, which requires more memory.
 
+:::
 
-mpsz <- st_read(dsn = "data/geospatial",
-                layer = "MPSZ-2019") %>% 
-  st_transform(crs = 3414)
+The schools are plotted as black dots in the above plot. Notice that in the above code chunk we have set it to use the OneMap Singapore map as the basemap. To make it more useful, we will bring in the Singapore planning subzone shapefile using the following code chunk so that we know which subzones the schools are in.
 
-both must be in the same coordinate system. 
+```{r}
+mpsz <- st_read(dsn = "data/geospatial", layer = "MPSZ-2019") %>% st_transform(crs = 3414)
+```
 
-tmap_options(check.and.fix = True) -> to force the polygons to close, fix geometric errors 
+Note that in the above code chunk, we also used `st_transform()` on the `mpsz` simple feature data frame so that it uses the same coordinate system as the `schools_sf` simple feature data frame.
 
-plot polygon first then line or point 
+We will now plot the schools with the planning subzones as the base using the following code chunk.
 
-attractiveness is at the destination, so when joining the codes, we should point the destination to "DESTIN_SZ" 
+```{r}
+tmap_options(check.and.fix = TRUE)
+tm_shape(mpsz) + 
+  tm_polygons() + 
+  tm_shape(schools_sf)+
+  tm_dots()
+```
 
-check for zero values, because we are going to use log function and log of zero values would give us errors. Those who are zero values, we will give a very small value but less than 1. 
+Note that in the above code chunk we:
+
+-   use `tmap_options(check.and.fix = True)` to force the polygons to close and fix geometric errors.
+
+-   plot polygon (i.e. `mpsz`) first then line or point polygon (i.e. `schools_sf`).
+
+## **Performing point-in-polygon count process**
+
+```{r}
+mpsz$'SCH_COUNT' <- lengths(st_intersects(mpsz, schools_sf))
+```
+
+```{r}
+summary(mpsz$'SCH_COUNT')
+```
+
+From the output above, it seems like there are excessive 0 values in `SCH_COUNT` field. We need to replace the 0 values with a value bigger than 0 but smaller than 1 because we will be using this information in spatial interaction modelling which uses `log()` and `log(0)` would give us error. We will fill in the 0 values with 0.01 using the following code chunk.
+
+```{r}
+mpsz <- mutate(mpsz, SCH_COUNT = replace(SCH_COUNT, 
+                                         SCH_COUNT == 0, 0.01))
+```
+
+```{r}
+summary(mpsz)
+```
+
+## Bringing in the business shapefile into R 
+
+We will also bring in the business shape file and plot it on the mpsz sf dataframe using the following code chunks.
+
+```{r}
+business_sf <- st_read(dsn = "data/geospatial",
+                       layer = "Business")
+```
+
+```{r}
+tmap_options(check.and.fix = TRUE)
+tm_shape(mpsz) +
+  tm_polygons() +
+  tm_shape(business_sf) +
+  tm_dots()
+```
+
+We will count the number of businesses in each subzone using the following code.
+
+```{r}
+mpsz$'BIZ_COUNT' <- lengths(st_intersects(mpsz, business_sf))
+```
+
+We will also check the business_sf if there are any 0 values.
+
+```{r}
+summary(mpsz$BIZ_COUNT)
+```
+
+We will again replace the 0 values with 0.01 because business is one of the variables for our weighted Poisson regression model that we will be using for spatial interaction modelling.
+
+```{r}
+mpsz <- mutate(mpsz, BIZ_COUNT = replace(BIZ_COUNT, 
+                                         BIZ_COUNT == 0, 0.01))
+```
+
+```{r}
+summary(mpsz$BIZ_COUNT)
+```
+
+## Bringing flow_data.rds into R 
+
+```{r}
+flow_data <- read_rds("data/rds/flow_data_tidy.rds")
+glimpse(flow_data)
+```

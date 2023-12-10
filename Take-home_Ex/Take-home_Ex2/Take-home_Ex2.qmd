@@ -155,7 +155,7 @@ glimpse(odbus)
 
 -   Convert to factor
 
--   Extract the time period we are interested in
+-   Extract the time period we are interested in - weekday evening peak hour
 
 -   Save output in rds format for future use
 
@@ -179,6 +179,8 @@ glimpse(hdbinfo)
 
 -   save output in rds format for future use
 
+-   Visualise the information for
+
 ## Computing Distance Matrix
 
 ## Preparing Flow Data
@@ -188,8 +190,6 @@ glimpse(hdbinfo)
 ## Geovisualisation of OD flows
 
 ## Calibrating Spatial Interaction Models
-
-### Unconstrained Models
 
 ### Origin constrained
 

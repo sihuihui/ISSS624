@@ -169,6 +169,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex3/In-class_Ex3.html" rel="" target="">
  <span class="dropdown-text">In-class Exercise 3</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex4/In-class_Ex4a.html" rel="" target="">
+ <span class="dropdown-text">In-class Exercise 4A</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex4/In-class_Ex4b.html" rel="" target="">
+ <span class="dropdown-text">In-class Exercise 4B</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
@@ -228,10 +236,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#geovisualisation-of-od-flows" id="toc-geovisualisation-of-od-flows" class="nav-link" data-scroll-target="#geovisualisation-of-od-flows"><span class="header-section-number">6</span> Geovisualisation of OD flows</a></li>
   <li><a href="#calibrating-spatial-interaction-models" id="toc-calibrating-spatial-interaction-models" class="nav-link" data-scroll-target="#calibrating-spatial-interaction-models"><span class="header-section-number">7</span> Calibrating Spatial Interaction Models</a>
   <ul class="collapse">
-  <li><a href="#unconstrained-models" id="toc-unconstrained-models" class="nav-link" data-scroll-target="#unconstrained-models"><span class="header-section-number">7.1</span> Unconstrained Models</a></li>
-  <li><a href="#origin-constrained" id="toc-origin-constrained" class="nav-link" data-scroll-target="#origin-constrained"><span class="header-section-number">7.2</span> Origin constrained</a></li>
-  <li><a href="#destination-constrained" id="toc-destination-constrained" class="nav-link" data-scroll-target="#destination-constrained"><span class="header-section-number">7.3</span> Destination constrained</a></li>
-  <li><a href="#doubly-constrained-model" id="toc-doubly-constrained-model" class="nav-link" data-scroll-target="#doubly-constrained-model"><span class="header-section-number">7.4</span> Doubly constrained Model</a></li>
+  <li><a href="#origin-constrained" id="toc-origin-constrained" class="nav-link" data-scroll-target="#origin-constrained"><span class="header-section-number">7.1</span> Origin constrained</a></li>
+  <li><a href="#destination-constrained" id="toc-destination-constrained" class="nav-link" data-scroll-target="#destination-constrained"><span class="header-section-number">7.2</span> Destination constrained</a></li>
+  <li><a href="#doubly-constrained-model" id="toc-doubly-constrained-model" class="nav-link" data-scroll-target="#doubly-constrained-model"><span class="header-section-number">7.3</span> Doubly constrained Model</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -265,7 +272,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">December 9, 2023</p>
+      <p class="date-modified">December 10, 2023</p>
     </div>
   </div>
     
@@ -494,7 +501,7 @@ $ TOTAL_TRIPS         &lt;dbl&gt; 3, 5, 3, 5, 4, 1, 24, 2, 1, 7, 3, 2, 5, 1, 1, 
 </div>
 <ul>
 <li><p>Convert to factor</p></li>
-<li><p>Extract the time period we are interested in</p></li>
+<li><p>Extract the time period we are interested in - weekday evening peak hour</p></li>
 <li><p>Save output in rds format for future use</p></li>
 </ul>
 <div class="cell">
@@ -543,6 +550,7 @@ $ other_room_rental     &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 <li><p>left join the final geospatial data with asapatial data</p></li>
 <li><p>check for duplicate records</p></li>
 <li><p>save output in rds format for future use</p></li>
+<li><p>Visualise the information for</p></li>
 </ul>
 </section>
 </section>
@@ -560,17 +568,14 @@ $ other_room_rental     &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 </section>
 <section id="calibrating-spatial-interaction-models" class="level2" data-number="7">
 <h2 data-number="7" class="anchored" data-anchor-id="calibrating-spatial-interaction-models"><span class="header-section-number">7</span> Calibrating Spatial Interaction Models</h2>
-<section id="unconstrained-models" class="level3" data-number="7.1">
-<h3 data-number="7.1" class="anchored" data-anchor-id="unconstrained-models"><span class="header-section-number">7.1</span> Unconstrained Models</h3>
+<section id="origin-constrained" class="level3" data-number="7.1">
+<h3 data-number="7.1" class="anchored" data-anchor-id="origin-constrained"><span class="header-section-number">7.1</span> Origin constrained</h3>
 </section>
-<section id="origin-constrained" class="level3" data-number="7.2">
-<h3 data-number="7.2" class="anchored" data-anchor-id="origin-constrained"><span class="header-section-number">7.2</span> Origin constrained</h3>
+<section id="destination-constrained" class="level3" data-number="7.2">
+<h3 data-number="7.2" class="anchored" data-anchor-id="destination-constrained"><span class="header-section-number">7.2</span> Destination constrained</h3>
 </section>
-<section id="destination-constrained" class="level3" data-number="7.3">
-<h3 data-number="7.3" class="anchored" data-anchor-id="destination-constrained"><span class="header-section-number">7.3</span> Destination constrained</h3>
-</section>
-<section id="doubly-constrained-model" class="level3" data-number="7.4">
-<h3 data-number="7.4" class="anchored" data-anchor-id="doubly-constrained-model"><span class="header-section-number">7.4</span> Doubly constrained Model</h3>
+<section id="doubly-constrained-model" class="level3" data-number="7.3">
+<h3 data-number="7.3" class="anchored" data-anchor-id="doubly-constrained-model"><span class="header-section-number">7.3</span> Doubly constrained Model</h3>
 
 
 </section>

@@ -16,17 +16,21 @@ editor: visual
 
 In this exercise, we will perform geocoding using SLA OneMap API and prepare the propulsiveness and attractiveness variables onto a flow data so as to calibrate geographically weighted poisson regression
 
+::: callout-note
+I have combined the previous In-class_Ex4a and In-class_Ex4b into 1 webpage: In-class_Ex4
+:::
+
 ## Downloading the packages
 
 We will use the following packages for this exercise. - httr: to work with URLs and HTTP - tidyverse: to import, wrangle and manipulate asapatial data - sf: to import and provide simple features access for R - tmap: to create thematic maps
 
 ```{r}
-pacman::p_load(tidyverse, sf, tmap, httr)
+pacman::p_load(tidyverse, sf, tmap, httr, performance)
 ```
 
 ## Data
 
-For this exercise, we will be using the `Generalinformationofschools` data
+For this exercise, we will be using the `Generalinformationofschools` data downloaded from data.gov.sg.
 
 ## Geocoding using SLA API
 
@@ -63,6 +67,7 @@ The following code chunk combines the school information dataframe (`csv`) with 
 ```{r}
 
 #| eval: FALSE 
+
 merged = merge(csv , found, by.x='postal_code', by.y = 'results.POSTAL', all = TRUE)
 write.csv(merged, file="data/aspatial/schools.csv")
 write_csv(not_found, file ="data/aspatial/not_found.csv")
@@ -84,7 +89,7 @@ glimpse(schools)
 
 ```
 
-## Convert tibble dataframe to a simple feature tibble dataframe 
+## Convert tibble dataframe to a simple feature tibble dataframe
 
 We will now convert the schools tibble data frame into a simple feature tibble data frame so that we can make use of the latitude and longitude fields as spatial data.
 
@@ -115,10 +120,8 @@ tm_basemap(server = tiles) +
 tmap_mode("plot")
 ```
 
-:::{.callout-info}
-
+::: callout-note
 We added "tmap_mode("plot") at the end so that the subsequent maps would be in plot mode, rather than view mode, which requires more memory.
-
 :::
 
 The schools are plotted as black dots in the above plot. Notice that in the above code chunk we have set it to use the OneMap Singapore map as the basemap. To make it more useful, we will bring in the Singapore planning subzone shapefile using the following code chunk so that we know which subzones the schools are in.
@@ -166,7 +169,7 @@ mpsz <- mutate(mpsz, SCH_COUNT = replace(SCH_COUNT,
 summary(mpsz)
 ```
 
-## Bringing in the business shapefile into R 
+## Bringing in the business shapefile into R
 
 We will also bring in the business shape file and plot it on the mpsz sf dataframe using the following code chunks.
 
@@ -206,9 +209,224 @@ mpsz <- mutate(mpsz, BIZ_COUNT = replace(BIZ_COUNT,
 summary(mpsz$BIZ_COUNT)
 ```
 
-## Bringing flow_data.rds into R 
+## Bringing flow_data.rds into R
 
 ```{r}
 flow_data <- read_rds("data/rds/flow_data_tidy.rds")
 glimpse(flow_data)
 ```
+
+We will append the SCH_COUNT and BIZ_COUNT fields from mpsz_tidy with the flow data using the following code chunks.
+
+```{r}
+mpsz_tidy <- mpsz %>%
+  st_drop_geometry() %>%
+  select(SUBZONE_C, SCH_COUNT, BIZ_COUNT)
+```
+
+```{r}
+fd <- flow_data %>% left_join(mpsz_tidy,
+            by = c("DESTIN_SZ" = "SUBZONE_C")) %>%
+  rename(DIST = dist, TRIPS = MORNING_PEAK)
+```
+
+Let us check for 0 values.
+
+```{r}
+summary(fd)
+```
+
+```{r}
+write_rds(fd, "data/rds/flow_data_tidy2.rds")
+```
+
+```{r}
+head(fd,10)
+```
+
+```{r}
+fd_df <- fd %>%
+  st_drop_geometry()
+```
+
+```{r}
+glimpse(fd_df)
+```
+
+
+Since spatial interaction models on interzonal trips, we will only retain those rows where ORIGIN_SZ not equals to DESTIN_SZ because it means that these flows are between the zones.
+
+```{r}
+fd_inter <- fd %>%
+  filter(ORIGIN_SZ != DESTIN_SZ)
+```
+
+```{r}
+head(fd_inter, 10)
+```
+
+We will save this as the modelling data for Spatial Interaction Models
+
+```{r}
+write_rds(fd_inter, "data/rds/SIM_data.rds")
+```
+
+Importing the modelling data
+
+```{r}
+SIM_data <- read_rds("data/rds/SIM_data.rds")
+```
+
+
+```{r}
+
+glimpse(SIM_data)
+```
+
+
+Visualing the dependent variable
+
+```{r}
+ggplot(data = SIM_data,
+       aes(x = TRIPS)) + 
+  geom_histogram()
+```
+
+Note that the distribution is highly skewed and does not resemble a normal distribution.
+
+```{r}
+ggplot(data = SIM_data, 
+       aes(x = DIST,
+           y = TRIPS)) +
+  geom_point() + 
+  geom_smooth(method = lm)
+```
+
+```{r}
+
+summary(SIM_data)
+
+```
+
+## Origin constrained Spatial Interaction Model 
+
+```{r}
+orcSIM <- glm(formula = TRIPS ~ 
+                 ORIGIN_SZ +
+                 log(SCH_COUNT) + log(BIZ_COUNT) +
+                 log(DIST) - 1,
+              family = poisson(link = "log"),
+              data = SIM_data,
+              na.action = na.exclude)
+
+summary(orcSIM)
+
+
+```
+
+dist is the impedience
+
+add a '-1' to remove the intercept because origin/dest constrained dun need an intercept.
+
+look at the impt of sch_count, biz_count, log(dist)
+
+check the parameters alpha, beta and gamma values (see slide 8 of lect 3, gravity models)
+
+
+```{r}
+CalcRSquared <- function(observed,estimated){
+  r <- cor(observed,estimated)
+  R2 <- r^2
+  R2
+}
+```
+
+
+```{r}
+CalcRSquared(orcSIM$data$TRIPS, orcSIM$fitted.values)
+```
+
+## Destination Constrained Spatial Interaction Model 
+
+```{r}
+decSIM <- glm(formula = TRIPS ~ 
+                 DESTIN_SZ +
+                 log(SCH_COUNT) + log(BIZ_COUNT) +
+                 log(DIST) - 1,
+              family = poisson(link = "log"),
+              data = SIM_data,
+              na.action = na.exclude)
+
+summary(decSIM)
+
+```
+
+
+
+```{r}
+CalcRSquared(decSIM$data$TRIPS, decSIM$fitted.values)
+```
+
+
+## Doubly Constrained Spatial Interaction Model 
+
+```{r}
+
+dbcSIM <- glm(formula = TRIPS ~ 
+             ORIGIN_SZ + 
+             DESTIN_SZ +
+             log(DIST), 
+           family = poisson(link = "log"),
+           data = SIM_data,
+           na.action = na.exclude)
+
+summary(dbcSIM)
+``` 
+
+
+```{r}
+CalcRSquared(dbcSIM$data$TRIPS, dbcSIM$fitted.values)
+```
+
+
+## Model Comparison 
+```{r}
+model_list <- list(originConstrained = orcSIM,
+                   destinationConstrained = decSIM, 
+                   doubleConstrained = dbcSIM)
+```
+
+```{r}
+compare_performance(model_list,
+                    metrics = "RMSE")
+
+```
+Output shows that doubly constrained SIM is the best model since it has the smallest RMSE value of 1906.694. 
+
+
+
+
+-   distance must be negative, because rs is inverse. ppl dun wanna travel too far. if it is positive, then need to investigate further
+
+-   log sch and log biz should always be positive
+
+-   last col is the pvalues. make sure it is less than 0.05 so that we can accept these factors. If more, then need to say there are not statistically significant
+
+use R square "goodness of fit" to explain how well the factors can explain the model
+
+-   create a function with observed results and estimated results.
+
+-   use correlation coef funct in base 2
+
+-   then square the corr result to get r2.
+
+-   helps to explain how well it explain the rate of flow,
+
+-   rmse on how good it is at estimation. the results is the number of errors (check documentation of performance_rmse again!) chose to normalised to be false,so it will use the raw value (actual root mean square error)
+
+-   smaller RMSE is better.
+
+-   doubly constrained - don't have the attractiveness factors, don't need to minus 1 the intercept
+
+
+-   plot rmse, check the outlier and might want to further investigate by removing the outlier and run the model and check how it affects the rmse.

@@ -34,7 +34,9 @@ For this exercise, we will be using the following packages:
 
 -   **sp**: to provide classes and methods for spatial data types
 
--   **DT**:to display R data objects (matrices or data frmaes) as tables on HTML pages
+-   **DT**:to display R data objects (matrices or dataframes) as tables on HTML pages
+
+-   **stplanr**: to visualise flow lines
 
 -   **performance**:to compute measures for assessing model quality
 
@@ -50,7 +52,7 @@ For this exercise, we will be using the following packages:
 #| code-fold: true 
 #| code-summary: "Show the code" 
 
-pacman::p_load(tmap, sf, sp, DT, performance, reshape2, ggpubr, tidyverse) 
+pacman::p_load(tmap, sf, sp, DT, stplanr, performance, reshape2, ggpubr, tidyverse) 
 ```
 
 ## Data Preparation
@@ -67,11 +69,17 @@ For the purpose of this take-home exercise, we will be using the following datas
 
     -   `Master Plan 2019 Subzone Boundary`
 
-    -   `Business`, `entertn,` `F&B`, `FinServ`, `Leisure&Recreation` and `Retails`
+    -   `Business`, 
+    
+    -   `FinServ`, 
 
 -   Aspatial Data
 
     -   `Passenger Volume by Origin Destination Bus Stops`
+    
+    -   `hdb`
+    
+    -   `schools`
 
 ### Importing Data into R
 
@@ -82,7 +90,13 @@ odbus <- read_csv("data/aspatial/origin_destination_bus_202310.csv")
 
 ```{r}
 
-hdbinfo <- read_csv("data/aspatial/HDBPropertyInformation.csv")
+hdb <- read_csv("data/aspatial/hdb.csv")
+
+```
+
+```{r}
+
+schools <- read_csv("data/aspatial/schools1.csv")
 
 ```
 
@@ -104,37 +118,8 @@ business <- st_read(dsn = "data/geospatial",
 ```
 
 ```{r}
-entertain <- st_read(dsn = "data/geospatial",
-                   layer = "entertn")
-```
-
-```{r}
-
-fnb <- st_read(dsn = "data/geospatial",
-                   layer = "F&B")
-
-```
-
-```{r}
 finserv <- st_read(dsn = "data/geospatial",
                    layer = "FinServ")
-
-```
-
-```{r}
-lnr <- st_read(dsn = "data/geospatial",
-                   layer = "Liesure&Recreation")
-```
-
-```{r}
-mrtstations <- st_read(dsn = "data/geospatial",
-                   layer = "RapidTransitSystemStation")
-
-```
-
-```{r}
-retail <- st_read(dsn = "data/geospatial",
-                   layer = "Retails")
 
 ```
 
@@ -145,6 +130,9 @@ mrtexits <- st_read(dsn = "data/geospatial",
 
 ```
 
+
+
+
 ### Data Wrangling of Aspatial Data
 
 ```{r}
@@ -152,47 +140,1012 @@ mrtexits <- st_read(dsn = "data/geospatial",
 #| code-summary: "Show the code"
 glimpse(odbus)
 ```
+From the above output, it shows that the values of the ORIGIN_PT_CODE and DESTINATION_PT_CODE are in character data type. Since these two columns contain the origin bus stop codes and destination bus stop codes and they actually take on a limited number of different values (unlike strings), we convert ORIGIN_PT_CODE and DESTINATION_PT_CODE into factor data type using as.factor().
 
--   Convert to factor
+```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 
--   Extract the time period we are interested in - weekday evening peak hour
+odbus$ORIGIN_PT_CODE <- as.factor(odbus$ORIGIN_PT_CODE)
+odbus$DESTINATION_PT_CODE <- as.factor(odbus$DESTINATION_PT_CODE)
 
--   Save output in rds format for future use
+```
+
+Let us check the odbus dataframe using glimpse() again. 
 
 ```{r}
 #| code-fold: true
 #| code-summary: "Show the code"
-glimpse(hdbinfo)
+glimpse(odbus)
+
 ```
 
--   follow link to prepare the hdb dataset
+Using unique() function, we can find the unique values in a column. Let us first check the YEAR_MONTH, DAY_TYPE, TIME_PER_HOUR and PT_TYPE to ensure the data contains bus trips made in October 2023, and there are no other unexpected values for DAY_TYPE and TIME_PER_HOUR.
+
+:::{.panel-tabset}
+## YEAR_MONTH
+
+```{r}
+unique(odbus$YEAR_MONTH)
+```
+
+## DAY_TYPE
+
+```{r}
+unique(odbus$DAY_TYPE)
+```
+
+## TIME_PER_HOUR
+
+```{r}
+unique(odbus$TIME_PER_HOUR)
+
+#To count the number hours listed
+length(unique(odbus$TIME_PER_HOUR))
+
+```
+
+## PT_TYPE
+
+```{r}
+unique(odbus$PT_TYPE)
+```
+::: 
+
+From the above output, we know that the data only contains **bus** trips made in **October 2023**. The DAY_TYPES have 2 categories: **WEEKDAYS** and **WEEKENDS/HOLIDAY**. TIME_PER_HOUR have 23 categories because there is no value of "3" in TIME_PER_HOUR variable.
+
+### Extract the time period we are interested in - Weekday Morning Peak Hour
+
+For the purpose of this exercise, we are interested in the commuter flows using bus on weekdays morning peak hour (i.e. 6am to 9am) so we will use the following code chunk to extract the time period we are interested in and save the output in rds format for future use. 
+
+```{r}
+odbus_WDMP <- odbus %>%
+  filter(DAY_TYPE == "WEEKDAY") %>%
+  filter(TIME_PER_HOUR >= 6 &
+           TIME_PER_HOUR <= 9) %>%
+  group_by(ORIGIN_PT_CODE, 
+           DESTINATION_PT_CODE) %>%
+  summarise(TRIPS = sum(TOTAL_TRIPS))
+```
+
+```{r}
+head(odbus_WDMP, 10)
+
+```
+We will use the following code chunk to save this dataframe in rds format for future use. 
+
+```{r}
+write_rds(odbus_WDMP, "data/rds/odbus_WDMP.rds")
+```
+
+
+We will now take a look at the HDB data. 
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+glimpse(hdb)
+```
+
+From the above output, we know that there are some hdb buildings considered as residential and some are considered as commercial. We shall filter them out and save them as different dataframes to subsequent steps because these could be propulsive or attractive factors for people to travel in morning peak hour.  
+
+```{r}
+hdb_residental <- hdb %>%
+  filter(residential == "Y") %>%
+  select(postal, lat, lng, SUBZONE_N, residential, total_dwelling_units)
+```
+
+```{r}
+glimpse(hdb_residental)
+```
+
+We check if there are any duplicates in the hdb_residential dataset
+
+```{r}
+duplicate <- hdb_residental %>%
+  group_by_all() %>% 
+  filter(n()>1) %>%
+  ungroup()
+
+duplicate
+```
+
+From the above output, we know that there is no duplicate rows in the hdb_residential dataframe.
+
+```{r}
+hdb_commercial <- hdb %>%
+  filter(commercial == "Y") %>%
+  select(postal, lat, lng, SUBZONE_N, commercial, total_dwelling_units)
+```
+
+```{r}
+glimpse(hdb_commercial)
+```
+
+```{r}
+duplicate1 <- hdb_commercial %>%
+  group_by_all() %>% 
+  filter(n()>1) %>%
+  ungroup()
+
+duplicate1
+```
+
+We will now take a look at the schools data.
+
+```{r}
+glimpse(schools)
+
+```
+
+```{r}
+schools_tidy <- schools %>%
+  rename(latitude = "results.LATITUDE",
+         longitude = "results.LONGITUDE")%>%
+  select(postal_code, school_name, latitude, longitude)
+```
+
+```{r}
+glimpse(schools_tidy)
+
+```
+
+```{r}
+duplicate2 <- schools_tidy %>%
+  group_by_all() %>% 
+  filter(n()>1) %>%
+  ungroup()
+
+duplicate2
+```
+
+
+```{r}
+
+schools_tidy <- unique(schools_tidy)
+```
+
+```{r}
+duplicate3 <- schools_tidy %>%
+  group_by_all() %>% 
+  filter(n()>1) %>%
+  ungroup()
+
+duplicate3
+```
+
+
+#### Converting aspatial data into sf tibble dataframe
+
+currently the hdb residential and hdb commercial are still asaptial data even though they have latitude and longitude information. So let us use st_as_sf to convert it into an sf tibble dataframe. 
+
+```{r}
+hdb_residental_sf <- st_as_sf(hdb_residental, 
+                              coords = c("lng", "lat"),
+                              crs=4326) %>%
+  st_transform(crs = 3414)
+```
+
+```{r}
+
+glimpse(hdb_residental_sf)
+```
+
+```{r}
+hdb_commercial_sf <- st_as_sf(hdb_commercial, 
+                              coords = c("lng", "lat"),
+                              crs=4326) %>%
+  st_transform(crs = 3414)
+```
+
+```{r}
+
+glimpse(hdb_commercial_sf)
+```
+
+```{r}
+schools_sf <- st_as_sf(schools_tidy,
+                       coords = c("longitude", "latitude"), 
+                       crs=4326) %>%
+  st_transform(crs=3414)
+  
+```
+
+```{r}
+glimpse(schools_sf)
+
+```
+
 
 ### Data Wrangling of Spatial Data
 
--   check geospatial dataset projection
+We will now take a look at the spatial data imported in. 
 
--   create hexagon grid using MPSZ?
+:::{.panel-tabset}
 
--   left join the final geospatial data with asapatial data
+### mpsz 
+```{r}
+glimpse(mpsz)
+```
 
--   check for duplicate records
+### busstop 
+```{r}
+glimpse(busstop)
+```
 
--   save output in rds format for future use
+### TrainExits 
+```{r}
+glimpse(mrtexits)
+```
 
--   Visualise the information for
+### business
+```{r}
+glimpse(business)
+```
 
-## Computing Distance Matrix
+### financial services
+```{r}
+glimpse(finserv)
+```
 
-## Preparing Flow Data
+::: 
 
-## Preparing Origin and Destination Attributes
+
+Let us Check the coordinates system using the st_crs function. 
+
+:::{.panel-tabset}
+
+### mpsz 
+```{r}
+
+st_crs(mpsz)
+```
+
+### busstop 
+```{r}
+st_crs(busstop)
+```
+### TrainExits 
+```{r}
+st_crs(mrtexits)
+```
+
+### business
+```{r}
+st_crs(business)
+```
+
+::: 
+
+transform the CRS for mpsz because it was in another projection format 
+Assign the correct ESPG code to the various sf dataframe using the st_set_crs() of sf package 
+
+:::{.panel-tabset}
+
+### mpsz 
+```{r}
+mpsz3414 <- st_transform(mpsz, crs=3414)
+st_crs(mpsz3414)
+```
+
+### busstop 
+```{r}
+busstop3414 <- st_set_crs(busstop, 3414)
+st_crs(busstop3414)
+```
+
+
+### TrainExits 
+```{r}
+mrtexits3414 <- st_set_crs(mrtexits, 3414)
+st_crs(mrtexits3414)
+```
+
+### business
+```{r}
+business3414 <- st_set_crs(business, 3414)
+st_crs(business3414)
+```
+
+###financial Services
+```{r}
+finserv3414 <- st_set_crs(finserv, 3414)
+st_crs(finserv3414)
+```
+
+::: 
+
+Let us plot the geospatial data out to visualise the data. 
+
+```{r}
+qtm(mpsz3414)
+
+```
+
+```{r}
+qtm(hdb_residental_sf)
+
+```
+
+```{r}
+qtm(hdb_commercial_sf)
+
+```
+
+```{r}
+qtm(business3414)
+
+```
+
+
+For this exercise, we will be analysing the bus commuter flows at analytics hexagon level. The analytical hexagon data is 375m between the centre of the hexagon and its edges to represent the traffic analysis zone (TAZ). 
+
+First, we will create a hexagon tessellation using MPSZ3414 to define the bounding box of the tessellation. As the hexagon layer that we want is 375m (the perpendicular distance between the centre of the hexagon and its edge), and the cellsize parameter in st_make_grid requires the length to be between opposite edges, we multiply 375m by 2 to get 750m, which is the distance between 2 opposite edges of a hexagon. 
+
+In the code chunk below, we also specify the crs = 3414 since we are using the SVY21 coordinate reference system and set square = FALSE to return a hexagon grid (rather than a square grid).
+
+```{r}
+
+hex_grid <- st_make_grid(mpsz3414, c(750,750), crs= 3414, what = "polygons", square = FALSE)
+
+hex_grid
+
+```
+Next, we convert hex_grid from a sfc_POLYGON object to sf object for easier handling and add an unique ID to each cell. Each cell is a hexagon and in subsequent steps, we will check the number of trips, count the number of businesses, financial services, schools, residential units, hdb commercial units within each hexagon.
+```{r}
+
+hex_grid_sf <- st_sf(hex_grid) %>%
+  mutate(grid_id = 1:length(lengths(hex_grid)))
+
+hex_grid_sf
+```
+This will give us a hexagon grid as seen below. 
+```{r}
+qtm(hex_grid_sf)
+```
+To make the entire Singapore map into a hexagon grid, we use st_intersects() to find out the "overlap" between the entire hexagon grid and the Singapore map (as outlined by mpsz3414). We use lengths() to return the number of each element of the list then attach it as a column back to hex_grid_sf data frame. 
+```{r}
+hex_grid_sf$SG <- lengths(st_intersects(hex_grid_sf, mpsz3414))
+
+```
+We then use this column to "cut out" the hexagon grid in Singapore map shape by filtering out values in the SG column that do not contain 0 because 0 means there is no overlap between mpsz and the hexagon grid. 
+
+```{r}
+sgmap <- filter(hex_grid_sf, SG>0)
+sgmap
+
+```
+We plot out `sgmap` to check that the entire Singapore map is now broken into hexagon units, rather than planning subzones. 
+
+```{r}
+qtm(sgmap)
+```
+
+To find out how many businesses are in each hexagon, we use st_interacts(). 
+
+
+```{r}
+sgmap$`BIZ_COUNT` <- lengths(st_intersects(sgmap, business3414))
+```
+
+
+We use the following code chunk to visualise the distribution of businesses over the hexagon singapore map. 
+```{r}
+tmap_options(check.and.fix = TRUE)
+
+tm_shape(sgmap) +
+  tm_polygons() +
+  tm_shape(business3414) +
+  tm_dots()
+
+```
+
+```{r}
+sgmap$`FINSERV_COUNT` <- lengths(st_intersects(sgmap, finserv3414))
+```
+
+```{r}
+tmap_options(check.and.fix = TRUE)
+
+tm_shape(sgmap) +
+  tm_polygons() +
+  tm_shape(finserv3414) +
+  tm_dots()
+
+```
+
+```{r}
+sgmap$`MRTEXIT_COUNT` <- lengths(st_intersects(sgmap, mrtexits3414))
+```
+
+
+```{r}
+tmap_options(check.and.fix = TRUE)
+
+tm_shape(sgmap) +
+  tm_polygons() +
+  tm_shape(mrtexits3414) +
+  tm_dots()
+
+```
+
+
+```{r}
+sgmap$`HDBCOMMERCIAL_COUNT` <- lengths(st_intersects(sgmap, hdb_commercial_sf))
+
+```
+
+
+```{r}
+tmap_options(check.and.fix = TRUE)
+
+tm_shape(sgmap) +
+  tm_polygons() +
+  tm_shape(hdb_commercial_sf) +
+  tm_dots()
+
+```
+
+```{r}
+sgmap$`HDBRESIDENTIAL_COUNT` <- lengths(st_intersects(sgmap, hdb_residental_sf))
+
+```
+
+```{r}
+tmap_options(check.and.fix = TRUE)
+
+tm_shape(sgmap) +
+  tm_polygons() +
+  tm_shape(hdb_residental_sf) +
+  tm_dots()
+
+```
+
+
+```{r}
+sgmap$`SCHOOLS_COUNT` <- lengths(st_intersects(sgmap, schools_sf))
+
+```
+
+
+```{r}
+
+tmap_options(check.and.fix = TRUE)
+
+tm_shape(sgmap) +
+  tm_polygons() +
+  tm_shape(schools_sf) +
+  tm_dots()
+
+```
+
+
+```{r}
+
+glimpse(sgmap)
+
+```
+
+
+- need to replace 0 values? 
+
+Notice that the sgmap has hexagon related information and the counts of the businesses/finserv/schools in each hexagon, but we are unable to map it back to the odbus_WDMP data because there are no common fields. 
+
+Hence, we will use st_intersection to perform point and polygon overlay and the output will be in point sf object. 
+
+
+
+```{r}
+busstop_hex <- st_intersection(busstop3414, sgmap)
+
+```
+
+
+```{r}
+glimpse(busstop_hex)
+
+```
+to get the subzones 
+
+```{r}
+mpsz_hex <- st_intersection(mpsz3414, sgmap)
+
+```
+```{r}
+glimpse(mpsz_hex)
+
+```
+
+
+```{r}
+
+busstop_hex_mpsz <- st_intersection(busstop_hex, mpsz_hex) %>%
+  select(BUS_STOP_N,LOC_DESC,
+         grid_id,BIZ_COUNT,
+         FINSERV_COUNT,MRTEXIT_COUNT,
+         HDBCOMMERCIAL_COUNT,HDBRESIDENTIAL_COUNT,
+         SCHOOLS_COUNT,SUBZONE_N,SUBZONE_C)
+
+```
+
+```{r}
+
+glimpse(busstop_hex_mpsz)
+```
+
+```{r}
+
+busstop_hex_mpsz_df <- busstop_hex_mpsz %>%
+  st_drop_geometry()
+
+glimpse(busstop_hex_mpsz_df)
+```
+
+
+```{r}
+od_data <- left_join(odbus_WDMP, busstop_hex_mpsz_df,
+                     by = c("ORIGIN_PT_CODE" = "BUS_STOP_N")) %>%
+  rename(ORIGIN_BS = ORIGIN_PT_CODE,
+         ORIGIN_SZ = SUBZONE_C,
+         ORIGIN_SZN = SUBZONE_N,
+         DESTIN_BS = DESTINATION_PT_CODE,
+         ORIGIN_BIZ_COUNT = BIZ_COUNT,
+         ORIGIN_FINSERV_COUNT = FINSERV_COUNT,
+         ORIGIN_MRTEXIT_COUNT = MRTEXIT_COUNT,
+         ORIGIN_HDBCOMMERCIAL_COUNT = HDBCOMMERCIAL_COUNT,
+         ORIGIN_HDBRESIDENTIAL_COUNT = HDBRESIDENTIAL_COUNT,
+         ORIGIN_SCHOOLS_COUNT = SCHOOLS_COUNT,
+         ORIGIN_LOC_DESC = LOC_DESC,
+         ORIGIN_GRID_ID = grid_id)
+
+```
+```{r}
+glimpse(od_data)
+```
+
+
+```{r}
+duplicate2 <- od_data %>%
+  group_by_all() %>%
+  filter(n()>1) %>%
+  ungroup()
+```
+
+
+```{r}
+od_data <- unique(od_data)
+
+```
+
+
+```{r}
+duplicate3 <- od_data %>%
+  group_by_all() %>%
+  filter(n()>1) %>%
+  ungroup()
+```
+
+
+
+```{r}
+
+od_data <- left_join(od_data , busstop_hex_mpsz_df,
+            by = c("DESTIN_BS" = "BUS_STOP_N")) %>%
+  rename(DESTIN_SZ = SUBZONE_C,
+         DESTIN_SZN = SUBZONE_N,
+         DESTIN_BIZ_COUNT = BIZ_COUNT,
+         DESTIN_FINSERV_COUNT = FINSERV_COUNT,
+         DESTIN_MRTEXIT_COUNT = MRTEXIT_COUNT,
+         DESTIN_HDBCOMMERCIAL_COUNT = HDBCOMMERCIAL_COUNT,
+         DESTIN_HDBRESIDENTIAL_COUNT = HDBRESIDENTIAL_COUNT,
+         DESTIN_SCHOOLS_COUNT = SCHOOLS_COUNT,
+         DESTIN_LOC_DESC = LOC_DESC,
+         DESTIN_GRID_ID = grid_id)
+
+```
+
+```{r}
+glimpse(od_data)
+
+```
+
+```{r}
+duplicate4 <- od_data %>%
+  group_by_all() %>%
+  filter(n()>1) %>%
+  ungroup()
+```
+
+
+```{r}
+od_data <- unique(od_data)
+
+```
+
+
+```{r}
+duplicate5 <- od_data %>%
+  group_by_all() %>%
+  filter(n()>1) %>%
+  ungroup()
+```
+
+```{r}
+glimpse(od_data)
+```
+
+```{r}
+od_data$ORIGIN_GRID_ID <- as.factor(od_data$ORIGIN_GRID_ID)
+od_data$DESTIN_GRID_ID <- as.factor(od_data$DESTIN_GRID_ID)
+```
+
+```{r}
+glimpse(od_data)
+```
+
+Currently the trips are calulated from the origin busstops, but we want to analyse the commuter flows at hexagon level so we will group by the origin_grid_id and destin_grid_id 
+
+```{r}
+od_data1 <- od_data %>%
+  drop_na() %>%
+  group_by(ORIGIN_GRID_ID , DESTIN_GRID_ID) %>%
+  summarise(MORNING_PEAK = sum(TRIPS),
+            TORIGIN_BIZ_COUNT = mean(ORIGIN_BIZ_COUNT),
+            TORIGIN_FINSERV_COUNT = mean(ORIGIN_FINSERV_COUNT),
+            TORIGIN_MRTEXIT_COUNT = mean(ORIGIN_MRTEXIT_COUNT),
+            TORIGIN_HDBCOMMERCIAL_COUNT =  mean(ORIGIN_HDBCOMMERCIAL_COUNT),
+            TORIGIN_HDBRESIDENTIAL_COUNT = mean(ORIGIN_HDBRESIDENTIAL_COUNT),
+            TORIGIN_SCHOOLS_COUNT = mean(ORIGIN_SCHOOLS_COUNT),
+            TDESTIN_BIZ_COUNT = mean(DESTIN_BIZ_COUNT),
+            TDESTIN_FINSERV_COUNT = mean(DESTIN_FINSERV_COUNT),
+            TDESTIN_MRTEXIT_COUNT = mean(DESTIN_MRTEXIT_COUNT),
+            TDESTIN_HDBCOMMERCIAL_COUNT = mean(DESTIN_HDBCOMMERCIAL_COUNT),
+            TDESTIN_HDBRESIDENTIAL_COUNT = mean(DESTIN_HDBRESIDENTIAL_COUNT),
+            TDESTIN_SCHOOLS_COUNT = mean(DESTIN_SCHOOLS_COUNT))
+```
+
+```{r}
+glimpse(od_data1)
+```
+
+```{r}
+write_rds(od_data1, "data/rds/od_data.rds")
+
+```
+
 
 ## Geovisualisation of OD flows
 
+We will not plot intra-zonal flows. The folowing code chunk remove the intra-zonal flows. 
+
+```{r}
+od_data_interzone <- od_data1[od_data1$ORIGIN_GRID_ID != od_data1$DESTIN_GRID_ID,]
+
+```
+
+```{r}
+head(od_data_interzone)
+```
+
+Creating desire lines 
+```{r}
+flowline <- od2line(flow=od_data_interzone, 
+                    zones = sgmap,
+                    zone_code = "grid_id")
+```
+
+
+```{r}
+tm_shape(sgmap) +
+  tm_polygons() + 
+  flowline %>%
+  tm_shape() + 
+  tm_lines(lwd = "MORNING_PEAK",
+           style = "quantile",
+           scale = c(0.1, 1, 3, 5, 7, 10),
+           n = 6,
+           alpha = 0.3)
+
+```
+
+```{r}
+summary(flowline$MORNING_PEAK)
+
+```
+
+```{r}
+tm_shape(sgmap) +
+  tm_polygons() + 
+  flowline %>%
+  filter(MORNING_PEAK >= 5000) %>%
+  tm_shape() + 
+  tm_lines(lwd = "MORNING_PEAK",
+           style = "quantile",
+           scale = c(0.1, 1, 3, 5, 7, 10),
+           n = 6,
+           alpha = 0.3)
+
+```
+see the flowline table and retrieve those trips that are more than 5000
+```{r}
+head(flowline) 
+
+```
+
+## Computing Distance Matrix
+
+
+
+```{r}
+
+sgmap_sp <- as(sgmap, "Spatial")
+sgmap_sp
+```
+
+```{r}
+DIST <- spDists(sgmap_sp, 
+                longlat = FALSE)
+
+head(DIST, n=c(10,10))
+
+```
+
+```{r}
+hex_grid_id <- sgmap$grid_id
+```
+
+```{r}
+colnames(DIST) <- paste0(hex_grid_id)
+rownames(DIST) <- paste0(hex_grid_id)
+```
+
+
+```{r}
+head(DIST, n=c(10,10))
+
+```
+
+```{r}
+distpair <- melt(DIST) %>%
+  rename(distance = value)
+
+head(distpair, 10)
+
+```
+
+
+```{r}
+
+distpair %>%
+  filter(distance > 0) %>%
+  summary()
+
+
+```
+
+```{r}
+distpair$distance <- ifelse(distpair$distance == 0,
+                            0.1, distpair$distance)
+
+```
+
+```{r}
+distpair %>%
+  summary()
+
+```
+
+```{r}
+distpair <- distpair %>%
+  rename(orig = Var1,
+         dest = Var2)
+```
+
+```{r}
+
+write_rds(distpair, "data/rds/distpair.rds")
+```
+
+## Preparing Flow Data
+
+```{r}
+glimpse(od_data1)
+
+```
+
+
+```{r}
+flow_data <- od_data1 %>%
+  rename(TRIPS = MORNING_PEAK )
+
+```
+
+```{r}
+head(flow_data, 10)
+```
+
+
+```{r}
+flow_data$FlowNoIntra <- ifelse(
+  flow_data$ORIGIN_GRID_ID == flow_data$DESTIN_GRID_ID, 
+  0, flow_data$TRIPS)
+flow_data$offset <- ifelse(
+  flow_data$ORIGIN_GRID_ID == flow_data$DESTIN_GRID_ID, 
+  0.000001, 1)
+
+```
+
+
+```{r}
+glimpse(flow_data)
+```
+```{r}
+
+glimpse(distpair)
+```
+
+```{r}
+distpair$orig <- as.factor(distpair$orig)
+distpair$dest <- as.factor(distpair$dest)
+```
+
+```{r}
+
+glimpse(distpair)
+```
+
+
+```{r}
+flow_data1 <- flow_data %>%
+  left_join (distpair,
+             by = c("ORIGIN_GRID_ID" = "orig",
+                    "DESTIN_GRID_ID" = "dest"))
+
+```
+
+```{r}
+glimpse(flow_data1)
+
+```
+
+
+
+```{r}
+inter_zonal_flow <- flow_data1 %>% 
+  filter(FlowNoIntra > 0)
+
+```
+
+
+```{r}
+glimpse(inter_zonal_flow)
+```
+
+
+- check for variables with 0 values 
+
+```{r}
+summary(inter_zonal_flow)
+```
+fill up 0 values with 0.99
+
+```{r}
+
+inter_zonal_flow$TORIGIN_BIZ_COUNT <- ifelse(
+  inter_zonal_flow$TORIGIN_BIZ_COUNT == 0,
+  0.99, inter_zonal_flow$TORIGIN_BIZ_COUNT)
+
+inter_zonal_flow$TORIGIN_FINSERV_COUNT <- ifelse(
+  inter_zonal_flow$TORIGIN_FINSERV_COUNT == 0,
+  0.99, inter_zonal_flow$TORIGIN_FINSERV_COUNT)
+
+inter_zonal_flow$TORIGIN_MRTEXIT_COUNT <- ifelse(
+  inter_zonal_flow$TORIGIN_MRTEXIT_COUNT == 0,
+  0.99, inter_zonal_flow$TORIGIN_MRTEXIT_COUNT)
+
+inter_zonal_flow$TORIGIN_HDBCOMMERCIAL_COUNT <- ifelse(
+  inter_zonal_flow$TORIGIN_HDBCOMMERCIAL_COUNT == 0, 
+  0.99, inter_zonal_flow$TORIGIN_HDBCOMMERCIAL_COUNT)
+
+inter_zonal_flow$TORIGIN_HDBRESIDENTIAL_COUNT <- ifelse(
+  inter_zonal_flow$TORIGIN_HDBRESIDENTIAL_COUNT == 0,
+  0.99, inter_zonal_flow$TORIGIN_HDBRESIDENTIAL_COUNT)
+
+inter_zonal_flow$TORIGIN_SCHOOLS_COUNT <- ifelse(
+  inter_zonal_flow$TORIGIN_SCHOOLS_COUNT == 0,
+  0.99, inter_zonal_flow$TORIGIN_SCHOOLS_COUNT)
+
+inter_zonal_flow$TDESTIN_BIZ_COUNT <- ifelse(
+  inter_zonal_flow$TDESTIN_BIZ_COUNT == 0,
+  0.99, inter_zonal_flow$TDESTIN_BIZ_COUNT)
+
+inter_zonal_flow$TDESTIN_FINSERV_COUNT <- ifelse(
+  inter_zonal_flow$TDESTIN_FINSERV_COUNT == 0,
+  0.99, inter_zonal_flow$TDESTIN_FINSERV_COUNT)
+
+inter_zonal_flow$TDESTIN_MRTEXIT_COUNT <- ifelse(
+  inter_zonal_flow$TDESTIN_MRTEXIT_COUNT == 0,
+  0.99, inter_zonal_flow$TDESTIN_MRTEXIT_COUNT)
+
+inter_zonal_flow$TDESTIN_HDBCOMMERCIAL_COUNT <- ifelse(
+  inter_zonal_flow$TDESTIN_HDBCOMMERCIAL_COUNT == 0, 
+  0.99, inter_zonal_flow$TDESTIN_HDBCOMMERCIAL_COUNT)
+
+inter_zonal_flow$TDESTIN_HDBRESIDENTIAL_COUNT <- ifelse(
+  inter_zonal_flow$TDESTIN_HDBRESIDENTIAL_COUNT == 0,
+  0.99, inter_zonal_flow$TDESTIN_HDBRESIDENTIAL_COUNT)
+
+inter_zonal_flow$TDESTIN_SCHOOLS_COUNT <- ifelse(
+  inter_zonal_flow$TDESTIN_SCHOOLS_COUNT == 0,
+  0.99, inter_zonal_flow$TDESTIN_SCHOOLS_COUNT)
+
+
+```
+
+
+```{r}
+summary(inter_zonal_flow)
+```
+
+
 ## Calibrating Spatial Interaction Models
 
+```{r}
+glimpse(inter_zonal_flow)
+
+```
+
 ### Origin constrained
+
+```{r}
+orcSIM_Poisson <- glm(formula = TRIPS ~ 
+                ORIGIN_GRID_ID +
+                log(TDESTIN_BIZ_COUNT) +
+                log(TDESTIN_FINSERV_COUNT) +
+                  log(TDESTIN_MRTEXIT_COUNT) +
+                  log(TDESTIN_HDBCOMMERCIAL_COUNT) +
+                  log(TDESTIN_SCHOOLS_COUNT) + 
+                log(distance) - 1,
+              family = poisson(link = "log"),
+              data = inter_zonal_flow,
+              na.action = na.exclude)
+summary(orcSIM_Poisson)
+
+```
+
+```{r}
+CalcRSquared <- function(observed, estimated){
+  r <- cor(observed, estimated)
+  R2 <- r^2
+  R2
+}
+
+```
+
+
+```{r}
+
+CalcRSquared(orcSIM_Poisson$data$TRIPS, orcSIM_Poisson$fitted.values)
+```
 
 ### Destination constrained
 
 ### Doubly constrained Model
+```{r}
+dbcSIM_Poisson <- glm(formula = TRIPS ~ 
+                ORIGIN_GRID_ID + 
+                DESTIN_GRID_ID +
+                log(distance),
+              family = poisson(link = "log"),
+              data = inter_zonal_flow,
+              na.action = na.exclude)
+summary(dbcSIM_Poisson)
+
+```
+
+
+
+```{r}
+CalcRSquared(dbcSIM_Poisson$data$TRIPS, dbcSIM_Poisson$fitted.values)
+
+```

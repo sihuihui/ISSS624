@@ -253,7 +253,6 @@ fd_df <- fd %>%
 glimpse(fd_df)
 ```
 
-
 Since spatial interaction models on interzonal trips, we will only retain those rows where ORIGIN_SZ not equals to DESTIN_SZ because it means that these flows are between the zones.
 
 ```{r}
@@ -277,12 +276,10 @@ Importing the modelling data
 SIM_data <- read_rds("data/rds/SIM_data.rds")
 ```
 
-
 ```{r}
 
 glimpse(SIM_data)
 ```
-
 
 Visualing the dependent variable
 
@@ -308,7 +305,7 @@ summary(SIM_data)
 
 ```
 
-## Origin constrained Spatial Interaction Model 
+## Origin constrained Spatial Interaction Model
 
 ```{r}
 orcSIM <- glm(formula = TRIPS ~ 
@@ -332,7 +329,6 @@ look at the impt of sch_count, biz_count, log(dist)
 
 check the parameters alpha, beta and gamma values (see slide 8 of lect 3, gravity models)
 
-
 ```{r}
 CalcRSquared <- function(observed,estimated){
   r <- cor(observed,estimated)
@@ -341,12 +337,11 @@ CalcRSquared <- function(observed,estimated){
 }
 ```
 
-
 ```{r}
 CalcRSquared(orcSIM$data$TRIPS, orcSIM$fitted.values)
 ```
 
-## Destination Constrained Spatial Interaction Model 
+## Destination Constrained Spatial Interaction Model
 
 ```{r}
 decSIM <- glm(formula = TRIPS ~ 
@@ -361,14 +356,11 @@ summary(decSIM)
 
 ```
 
-
-
 ```{r}
 CalcRSquared(decSIM$data$TRIPS, decSIM$fitted.values)
 ```
 
-
-## Doubly Constrained Spatial Interaction Model 
+## Doubly Constrained Spatial Interaction Model
 
 ```{r}
 
@@ -381,15 +373,14 @@ dbcSIM <- glm(formula = TRIPS ~
            na.action = na.exclude)
 
 summary(dbcSIM)
-``` 
-
+```
 
 ```{r}
 CalcRSquared(dbcSIM$data$TRIPS, dbcSIM$fitted.values)
 ```
 
+## Model Comparison
 
-## Model Comparison 
 ```{r}
 model_list <- list(originConstrained = orcSIM,
                    destinationConstrained = decSIM, 
@@ -401,10 +392,8 @@ compare_performance(model_list,
                     metrics = "RMSE")
 
 ```
-Output shows that doubly constrained SIM is the best model since it has the smallest RMSE value of 1906.694. 
 
-
-
+Output shows that doubly constrained SIM is the best model since it has the smallest RMSE value of 1906.694.
 
 -   distance must be negative, because rs is inverse. ppl dun wanna travel too far. if it is positive, then need to investigate further
 
@@ -427,6 +416,5 @@ use R square "goodness of fit" to explain how well the factors can explain the m
 -   smaller RMSE is better.
 
 -   doubly constrained - don't have the attractiveness factors, don't need to minus 1 the intercept
-
 
 -   plot rmse, check the outlier and might want to further investigate by removing the outlier and run the model and check how it affects the rmse.

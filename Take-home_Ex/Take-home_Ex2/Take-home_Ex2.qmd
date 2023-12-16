@@ -1980,10 +1980,167 @@ compare_performance(model_list2,
 
 #### Remove outliers 
 
+Filter out the 2 extreme trip values: 87864, 71996
+
+```{r}
+inter_zonal_flow1 <- inter_zonal_flow %>%
+  filter(TRIPS <71996)
+
+summary(inter_zonal_flow1$TRIPS)
+```
+
+```{r}
+orcSIM_Poisson3 <- glm(formula = TRIPS ~ 
+                ORIGIN_GRID_ID +
+                log(TDESTIN_BIZ_COUNT) +
+                log(TDESTIN_FINSERV_COUNT) +
+                  log(TDESTIN_MRTEXIT_COUNT) +
+                  log(TDESTIN_BUSSTOP_COUNT) +
+                  log(TDESTIN_HDBCOMMERCIAL_COUNT) +
+                  log(TDESTIN_HDBRESIDENTIAL_COUNT) +
+                  log(TDESTIN_HDBCOMM_UNITS) +
+                  log(TDESTIN_HDBRES_UNITS) + 
+                  log(TDESTIN_SCHOOLS_COUNT) + 
+                log(DISTANCE) - 1,
+              family = poisson(link = "log"),
+              data = inter_zonal_flow1,
+              na.action = na.exclude)
+summary(orcSIM_Poisson3)
+
+```
+
+```{r}
+CalcRSquared(orcSIM_Poisson3$data$TRIPS, orcSIM_Poisson3$fitted.values)
+
+```
+
+```{r}
+decSIM_Poisson3 <- glm(formula = TRIPS ~ 
+                DESTIN_GRID_ID +
+                log(TORIGIN_BIZ_COUNT) +
+                log(TORIGIN_FINSERV_COUNT) +
+                  log(TORIGIN_MRTEXIT_COUNT) +
+                  log(TORIGIN_BUSSTOP_COUNT) +
+                  log(TORIGIN_HDBCOMMERCIAL_COUNT) +
+                  log(TORIGIN_HDBRESIDENTIAL_COUNT) +
+                  log(TORIGIN_HDBCOMM_UNITS) +
+                  log(TORIGIN_HDBRES_UNITS) + 
+                  log(TORIGIN_SCHOOLS_COUNT) + 
+                log(DISTANCE) - 1,
+              family = poisson(link = "log"),
+              data = inter_zonal_flow1,
+              na.action = na.exclude)
+summary(decSIM_Poisson3)
+
+```
+
+```{r}
+CalcRSquared(decSIM_Poisson3$data$TRIPS, decSIM_Poisson3$fitted.values)
+
+```
+
+
+
+```{r}
+dbcSIM_Poisson2 <- glm(formula = TRIPS ~ 
+                ORIGIN_GRID_ID + 
+                DESTIN_GRID_ID +
+                log(DISTANCE),
+              family = poisson(link = "log"),
+              data = inter_zonal_flow1,
+              na.action = na.exclude)
+summary(dbcSIM_Poisson2)
+
+```
+
+
+```{r}
+CalcRSquared(dbcSIM_Poisson2$data$TRIPS, dbcSIM_Poisson2$fitted.values)
+
+```
+
+
+```{r}
+model_list3 <- list(originConstrained3=orcSIM_Poisson3,
+                   destinationConstrained3=decSIM_Poisson3,
+                   doublyConstrained2=dbcSIM_Poisson2)
+
+```
+
+
+
+```{r}
+
+compare_performance(model_list3,
+                    metrics = "RMSE")
+
+```
 
 
 #### Removing both the variables and outliers 
 
+```{r}
+orcSIM_Poisson4 <- glm(formula = TRIPS ~ 
+                ORIGIN_GRID_ID +
+                log(TDESTIN_BIZ_COUNT) +
+                log(TDESTIN_FINSERV_COUNT) +
+                  log(TDESTIN_MRTEXIT_COUNT) +
+                  log(TDESTIN_BUSSTOP_COUNT) +
+                  log(TDESTIN_HDBCOMM_UNITS) +
+                  log(TDESTIN_HDBRES_UNITS) + 
+                  log(TDESTIN_SCHOOLS_COUNT) + 
+                log(DISTANCE) - 1,
+              family = poisson(link = "log"),
+              data = inter_zonal_flow1,
+              na.action = na.exclude)
+summary(orcSIM_Poisson4)
+
+```
+
+```{r}
+CalcRSquared(orcSIM_Poisson4$data$TRIPS, orcSIM_Poisson4$fitted.values)
+
+```
+
+```{r}
+decSIM_Poisson4 <- glm(formula = TRIPS ~ 
+                DESTIN_GRID_ID +
+                log(TORIGIN_BIZ_COUNT) +
+                log(TORIGIN_FINSERV_COUNT) +
+                  log(TORIGIN_MRTEXIT_COUNT) +
+                  log(TORIGIN_BUSSTOP_COUNT) +
+                  log(TORIGIN_HDBCOMM_UNITS) +
+                  log(TORIGIN_HDBRES_UNITS) + 
+                  log(TORIGIN_SCHOOLS_COUNT) + 
+                log(DISTANCE) - 1,
+              family = poisson(link = "log"),
+              data = inter_zonal_flow1,
+              na.action = na.exclude)
+summary(decSIM_Poisson4)
+
+```
+
+```{r}
+CalcRSquared(decSIM_Poisson4$data$TRIPS, decSIM_Poisson4$fitted.values)
+
+```
+
+
+```{r}
+model_list4 <- list(originConstrained4=orcSIM_Poisson4,
+                   destinationConstrained4=decSIM_Poisson4,
+                   doublyConstrained2=dbcSIM_Poisson2)
+
+```
+
+
+
+```{r}
+
+compare_performance(model_list4,
+                    metrics = "RMSE")
+
+```
 
 ### Final Model 
 

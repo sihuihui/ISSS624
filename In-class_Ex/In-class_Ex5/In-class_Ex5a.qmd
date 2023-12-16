@@ -1,0 +1,227 @@
+---
+title: "In-class Exercise 5"
+author: "Goh Si Hui"
+date: 2023/12/16
+date-format: long
+date-modified: "last-modified"
+format: html 
+execute: 
+  echo: true
+  eval: true
+  warning: false
+editor: visual 
+---
+
+## Getting Started 
+
+### Importing the packages 
+
+Use the following code chunk to install the latest version of spflow (instead from CRAN's R library)
+```{r}
+devtools::install_github("LukeCe/spflow")
+```
+Then, we will load spflow and the other packages that we need for this exericse using the following code chunk. 
+
+```{r}
+
+pacman::p_load(tmap, sf, spdep, sp, Matrix, spflow, reshape2, knitr, tidyverse)
+
+```
+
+
+
+To work with spflow, we need to have:
+-   Spatial Weights (Lesson 2)
+-   a tibble dataframe consists of the origins, destination, flows and distances between the origins and destinations, and 
+-   a tibble dataframe consists of the explanatory variables. 
+
+
+
+```{r}
+mpsz_nb <- read_rds("data/rds/mpsz_nb.rds")
+mpsz_flow <- read_rds("data/rds/mpsz_flow.rds")
+mpsz_var <- read_rds("data/rds/mpsz_var.rds")
+```
+
+## Creating spflow network class objects
+
+spflow network class is an S4 class that contains all information on a spatial network which is composed by a set of nodes that are linked by some neighbourhood relation. It can be created by usiing spflow_network() of spflow
+
+For our model, we choose the contiguity based neighbourhood structure. 
+
+```{r}
+mpsz_net <- spflow_network(
+  id_net = "sg",
+  node_neighborhood = nb2mat(mpsz_nb$by_contiguity),
+  node_data = mpsz_var,
+  node_key_column = "SZ_CODE")
+
+mpsz_net
+
+```
+
+id_net - we can just name it anything (to give a name to the id?) 
+
+combines contiguity matrix and explanatory variables
+
+
+Use sp_network_pair() to... 
+
+```{r}
+mpsz_net_pairs <- spflow_network_pair(
+  id_orig_net = "sg",
+  id_dest_net = "sg",
+  pair_data = mpsz_flow,
+  orig_key_column = "ORIGIN_SZ",
+  dest_key_column = "DESTIN_SZ")
+
+mpsz_net_pairs
+
+```
+
+
+```{r}
+
+mpsz_multi_net <- spflow_network_multi(mpsz_net, mpsz_net_pairs)
+
+mpsz_multi_net
+```
+
+both have to be spflow network object class 
+
+
+
+flow has to be n x n (i.e. 313 x 313 = 97969 obs for mpsz_flow)
+
+### Correlation Analysis 
+
+check for multicollinearity before running regression
+- more impt for explanatory models 
+can also use to detect if we have suitable variables
+
+```{r}
+cor_formula <- log(1 + TRIPS) ~
+  BUSSTOP_COUNT + 
+  AGE7_12 +
+  AGE13_24 +
+  AGE25_64 + 
+  SCHOOL_COUNT +
+  BUSINESS_COUNT +
+  RETAILS_COUNT +
+  FINSERV_COUNT + 
+  P_(log(DISTANCE + 1))
+
+cor_mat <- pair_cor(
+  mpsz_multi_net,
+  spflow_formula = cor_formula,
+  add_lags_x = FALSE)
+
+colnames(cor_mat) <- paste0(
+  substr(colnames(cor_mat),1,3), "...")
+
+cor_image(cor_mat)
+
+```
+"P_" always refers to impedence 
+
+
+
+## Model Calibration 
+
+Maximum Likelihood Estimate (MLE)
+
+Origin
+Destin
+Intra
+P - impedence (distance)
+
+model 9 (see slides!)
+
+
+```{r}
+base_model <- spflow(
+  spflow_formula = log(1 + TRIPS)~
+    O_(BUSSTOP_COUNT + AGE25_64) + 
+    D_(SCHOOL_COUNT +
+         BUSINESS_COUNT +
+         RETAILS_COUNT + 
+         FINSERV_COUNT) + 
+    P_(log(DISTANCE + 1)),
+spflow_networks = mpsz_multi_net) 
+
+base_model
+```
+
+
+
+
+rho_d : destination constrained
+rho_o : origin constrained
+rho_w : intrazonal 
+
+school_count.lag1: also tell us if school_count's immediate neighbours can affect the flows. Notice that it is not sig. so the flow is largely due to the sch within the zone 
+
+
+Finserv: both finserv and its immediate have small p value. 
+
+busstop: both BS and its immediate nb are sig. so both can attract flows
+
+
+### Residual Diagnostic Test
+If th line is very close to the diagonal, means no more spatial autocorrelation
+
+```{r}
+old_par <- par(mfrow = c(1,3),
+               mar = c(2,2,2,2))
+
+spflow_moran_plots(base_model)
+```
+
+
+```{r}
+
+corr_residual <- pair_cor(base_model)
+colnames(corr_residual) <- substr(colnames(corr_residual), 1,3)
+cor_image(corr_residual)
+
+
+```
+
+No violation of multicollinearity 
+All contribute to the model 
+
+
+### Working with Model Control 
+
+```{r}
+
+spflow_formula <- log(1 + TRIPS)~
+    O_(BUSSTOP_COUNT + AGE25_64) + 
+    D_(SCHOOL_COUNT +
+         BUSINESS_COUNT +
+         RETAILS_COUNT + 
+         FINSERV_COUNT) + 
+    P_(log(DISTANCE + 1))
+
+model_control <-spflow_control(estimation_method = "mle",
+                               model = "model_1")
+
+mle_model1 <- spflow(
+  spflow_formula, 
+  spflow_networks = mpsz_multi_net,
+  estimation_control = model_control) 
+
+mle_model1
+
+
+```
+
+
+can change the model using the model control (choose frm 1 to 9)
+
+```{r}
+old_par <- par(mfrow = c(1,3),
+               mar = c(2,2,2,2))
+
+spflow_moran_plots(mle_model1)
+```

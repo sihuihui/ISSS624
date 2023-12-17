@@ -257,6 +257,7 @@ write_rds(odbus_WDMP, "data/rds/odbus_WDMP.rds")
 odbus_WDMP <- read_rds("data/rds/odbus_WDMP.rds")
 
 ```
+
 #### HDB Data
 
 We will now take a look at the HDB data.
@@ -393,7 +394,7 @@ From the above output, it shows that there are no more duplicates in the datafra
 
 #### Converting Aspatial data into SF Tibble Dataframe
 
-Currently the hdb residential, hdb commercial and school_tidy data are still asaptial data even though they have latitude and longitude information. So we will use st_as_sf() to convert it into an sf tibble dataframe and use st_transform() to change it to SYV21 projected coordinate system (i.e. the crs code is 3414)
+Currently the hdb residential and school_tidy data are still asaptial data even though they have latitude and longitude information. So we will use `st_as_sf()` to convert it into an sf tibble dataframe and use `st_transform()` to change it to SYV21 projected coordinate system (i.e. the crs code is 3414)
 
 We use the following code chunk to convert hdb residential data into an sf tibble dataframe.
 
@@ -415,11 +416,17 @@ glimpse(hdb_res_sf)
 ```
 :::
 
+We will write it as an rds file for future use.
+
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 write_rds(hdb_res_sf, "data/rds/hdb_res_sf.rds")
 ```
 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 hdb_res_sf <- read_rds("data/rds/hdb_res_sf.rds")
 
 ```
@@ -445,11 +452,17 @@ glimpse(schools_sf)
 ```
 :::
 
+We will write it as an rds file for future use.
+
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 write_rds(schools_sf, "data/rds/schools_sf.rds")
 ```
 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 schools_sf <- read_rds("data/rds/schools_sf.rds")
 
 ```
@@ -571,9 +584,9 @@ st_crs(finserv3414)
 
 For this exercise, we will be analysing the bus commuter flows at analytics hexagon level. The analytical hexagon data is 375m between the centre of the hexagon and its edges to represent the traffic analysis zone.
 
-First, we will create a hexagon tessellation using MPSZ3414 to define the bounding box of the tessellation. As the hexagon layer that we want is 375m (the perpendicular distance between the centre of the hexagon and its edge), and the cellsize parameter in st_make_grid() requires the length to be between opposite edges, we multiply 375m by 2 to get 750m, which is the distance between 2 opposite edges of a hexagon.
+First, we will create a hexagon tessellation using `busstop3414` to define the bounding box of the tessellation. As the hexagon layer that we want is 375m (the perpendicular distance between the centre of the hexagon and its edge), and the cellsize parameter in `st_make_grid()` requires the length to be between opposite edges, we multiply 375m by 2 to get 750m, which is the distance between 2 opposite edges of a hexagon.
 
-In the code chunk below, we also specify the crs = 3414 since we are using the SVY21 coordinate reference system and set square = FALSE to return a hexagon grid (rather than a square grid).
+In the code chunk below, we also specify the `crs = 3414` since we are using the SVY21 coordinate reference system and set `square = FALSE` to return a hexagon grid (rather than a square grid).
 
 ```{r}
 #| code-fold: true 
@@ -584,7 +597,7 @@ head(hex_grid, 10)
 
 ```
 
-Next, we convert hex_grid from a sfc_POLYGON object to sf object for easier handling and add an unique ID to each cell. Each cell is a hexagon and in subsequent steps, we will check the number of trips, count the number of businesses, financial services, schools, residential units, hdb commercial units within each hexagon.
+Next, we convert `hex_grid` from a sfc_POLYGON object to sf object for easier handling and add an unique ID to each hexagon.
 
 ```{r}
 #| code-fold: true 
@@ -634,12 +647,11 @@ We plot out `busmap` to plot out the hexagons containing the busstops.
   tm_polygons("BS_COUNT")
 ```
 
-We see that there are some busstops outside the Singapore Map and we will remove them in the later steps for the purpose of this exercise. 
+We see that there are some busstops outside the Singapore Map and we will remove them in the later steps. This is because we do noth have information on the businesses, residential dwellings and other data required to come up with the explanatory variables for the Spatial Interaction Models.
 
+### Counts of Businesses, Financial Services, Schools and MRT Stations in Each Hexagon
 
-### Counts of Businesses, Financial Services and MRT Stations in Each Hexagon
-
-We use st_intersects() and lengths() to find out how many businesses, Financial Services, MRT Exits are in each hexagon. The count of these variables would be the explantory variables on why people are travelling to a certain place
+We use `st_intersects()` and `lengths()` to find out how many businesses, Financial Services, MRT Exits are in each hexagon. The count of these variables would be the explantory variables on why people are travelling to a certain place
 
 ```{r}
 #| code-fold: true 
@@ -651,7 +663,8 @@ busmap$`SCHOOLS_COUNT` <- lengths(st_intersects(busmap, schools_sf))
 
 glimpse(busmap)
 ```
-We create `busmap_grid` to just have the grid_id, bs_count and geometry to use it for subsequent data wrangling steps. 
+
+We create `busmap_grid` to have a dataframe just with the grid_id, bs_count and geometry to use it for subsequent data wrangling steps.
 
 ```{r}
 busmap_grid <- busmap %>%
@@ -660,24 +673,29 @@ busmap_grid <- busmap %>%
 glimpse(busmap_grid)
 ```
 
+We will also keep it as an rds file for future use.
 
 ```{r}
 write_rds(busmap_grid, "data/rds/busmap_grid.rds")
 ```
 
-
 ### HDB Residential Dwellings in Each Hexagon
 
-Unlike the businesses, Financial Services and MRT Exits, we cannot use the counts. So we will first derive the grid_ids for the residences in hdb_res_sf using st_interaction(). 
+Unlike the businesses, Financial Services and MRT Exits, we cannot use the counts for HDB Residential Buidlings. So we will first derive the grid_ids for the residences in hdb_res_sf using `st_interaction()`.
 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 hdb_res_hex <- st_intersection(hdb_res_sf, busmap_grid)
 glimpse(hdb_res_hex)
 ```
 
-We will drop the geometry using st_drop_geometry so that hdb_res_hex becomes a tibble dataframe. After it is a tibble dataframe, we will group by the grid_id and sum the dwellings to find out 
+We will drop the geometry using `st_drop_geometry` so that hdb_res_hex becomes a tibble dataframe. After it is a tibble dataframe, we will group by using the grid_id and sum the dwellings to find out the total residential dwellings in each hexagon.
 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
+
 hdb_res_hex_df <- st_drop_geometry(hdb_res_hex)
 
 hdb_res_hex_df <- hdb_res_hex_df %>%
@@ -687,20 +705,27 @@ hdb_res_hex_df <- hdb_res_hex_df %>%
 glimpse(hdb_res_hex_df)
 
 ```
-### Explanatory variables 
 
-We will join the dwellings information with the counts of businesses, financial services and MRT exits found in `busmap` dataframe after dropping the latter's geometry. The resultant dataframe `var_grid` will contain information on the explanatory variables used to build the spatial interaction models. 
+### Explanatory variables
+
+We will join the dwellings information with the counts of businesses, financial services and MRT exits found in `busmap` dataframe after dropping the latter's geometry. The resultant dataframe `var_grid` will contain information on the explanatory variables used to build the spatial interaction models.
 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
+
 var_grid <- busmap %>%
   st_drop_geometry() %>%
   left_join(hdb_res_hex_df)
 
 glimpse(var_grid)
 ```
-We will convert the grid_id into a factor and also replace the NA in DWELLINGS column with 0 using the following code. 
+
+We will convert the grid_id into a factor and also replace the NA in DWELLINGS column with 0 using the following code.
 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 var_grid$grid_id <- as.factor(var_grid$grid_id)
 
 var_grid$DWELLINGS <- var_grid$DWELLINGS %>% replace_na(0)
@@ -709,16 +734,20 @@ glimpse(var_grid)
 
 ```
 
+We will store it as an RDS file for future use.
+
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 write_rds(var_grid, "data/rds/var_grid.rds")
 
 ```
 
 ### Dropping Busstops outside of Singapore and mapping busstop code with grid_id
 
-Notice that `busgrid` has hexagon related information, but we are unable to map it back to the odbus_WDMP data because there are no common fields.
+Notice that `busgrid` has hexagon related information, but we are unable to map it back to the `odbus_WDMP` dataframe because there are no common fields.
 
-Hence, we will use st_intersection() to get the busstop codes and their corresponding grid_id.
+Hence, we will use `st_intersection()` to get the busstop codes (from `busstop3414`) and their corresponding grid_id.
 
 ```{r}
 #| code-fold: true 
@@ -728,7 +757,7 @@ glimpse(busstop_hex)
 
 ```
 
-We will also use st_intersection() to get the planning subzones and their corresponding grid_id.
+We will also use `st_intersection()` to get the planning subzones and their corresponding grid_id.
 
 ```{r}
 #| code-fold: true 
@@ -739,7 +768,7 @@ glimpse(mpsz_hex)
 
 ```
 
-We then combine busstop_hex and mpsz_hex to get the busstop number, their grid_id, the subzones they are in and the count of the various factors affecting commuter flows
+We then combine busstop_hex and mpsz_hex to get the busstop numbers, their grid_id, the subzones they are in and the count of the various factors affecting commuter flows
 
 ```{r}
 #| code-fold: true 
@@ -755,18 +784,23 @@ glimpse(bs_mpsz_hex)
 Note that after we combined busstop_hex with mpsz_hex, the number of bus stops dropped from 5161 to 5156. This is because there are 5 busstops outside of Singapore. For this Spatial Interaction Model exercise, we do not have information of the explanatory variables of the locations of these 5 busstops so we will be excluding them in this exercise.
 :::
 
+Again, we will store it as an rds file for later use.
+
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 write_rds(bs_mpsz_hex, "data/rds/bs_mpsz_hex.rds")
 ```
 
-
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 bs_mpsz_hex <- read_rds("data/rds/bs_mpsz_hex.rds")
 ```
 
 ## Visualising the Attractiveness/ Propulsiveness Factors
 
-We use the following code chunk to visualise the distribution of businesses, financial Services, MRT exits and HDB Residential Dwelling over the hexagon grid with busstops.
+We use the following code chunk to visualise the distribution of businesses, financial Services, MRT exits and HDB Residential Dwellings over the hexagon grid with busstops.
 
 ::: panel-tabset
 ## Summary of BIZ_COUNT
@@ -795,6 +829,7 @@ tmap_mode("plot")
             legend.position = c("right", "bottom"),
             frame = FALSE) 
 ```
+
 ## Data Table
 
 ```{r}
@@ -805,8 +840,7 @@ datatable(busmap %>%
 ```
 :::
 
-From the above output, we observe that grid 1473 has the highest number of businesses concentrated, followed by grid 637, 1335 and 1793. We see the northern part, western part,southern and eastern part each have a cluster of high concentration of businesses. This could be due to the various industrial/ business districts. For example, the north has Yishun and Woodlands, the west has Joo Koon, the south has the central business district, the east has Kaki Bukit Industrial park. 
-
+From the above output, we observe that grid 1473 has the highest number of businesses concentrated, followed by grid 637, 1335 and 1793. We see the northern part, western part,southern and eastern part each have a cluster of high concentration of businesses. This could be due to the various industrial/ business districts. For example, the north has Yishun and Woodlands, the west has Joo Koon, the south has the central business district, the east has Kaki Bukit Industrial park.
 
 ::: panel-tabset
 ## Summary of FINSERV_COUNT
@@ -845,7 +879,7 @@ datatable(busmap %>%
 ```
 :::
 
-From the above output, we see that financial services are highly concentrted in the southern part of Singapore, where the Central Business District is. 
+From the above output, we see that financial services are highly concentrted in the southern part of Singapore, where the Central Business District is.
 
 ::: panel-tabset
 ## Summary of MRTEXIT_COUNT
@@ -883,8 +917,7 @@ datatable(busmap %>%
 ```
 :::
 
-We see that the hexagons in the southern part of Singapore have higher concentrations of MRT station exits. This could be due to many of these stations are interchanges (e.g. Raffles Place, City Hall) or the possibility of many MRT stations in the same grid, hence leading to a higher number of MRT exits. The high number of MRT exits is also an indication of the accessibility of the hexagon. Assuming that there are attractive factors in that hexagon, we foresee that these highly accessible hexagons would have high volume of passenger trips. 
-
+We see that the hexagons in the southern part of Singapore have higher concentrations of MRT station exits. This could be due to many of these stations are interchanges (e.g. Raffles Place, City Hall) or the possibility of many MRT stations in the same grid, hence leading to a higher number of MRT exits. The high number of MRT exits is also an indication of the accessibility of the hexagon. Assuming that there are attractive factors in that hexagon, we foresee that these highly accessible hexagons would have high volume of passenger trips.
 
 ::: panel-tabset
 ## Summary of DWELLINGS
@@ -916,23 +949,24 @@ datatable(var_grid %>%
 ```
 :::
 
-The distribution of the HDB Residential Dwellings is aligned with the HDB Estates in Singapore. These residential areas could be an origin/ propulsive factor for Weekday Morning Peak Hours because commuters would be leaving the residential estates (with relatively low business , financial Services) to go to places with higher concentrations of businesses, financial services. 
-
+The distribution of the HDB Residential Dwellings is aligned with the HDB Estates in Singapore. These residential areas could be an origin/ propulsive factor for Weekday Morning Peak Hours because commuters would be leaving the residential estates (with relatively low business , financial Services) to go to places with higher concentrations of businesses, financial services.
 
 ## Creating O-D Matrix
 
-To visualise the commuter flows from origin busstops to destination busstops, we need to create an Origin-Destination (O-D) Matrix. First, we will convert the `busstop_hex_mpsz` (an sf dataframe) to a tibble dataframe using `st_drop_geometry()`.
+To visualise the commuter flows from origin busstops to destination busstops, we need to create an Origin-Destination (O-D) Matrix. 
 
+Let us import the data the we need for this section first. 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
+
 odbus_WDMP <- read_rds("data/rds/odbus_WDMP.rds")
 var_grid<- read_rds("data/rds/var_grid.rds")
 bs_mpsz_hex <- read_rds("data/rds/bs_mpsz_hex.rds")
 ```
 
-```{r}
-glimpse(bs_mpsz_hex)
-```
 
+We will convert the `bs_mpsz_hex` (an sf dataframe) to a tibble dataframe using `st_drop_geometry()` so that we can join it with a tibble dataframe in subsequent steps. 
 
 ```{r}
 #| code-fold: true 
@@ -945,43 +979,61 @@ busstop_hex_df <- bs_mpsz_hex %>%
 glimpse(busstop_hex_df)
 ```
 
+We will convert the grid_id and BUS_STOP_N from integer(grid_id) and character(BUS_STOP_N) into factors so that they have a consistent data type to join with the corresponding columns of the other dataframe in subsequent steps. 
+
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
+
 busstop_hex_df$grid_id <- as.factor(busstop_hex_df$grid_id)
 busstop_hex_df$BUS_STOP_N <- as.factor(busstop_hex_df$BUS_STOP_N)
 glimpse(busstop_hex_df)
 ```
-
+We will write it into an rds file for later use. 
 ```{r}
-glimpse(odbus_WDMP)
+#| code-fold: true 
+#| code-summary: "Show the code" 
 
-```
-
-```{r}
 write_rds(busstop_hex_df, "data/rds/busstop_hex_df.rds")
 ```
 
+Next, we will join the passenger trips from `odbus_WDMP` with the `busstop_hex_df `. This will give us half of the O-D Matrix: you will see that the origin bus stops are now mapped with a corresponding origin grid. 
+
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
+
 od_data <- left_join(odbus_WDMP, busstop_hex_df,
                      by = c("ORIGIN_PT_CODE" = "BUS_STOP_N")) %>%
   rename(ORIGIN_BS = ORIGIN_PT_CODE,
          ORIGIN_GRID = grid_id,
          DESTIN_BS = DESTINATION_PT_CODE)
 
+glimpse(od_data)
 ```
+Before we proceed, we use the following code chunk to check for duplicate data. 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
+
 duplicate <- od_data %>%
   group_by_all() %>%
   filter(n()>1) %>%
   ungroup()
 
+glimpse(duplicate)
 ```
-
-
+From the above output,we see that there are 894 duplicate data. So we will use the following code chunk to remove the duplicates. 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 od_data <- unique(od_data)
 ```
 
+We will use the following code chunk to confirm that there are no more duplicates. 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 duplicate1 <- od_data %>%
   group_by_all() %>%
   filter(n()>1) %>%
@@ -990,25 +1042,37 @@ duplicate1 <- od_data %>%
 duplicate1
 ```
 
+We will continue to join the `od_data` with `busstop_hex_df` to derive the grid_id of the destination bus stops. 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 od_data <- left_join(od_data, busstop_hex_df,
                      by = c("DESTIN_BS" = "BUS_STOP_N"))
 ```
 
+Before we proceed, we use the following code chunk to check for duplicate data. 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 duplicate <- od_data %>%
   group_by_all() %>%
   filter(n()>1) %>%
   ungroup()
 
+glimpse(duplicate)
 ```
-
-
+From the above output,we see that there are 794 duplicate data. So we will use the following code chunk to remove the duplicates. 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 od_data <- unique(od_data)
 ```
 
+We use the following code chunk to confirm that there are no more duplicates. 
+
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 duplicate1 <- od_data %>%
   group_by_all() %>%
   filter(n()>1) %>%
@@ -1017,25 +1081,38 @@ duplicate1 <- od_data %>%
 duplicate1
 ```
 
+Currently, the passenger trips are from origin bus stops to destination bus stops. However for this exercise, we are interested in the trips from one hexagon to another hexagon. Hence, we will use the following code chunk to summarise the passenger trips by origin hexagon grid and destination hexagon grid. 
+
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 od_data <- od_data %>%
   rename(DESTIN_GRID = grid_id) %>%
   drop_na() %>%
   group_by(ORIGIN_GRID, DESTIN_GRID) %>%
   summarise(MORNING_PEAK = sum(TRIPS))
-```
-```{r}
-glimpse(od_data)
 
+glimpse(od_data)
 ```
+
+
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 write_rds(od_data, "data/rds/od_data.rds")
 ```
 
 ## Geovisualisation of OD flows
 
-As we are not plotting intra-zonal flows, the following code chunk removes the intra-zonal flows.
+### Import OD Matrix and Hexagon Grid 
 
+First we will import the O-D Matrix. 
+```{r}
+od_data <- read_rds("data/rds/od_data.rds")
+
+```
+
+As we are not plotting intra-zonal flows, the following code chunk removes the intra-zonal flows.
 
 ```{r}
 #| code-fold: true 
@@ -1044,13 +1121,18 @@ od_data1 <- od_data[od_data$ORIGIN_GRID != od_data$DESTIN_GRID,]
 
 head(od_data1)
 ```
-```{r}
-busmap_grid <- read_rds("data/rds/busmap_grid.rds")
-```
+We will also import busmap_grid using the following code chunk to get all the hexagons containing busstops and their grid ids. This will be needed for subsequent visualisation. 
 
+```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
+busmap_grid <- read_rds("data/rds/busmap_grid.rds")
+glimpse(busmap_grid)
+```
 
 ### Creating desire lines
 
+In this code chunk below, `od2line()` of stplanr package is used to create the desire lines.
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
@@ -1061,7 +1143,7 @@ flowline <- od2line(flow=od_data1,
 glimpse(flowline)
 ```
 
-Let us take a look at the summary statistics of the morning peak trips using summary().
+Let us take a look at the summary statistics of the morning peak trips using `summary()`.
 
 ```{r}
 #| code-fold: true 
@@ -1070,9 +1152,9 @@ summary(flowline$MORNING_PEAK)
 
 ```
 
-From the above output, we see that the range of morning peak trips is wide. The number of trips can be as low as one and as high as 87,864. We can also deduce that the trips volume is extreme by looking at the difference between mean and median values. The mean is 1826 while the median is 300, meaning that there are few extreme high values (hence causing a relatively high mean) and many extreme low values (causing a relatively low median).
+From the above output, we see that the range of morning peak trips is wide. The number of trips can be as low as 1 and as high as more than 70,000. 
 
-Let us break he morning peak trips into the various quantiles from 10th to the 100th quantile.
+Given the wide range, let us break the morning peak trips into the various quantiles from 10th to the 100th quantile.
 
 ```{r}
 #| code-fold: true 
@@ -1081,7 +1163,15 @@ quantile(flowline$MORNING_PEAK, probs = seq(.1, 1, by =.05))
 
 ```
 
-Let us plot out the flowlines from the 95th percentile onwards to find out where the most commuter flows are going to.
+Let us plot out the flowlines from the 99th percentile onwards since even the range between 95th percentile and 100th percentile is wide. 
+
+```{r}
+#| code-fold: true 
+#| code-summary: "Show the code"
+quantile(flowline$MORNING_PEAK, probs = 0.99)
+```
+
+We will use this output to filter out the trips' flowlines to plot out. 
 
 ::: panel-tabset
 ## Plot
@@ -1092,14 +1182,14 @@ tm_shape(mpsz3414) +
 tm_shape(busmap_grid) +
   tm_polygons("BS_COUNT") + 
   flowline %>%
-  filter(MORNING_PEAK >= 1411) %>%
+  filter(MORNING_PEAK >= 6081) %>%
   tm_shape() + 
   tm_lines(lwd = "MORNING_PEAK",
            style = "quantile",
            scale = c(0.1, 1, 3, 5, 7, 10),
            n = 6,
-           alpha = 0.3)+
-    tm_layout(main.title = "Flow for Passenger Volume at 95th Percentile and Above",
+           alpha = 0.5)+
+    tm_layout(main.title = "Flow for Passenger Volume at 99th Percentile and Above",
             main.title.size = 0.9,
             main.title.position = "center")
 
@@ -1109,79 +1199,111 @@ tm_shape(busmap_grid) +
 ## Data Table
 
 ```{r}
-flowline_95 <- flowline %>%
-  filter(flowline$MORNING_PEAK >= 1411)
+flowline_99 <- flowline %>%
+  filter(flowline$MORNING_PEAK >= 6081)
 
-datatable(flowline_95)
+datatable(flowline_99)
 ```
 :::
 
-Let us visualise the distribution of the trips from the 95th percentile and above using a histogram.
+However, even with plotting the flowlines at the 99th percentile and above does not result in very clear flow lines. 
+
+
+Let us visualise the distribution of the trips from the 99th percentile and above using a histogram.
 
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
-ggplot(flowline_95, aes(x=MORNING_PEAK))+
-  geom_histogram(binwidth = 2000, color="#e9ecef", alpha=0.9)+
-  xlim(1411, 77433)
+ggplot(flowline_99, aes(x=MORNING_PEAK))+
+  geom_histogram(binwidth = 2000, alpha=0.9)
 
 ```
 
-From the above output, we see that the distribution of morning peak commuter flow is highly skewed with a wide range. The number of trips at the 95th percentile and above range from 8000+ trips to more than 80,000 trips.
+From the above output, we see that the distribution of morning peak commuter flow is still highly skewed with a wide range at 99th percentile and above. The number of trips at the 99th percentile and above range from 6000+ trips to more than 60,000 trips.
 
 We will use the summary statistics to see how we can further divide the trips to plot a clearer OD flow.
 
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
-summary(flowline_95$MORNING_PEAK)
+summary(flowline_99$MORNING_PEAK)
 ```
 
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
-tm_shape(mpsz3414) +
-  tm_polygons() + 
+
+tmap_mode("view")
+
 tm_shape(busmap_grid) +
   tm_polygons("BS_COUNT") + 
   flowline %>%
-  filter(MORNING_PEAK >= 10000) %>%
+  filter(MORNING_PEAK >= 16114) %>%
   tm_shape() + 
   tm_lines(lwd = "MORNING_PEAK",
            style = "quantile",
            scale = c(0.1, 1, 3, 5, 7, 10),
            n = 6,
-           alpha = 0.8)+
-    tm_layout(main.title = "Flow for Passenger Volume more than 10,000 trips",
+           alpha = 0.5)+
+    tm_layout(main.title = "Flow for Passenger Volume more than 16114 trips",
             main.title.size = 0.9,
             main.title.position = "center")
 
 ```
 
+## Data Table
+
+```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
+flowline_16114 <- flowline %>%
+  filter(flowline$MORNING_PEAK >= 16114)
+
+datatable(flowline_16114)
+```
+
+From the above datatable, we can find out that the most number of trips came from commuters moving from grid 1004 to 1108 situated in the northern part of Singapore. A check using the grid number and the bs_mpsz_hex dataframe tells us that 1004 contains Woodlands West and 1108 contains Woodlands Regional Centre. Comparing the bus stops between these 2 hexagons, 1004 has 10 bus stops while 1108 has 14, which seem to be comparable. However, 1108 has MRT exits while 1004 has none. This could mean that the high trip volume was generated by people taking feeder bus services to reach the MRT station. 
+
+The second highest volume came from grid 853 and 832 situated in the western part of Singapore. Grid 853 contains Yew Tee while Grid 832 contains Choa Chu Kang North subzone. Comparing the variables between these 2 grids, we observed that grid 832 has MRT exits while grid 853 has no MRT exits. Again,ythis could mean that the high trip volume was generated by people taking feeder bus services to reach the MRT station.
+
+The third highest volumn came from grid 983 and 939 situated in the northern part of Singapore. A check using the grid number and the bs_mpsz_hex dataframe tells us that 983 contains North Coast subzone and 939 contains Krangji Subzone. Grid 983 has only 1 bus stop while grid 939 has 4 bus stops and 4 MRT exits in it. In addition, I did a search using the Internet on the exact location of North Coast subzone shows us that it is located very near the Woodlands Checkpoint. Hence, this area might have high commuter flows from Malaysians who travel to Singapore to work everyday who take the bus to transfer to the MRT station located within grid 939 to continue with their journey to work. 
+
 
 ## Computing Distance Matrix
 
-In spatial interaction, a distance matrix is a table that shows the distance between pairs of locations. We will compute a distance matrix using the busmap_grid. 
+In spatial interaction, a distance matrix is a table that shows the distance between pairs of locations. We will compute a distance matrix using the busmap_grid.
 
-First we will use `as.Spatial()` to convert busmap_grid from sf tibble dataframe to Spatial Polygons Dataframe using sp package.
+### Importing the Data 
+First, we will import od_data and the busmap_grid first. 
+
 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
+
 od_data <- read_rds("data/rds/od_data.rds")
 busmap_grid <- read_rds("data/rds/busmap_grid.rds")
 ```
+
+Let us check at the imported data. 
+
+:::{.panel-tabset} 
+
+## Busmap_grid
 
 ```{r}
 glimpse(busmap_grid)
 ```
 
+## OD_DATA 
 ```{r}
 glimpse(od_data)
 ```
+::: 
 
-```{r}
-glimpse(var_grid)
-```
+### Creating Spatial Polygons Dataframe 
 
+We will use `as.Spatial()` to convert busmap_grid from sf tibble dataframe to Spatial Polygons Dataframe using sp package.
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
@@ -1190,7 +1312,7 @@ busmap_sp <- as(busmap_grid, "Spatial")
 busmap_sp
 ```
 
-Then we will use the spDist() function of sp package to compute the Euclidean distance between the centriods of the planning subzones.
+Then we will use the `spDist()` function of sp package to compute the Euclidean distance between the centriods of the hexagons. 
 
 ```{r}
 #| code-fold: true 
@@ -1287,7 +1409,7 @@ write_rds(distpair, "data/rds/distpair.rds")
 
 ## Preparing Flow Data
 
-We will compute the total passenger trip between and within grid_ids by using the code chunk below. The output will have both intra and inter-grid flow data.
+We will compute the total passenger trips between and within grid_ids by using the code chunk below. The output will have both intra and inter-grid flow data.
 
 ```{r}
 #| code-fold: true 
@@ -1332,7 +1454,7 @@ distpair$dest <- as.factor(distpair$dest)
 glimpse(distpair)
 ```
 
-Now, left_join() of dplyr will be used to flow_data dataframe and distPair dataframe. The output is called flow_data1.
+Now, `left_join()` of dplyr will be used to flow_data dataframe and distPair dataframe. The output is called flow_data1. This will give us the number of trips and the distance between grids. The trips and distance variables will be needed when we build and calibrate our spatial interaction models in the subsequent sections. 
 
 ```{r}
 #| code-fold: true 
@@ -1343,15 +1465,19 @@ flow_data1 <- flow_data %>%
                     "DESTIN_GRID" = "dest"))
 glimpse(flow_data1)
 ```
-## Preparing Origin and Destination Attributes 
 
-### Importing Explanatory Variables 
+## Preparing Origin and Destination Attributes
+
+We will now prepare the Origin and Destination attributes, which are the propulsive and attractive factors for the origins and destinations. These factors will be used to build and calibrate the Spatial Interaction Models. These factors can be used to explain why certain hexagons have more trips and even use to predict trips volumes. 
+
+### Importing the Factors
 
 ```{r}
 var_grid<- read_rds("data/rds/var_grid.rds")
 glimpse(var_grid)
 ```
-### Preparing Origin Attributes 
+
+### Preparing Origin Attributes
 
 ```{r}
 flow_data2 <- flow_data1 %>%
@@ -1366,7 +1492,8 @@ flow_data2 <- flow_data1 %>%
 glimpse(flow_data2)
 ```
 
-### Preparing Destination Attributes 
+### Preparing Destination Attributes
+
 ```{r}
 flow_data2 <- flow_data2 %>%
   left_join(var_grid, by = c(DESTIN_GRID = "grid_id")) %>%
@@ -1380,12 +1507,13 @@ flow_data2 <- flow_data2 %>%
 glimpse(flow_data2)
 ```
 
+We will save flow_data2 in rds format. This data will be used to build and calibrate spatial interaction models in subsequent sections. 
+
 ```{r}
 write_rds(flow_data2, "data/rds/SIM_data.rds")
 ```
 
-
-## Calibrating Spatial Interaction Models 
+## Calibrating Spatial Interaction Models
 
 ### Importing the modelling data
 
@@ -1423,7 +1551,7 @@ ggplot(data = SIM_data,
 
 Again, their relationship hardly resemble linear relationship.
 
-On the other hand, if we plot the scatter plot by using the log transformed version of both variables using the following code chunk, we can see that their relationship more resembles a linear relationship.
+On the other hand, if we plot the scatter plot by using the log transformed version of both variables using the following code chunk, we can see that their relationship relatively resembles more of a linear relationship.
 
 ```{r}
 #| code-fold: true 
@@ -1450,21 +1578,18 @@ CalcRSquared <- function(observed, estimated){
 
 ```
 
-
-
 We will filter out those intra-zonal flows using the FlowNoIntra column.
 
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
-inter_zonal_flow <- flow_data1 %>% 
+SIM_data <- SIM_data %>% 
   filter(FlowNoIntra > 0)
 
-glimpse(inter_zonal_flow)
+glimpse(SIM_data)
 ```
 
-
-### Checking for Variables with Zero Values 
+### Checking for Variables with Zero Values
 
 Since Poisson Regression is based on log and log 0 is undefined, it is important for us to ensure that no 0 values in the explanatory variables.
 
@@ -1476,10 +1601,7 @@ In the code chunk below, `summary()` of Base R is used to compute the summary st
 summary(SIM_data)
 ```
 
-The print report above reveals that variables ORIGIN_BIZ_COUNT, ORIGIN_FINSERV_COUNT,ORIGIN_MRTEXIT_COUNT,
-ORIGIN_SCHOOLS_COUNT, ORIGIN_DWELLINGS, DESTIN_BIZ_COUNT,
-DESTIN_FINSERV_COUNT, DESTIN_MRTEXIT_COUNT, DESTIN_SCHOOLS_COUNT,
-DESTIN_DWELLINGS  consist of 0 values.
+The print report above reveals that variables ORIGIN_BIZ_COUNT, ORIGIN_FINSERV_COUNT,ORIGIN_MRTEXIT_COUNT, ORIGIN_SCHOOLS_COUNT, ORIGIN_DWELLINGS, DESTIN_BIZ_COUNT, DESTIN_FINSERV_COUNT, DESTIN_MRTEXIT_COUNT, DESTIN_SCHOOLS_COUNT, DESTIN_DWELLINGS consist of 0 values.
 
 We will use the following code chunk to replace 0 values with 0.99.
 
@@ -1537,19 +1659,18 @@ We run summary() again to confirm that the 0 values have been replaced with 0.99
 summary(SIM_data)
 ```
 
-
-
 ### Origin (Production) Constrained Spatial Interaction Model
 
 An origin-constrained spatial interaction model estimates "where they went" using the information on how many people left a particular origin (i.e. origin grid_id in our case). This model can have variables that reflect characteristics of the destinations so it is useful in forecasting destination inflow totals that are unknown.
 
 In reality, origin-constrained spatial interaction model is useful for policy makers when they come up with new bus routes and bus stops, and estimating how much resource they need to commit during peak hours and non peak hours (e.g. number of double-deck/ single deck buses to deploy during peak and non peak hours respectively). Being able to estimate and project such resources is important because this could help the transport ministry and transport operators determine how many buses and bus drivers they need at any one time.
 
-The general equation for Origin-constrained Spatial Interaction Model is as follow. 
+The general equation for Origin-constrained Spatial Interaction Model is as follow.
 
 $$
 \lambda{i}{j}= exp(k + \mu{i} + \alpha\ln W{j} - \beta \ln d{i}{j})
 $$ 
+
 We use `glm()` of Base Stats to calibrate an origin-constrained spatial interaction model. the explanatory variables are the destination related variables (such as TDESTIN_BIZ_COUNT, TDESTIN_FINSERV_COUNT) and the distance between the origin and destination (i.e. DISTANCE).
 
 ```{r}
@@ -1574,9 +1695,14 @@ Based on the above output, all the destination related variables are significant
 We compute the R-squared of the Origin Constrained Spatial Interaction Model using the CalcRSquared function written earlier.
 
 ```{r}
-
 CalcRSquared(orcSIM_Poisson$data$TRIPS, orcSIM_Poisson$fitted.values)
 ```
+
+```{r}
+r2_mcfadden(orcSIM_Poisson)
+
+```
+
 
 The above output indicates that these variables explain for 62.65569% of the observed spatial interaction patterns.
 
@@ -1608,7 +1734,6 @@ summary(decSIM_Poisson)
 ```
 
 ```{r}
-
 CalcRSquared(decSIM_Poisson$data$TRIPS, decSIM_Poisson$fitted.values)
 ```
 
@@ -1698,19 +1823,28 @@ orc_p <- ggplot(data = SIM_data,
                 aes(x = orcTRIPS,
                     y = TRIPS)) +
   geom_point() +
-  geom_smooth(method = lm) 
+  geom_smooth(method = lm) + 
+  coord_cartesian(xlim=c(0,70000),
+                  ylim=c(0,70000))
+
 
 dec_p <- ggplot(data = SIM_data,
                 aes(x = decTRIPS,
                     y = TRIPS)) +
   geom_point() +
-  geom_smooth(method = lm) 
+  geom_smooth(method = lm)+ 
+  coord_cartesian(xlim=c(0,70000),
+                  ylim=c(0,70000))
+
 
 dbc_p <- ggplot(data = SIM_data,
                 aes(x = dbcTRIPS,
                     y = TRIPS)) +
   geom_point() +
-  geom_smooth(method = lm) 
+  geom_smooth(method = lm)+
+  coord_cartesian(xlim=c(0,70000),
+                  ylim=c(0,70000))
+
 ```
 
 ```{r}
@@ -1722,17 +1856,113 @@ ggarrange(orc_p, dec_p,dbc_p,
 
 ### Further Calibration of the Models
 
-#### Remove certain variables
 
-#### Remove outliers 
+#### Remove outliers
 
-#### Remove both variables and outliers 
+Filter out the 2 extreme trip values: 87864, 71996
+
+```{r}
+SIM_data1 <- SIM_data %>%
+  filter(TRIPS <60000)
+
+summary(SIM_data1$TRIPS)
+```
+
+```{r}
+
+orcSIM_Poisson2 <- glm(formula = TRIPS ~ 
+                ORIGIN_GRID +
+                log(DESTIN_BS_COUNT) +
+                log(DESTIN_BIZ_COUNT) +
+                  log(DESTIN_FINSERV_COUNT) +
+                  log(DESTIN_MRTEXIT_COUNT) +
+                  log(DESTIN_SCHOOLS_COUNT) +
+                  log(DESTIN_DWELLINGS ) + 
+                log(DISTANCE) - 1,
+              family = poisson(link = "log"),
+              data = SIM_data1,
+              na.action = na.exclude)
+summary(orcSIM_Poisson2)
+
+```
+
+```{r}
+CalcRSquared(orcSIM_Poisson2$data$TRIPS, orcSIM_Poisson2$fitted.values)
+
+```
+
+```{r}
+
+decSIM_Poisson2 <- glm(formula = TRIPS ~ 
+                DESTIN_GRID + 
+                  log(ORIGIN_BS_COUNT) +
+                log(ORIGIN_BIZ_COUNT) +
+                  log(ORIGIN_FINSERV_COUNT) +
+                  log(ORIGIN_MRTEXIT_COUNT) +
+                  log(ORIGIN_SCHOOLS_COUNT) +
+                  log(ORIGIN_DWELLINGS ) + 
+                log(DISTANCE) - 1,
+              family = poisson(link = "log"),
+              data = SIM_data1,
+              na.action = na.exclude)
+summary(decSIM_Poisson2)
+
+```
+
+
+
+```{r}
+CalcRSquared(decSIM_Poisson2$data$TRIPS, decSIM_Poisson2$fitted.values)
+
+```
+
+```{r}
+dbcSIM_Poisson2 <- glm(formula = TRIPS ~ 
+                ORIGIN_GRID + 
+                DESTIN_GRID +
+                log(DISTANCE),
+              family = poisson(link = "log"),
+              data = SIM_data1,
+              na.action = na.exclude)
+summary(dbcSIM_Poisson2)
+
+```
+
+```{r}
+CalcRSquared(dbcSIM_Poisson2$data$TRIPS, dbcSIM_Poisson2$fitted.values)
+
+```
+
+```{r}
+model_list2 <- list(originConstrained_ro=orcSIM_Poisson2,
+                   destinationConstrained_ro=decSIM_Poisson2,
+                   doublyConstrained_ro=dbcSIM_Poisson2)
+
+```
+
+```{r}
+compare_performance(model_list2,
+                    metrics = "RMSE")
+
+```
+
 
 #### Final Model
 
+
+
 ## Conclusion and Future Work
+In this exercise, we have constructed OD flows and calibrated Spatial Interaction Models. We found that the Doubly Constrained SIM gave us the highest R2 and the lowest RMSE. 
+SIMs assume that using distance as an explanatory variable will eradicate the spatial dependence among the sample of OD flows between pairs of locations but in reality, OD flows are influenced by factors other than distance. Hence, for future work, we can consider using Spatial Econometric Interaction Models introduced by James P. LeSage and R. Kelley Pace (2009) to find out the factors that contribute to the observed commuter flows. 
 
 
-## References 
 
+## References
 
+Farmer, C. and Oshan, T. (2017). Spatial interaction. The Geographic Information Science & Technology Body of Knowledge (4th Quarter 2017 Edition), John P. Wilson (ed.). DOI: 10.22224/gistbok/2017.4.5
+
+Haynes, K.E., & Fotheringham, A.S. (1985). Gravity and Spatial Interaction Models. Reprint. Edited by Grant Ian Thrall. WVU Research Repository, 2020.
+
+Kam, T. S. (2022a). Calibrating Spatial Interaction Models with R [Webbook]. In R for Geospatial Data Science and Analytics. https://r4gdsa.netlify.app/chap16
+
+Kam, T. S. (2022b). Processing and Visualising Flow Data [Webbook]. In R for Geospatial Data Science and Analytics. https://r4gdsa.netlify.app/chap15

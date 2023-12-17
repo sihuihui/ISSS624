@@ -879,7 +879,7 @@ datatable(busmap %>%
 ```
 :::
 
-From the above output, we see that financial services are highly concentrted in the southern part of Singapore, where the Central Business District is.
+From the above output, we see that financial services are highly concentrated in the southern part of Singapore, where the Central Business District is.
 
 ::: panel-tabset
 ## Summary of MRTEXIT_COUNT
@@ -953,9 +953,10 @@ The distribution of the HDB Residential Dwellings is aligned with the HDB Estate
 
 ## Creating O-D Matrix
 
-To visualise the commuter flows from origin busstops to destination busstops, we need to create an Origin-Destination (O-D) Matrix. 
+To visualise the commuter flows from origin busstops to destination busstops, we need to create an Origin-Destination (O-D) Matrix.
 
-Let us import the data the we need for this section first. 
+Let us import the data the we need for this section first.
+
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
@@ -965,8 +966,7 @@ var_grid<- read_rds("data/rds/var_grid.rds")
 bs_mpsz_hex <- read_rds("data/rds/bs_mpsz_hex.rds")
 ```
 
-
-We will convert the `bs_mpsz_hex` (an sf dataframe) to a tibble dataframe using `st_drop_geometry()` so that we can join it with a tibble dataframe in subsequent steps. 
+We will convert the `bs_mpsz_hex` (an sf dataframe) to a tibble dataframe using `st_drop_geometry()` so that we can join it with a tibble dataframe in subsequent steps.
 
 ```{r}
 #| code-fold: true 
@@ -979,7 +979,7 @@ busstop_hex_df <- bs_mpsz_hex %>%
 glimpse(busstop_hex_df)
 ```
 
-We will convert the grid_id and BUS_STOP_N from integer(grid_id) and character(BUS_STOP_N) into factors so that they have a consistent data type to join with the corresponding columns of the other dataframe in subsequent steps. 
+We will convert the grid_id and BUS_STOP_N from integer(grid_id) and character(BUS_STOP_N) into factors so that they have a consistent data type to join with the corresponding columns of the other dataframe in subsequent steps.
 
 ```{r}
 #| code-fold: true 
@@ -989,7 +989,9 @@ busstop_hex_df$grid_id <- as.factor(busstop_hex_df$grid_id)
 busstop_hex_df$BUS_STOP_N <- as.factor(busstop_hex_df$BUS_STOP_N)
 glimpse(busstop_hex_df)
 ```
-We will write it into an rds file for later use. 
+
+We will write it into an rds file for later use.
+
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
@@ -997,7 +999,7 @@ We will write it into an rds file for later use.
 write_rds(busstop_hex_df, "data/rds/busstop_hex_df.rds")
 ```
 
-Next, we will join the passenger trips from `odbus_WDMP` with the `busstop_hex_df `. This will give us half of the O-D Matrix: you will see that the origin bus stops are now mapped with a corresponding origin grid. 
+Next, we will join the passenger trips from `odbus_WDMP` with the `busstop_hex_df`. This will give us half of the O-D Matrix: you will see that the origin bus stops are now mapped with a corresponding origin grid.
 
 ```{r}
 #| code-fold: true 
@@ -1011,7 +1013,9 @@ od_data <- left_join(odbus_WDMP, busstop_hex_df,
 
 glimpse(od_data)
 ```
-Before we proceed, we use the following code chunk to check for duplicate data. 
+
+Before we proceed, we use the following code chunk to check for duplicate data.
+
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
@@ -1023,14 +1027,17 @@ duplicate <- od_data %>%
 
 glimpse(duplicate)
 ```
-From the above output,we see that there are 894 duplicate data. So we will use the following code chunk to remove the duplicates. 
+
+From the above output,we see that there are 894 duplicate data. So we will use the following code chunk to remove the duplicates.
+
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
 od_data <- unique(od_data)
 ```
 
-We will use the following code chunk to confirm that there are no more duplicates. 
+We will use the following code chunk to confirm that there are no more duplicates.
+
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
@@ -1042,7 +1049,8 @@ duplicate1 <- od_data %>%
 duplicate1
 ```
 
-We will continue to join the `od_data` with `busstop_hex_df` to derive the grid_id of the destination bus stops. 
+We will continue to join the `od_data` with `busstop_hex_df` to derive the grid_id of the destination bus stops.
+
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
@@ -1050,7 +1058,8 @@ od_data <- left_join(od_data, busstop_hex_df,
                      by = c("DESTIN_BS" = "BUS_STOP_N"))
 ```
 
-Before we proceed, we use the following code chunk to check for duplicate data. 
+Before we proceed, we use the following code chunk to check for duplicate data.
+
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
@@ -1061,14 +1070,16 @@ duplicate <- od_data %>%
 
 glimpse(duplicate)
 ```
-From the above output,we see that there are 794 duplicate data. So we will use the following code chunk to remove the duplicates. 
+
+From the above output,we see that there are 794 duplicate data. So we will use the following code chunk to remove the duplicates.
+
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
 od_data <- unique(od_data)
 ```
 
-We use the following code chunk to confirm that there are no more duplicates. 
+We use the following code chunk to confirm that there are no more duplicates.
 
 ```{r}
 #| code-fold: true 
@@ -1081,7 +1092,7 @@ duplicate1 <- od_data %>%
 duplicate1
 ```
 
-Currently, the passenger trips are from origin bus stops to destination bus stops. However for this exercise, we are interested in the trips from one hexagon to another hexagon. Hence, we will use the following code chunk to summarise the passenger trips by origin hexagon grid and destination hexagon grid. 
+Currently, the passenger trips are from origin bus stops to destination bus stops. However for this exercise, we are interested in the trips from one hexagon to another hexagon. Hence, we will use the following code chunk to summarise the passenger trips by origin hexagon grid and destination hexagon grid.
 
 ```{r}
 #| code-fold: true 
@@ -1095,7 +1106,6 @@ od_data <- od_data %>%
 glimpse(od_data)
 ```
 
-
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
@@ -1104,9 +1114,10 @@ write_rds(od_data, "data/rds/od_data.rds")
 
 ## Geovisualisation of OD flows
 
-### Import OD Matrix and Hexagon Grid 
+### Import OD Matrix and Hexagon Grid
 
-First we will import the O-D Matrix. 
+First we will import the O-D Matrix.
+
 ```{r}
 od_data <- read_rds("data/rds/od_data.rds")
 
@@ -1121,7 +1132,8 @@ od_data1 <- od_data[od_data$ORIGIN_GRID != od_data$DESTIN_GRID,]
 
 head(od_data1)
 ```
-We will also import busmap_grid using the following code chunk to get all the hexagons containing busstops and their grid ids. This will be needed for subsequent visualisation. 
+
+We will also import busmap_grid using the following code chunk to get all the hexagons containing busstops and their grid ids. This will be needed for subsequent visualisation.
 
 ```{r}
 #| code-fold: true 
@@ -1133,6 +1145,7 @@ glimpse(busmap_grid)
 ### Creating desire lines
 
 In this code chunk below, `od2line()` of stplanr package is used to create the desire lines.
+
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
@@ -1152,7 +1165,7 @@ summary(flowline$MORNING_PEAK)
 
 ```
 
-From the above output, we see that the range of morning peak trips is wide. The number of trips can be as low as 1 and as high as more than 70,000. 
+From the above output, we see that the range of morning peak trips is wide. The number of trips can be as low as 1 and as high as more than 70,000.
 
 Given the wide range, let us break the morning peak trips into the various quantiles from 10th to the 100th quantile.
 
@@ -1163,7 +1176,7 @@ quantile(flowline$MORNING_PEAK, probs = seq(.1, 1, by =.05))
 
 ```
 
-Let us plot out the flowlines from the 99th percentile onwards since even the range between 95th percentile and 100th percentile is wide. 
+Let us plot out the flowlines from the 99th percentile onwards since even the range between 95th percentile and 100th percentile is wide.
 
 ```{r}
 #| code-fold: true 
@@ -1171,7 +1184,7 @@ Let us plot out the flowlines from the 99th percentile onwards since even the ra
 quantile(flowline$MORNING_PEAK, probs = 0.99)
 ```
 
-We will use this output to filter out the trips' flowlines to plot out. 
+We will use this output to filter out the trips' flowlines to plot out.
 
 ::: panel-tabset
 ## Plot
@@ -1206,8 +1219,7 @@ datatable(flowline_99)
 ```
 :::
 
-However, even with plotting the flowlines at the 99th percentile and above does not result in very clear flow lines. 
-
+However, even with plotting the flowlines at the 99th percentile and above does not result in very clear flow lines.
 
 Let us visualise the distribution of the trips from the 99th percentile and above using a histogram.
 
@@ -1228,6 +1240,9 @@ We will use the summary statistics to see how we can further divide the trips to
 #| code-summary: "Show the code" 
 summary(flowline_99$MORNING_PEAK)
 ```
+
+::: panel-tabset
+## Plot
 
 ```{r}
 #| code-fold: true 
@@ -1261,21 +1276,21 @@ flowline_16114 <- flowline %>%
 
 datatable(flowline_16114)
 ```
+:::
 
-From the above datatable, we can find out that the most number of trips came from commuters moving from grid 1004 to 1108 situated in the northern part of Singapore. A check using the grid number and the bs_mpsz_hex dataframe tells us that 1004 contains Woodlands West and 1108 contains Woodlands Regional Centre. Comparing the bus stops between these 2 hexagons, 1004 has 10 bus stops while 1108 has 14, which seem to be comparable. However, 1108 has MRT exits while 1004 has none. This could mean that the high trip volume was generated by people taking feeder bus services to reach the MRT station. 
+From the above datatable, we can find out that the most number of trips came from commuters moving from grid 1004 to 1108 situated in the northern part of Singapore. A check using the grid number and the bs_mpsz_hex dataframe tells us that 1004 contains Woodlands West and 1108 contains Woodlands Regional Centre. Comparing the bus stops between these 2 hexagons, 1004 has 10 bus stops while 1108 has 14, which seem to be comparable. However, 1108 has MRT exits while 1004 has none. This could mean that the high trip volume was generated by people taking feeder bus services to reach the MRT station.
 
-The second highest volume came from grid 853 and 832 situated in the western part of Singapore. Grid 853 contains Yew Tee while Grid 832 contains Choa Chu Kang North subzone. Comparing the variables between these 2 grids, we observed that grid 832 has MRT exits while grid 853 has no MRT exits. Again,ythis could mean that the high trip volume was generated by people taking feeder bus services to reach the MRT station.
+The second highest volume came from grid 853 and 832 situated in the western part of Singapore. Grid 853 contains Yew Tee while Grid 832 contains Choa Chu Kang North subzone. Comparing the variables between these 2 grids, we observed that grid 832 has MRT exits while grid 853 has no MRT exits. Again,this could mean that the high trip volume was generated by people taking feeder bus services to reach the MRT station.
 
-The third highest volumn came from grid 983 and 939 situated in the northern part of Singapore. A check using the grid number and the bs_mpsz_hex dataframe tells us that 983 contains North Coast subzone and 939 contains Krangji Subzone. Grid 983 has only 1 bus stop while grid 939 has 4 bus stops and 4 MRT exits in it. In addition, I did a search using the Internet on the exact location of North Coast subzone shows us that it is located very near the Woodlands Checkpoint. Hence, this area might have high commuter flows from Malaysians who travel to Singapore to work everyday who take the bus to transfer to the MRT station located within grid 939 to continue with their journey to work. 
-
+The third highest volumn came from grid 983 and 939 situated in the northern part of Singapore. A check using the grid number and the bs_mpsz_hex dataframe tells us that 983 contains North Coast subzone and 939 contains Kranji Subzone. Grid 983 has only 1 bus stop while grid 939 has 4 bus stops and 4 MRT exits in it. In addition, I did a search using the [Internet](https://www.citypopulation.de/en/singapore/admin/woodlands/40703__north_coast/) on the exact location of North Coast subzone shows us that it is located very near the Woodlands Checkpoint. Hence, this area might have high commuter flows from Malaysians who travel to Singapore to work everyday who take the bus to transfer to the MRT station located within grid 939 to continue with their journey to work.
 
 ## Computing Distance Matrix
 
 In spatial interaction, a distance matrix is a table that shows the distance between pairs of locations. We will compute a distance matrix using the busmap_grid.
 
-### Importing the Data 
-First, we will import od_data and the busmap_grid first. 
+### Importing the Data
 
+First, we will import od_data and the busmap_grid first.
 
 ```{r}
 #| code-fold: true 
@@ -1285,25 +1300,26 @@ od_data <- read_rds("data/rds/od_data.rds")
 busmap_grid <- read_rds("data/rds/busmap_grid.rds")
 ```
 
-Let us check at the imported data. 
+Let us check at the imported data.
 
-:::{.panel-tabset} 
-
+::: panel-tabset
 ## Busmap_grid
 
 ```{r}
 glimpse(busmap_grid)
 ```
 
-## OD_DATA 
+## OD_DATA
+
 ```{r}
 glimpse(od_data)
 ```
-::: 
+:::
 
-### Creating Spatial Polygons Dataframe 
+### Creating Spatial Polygons Dataframe
 
 We will use `as.Spatial()` to convert busmap_grid from sf tibble dataframe to Spatial Polygons Dataframe using sp package.
+
 ```{r}
 #| code-fold: true 
 #| code-summary: "Show the code" 
@@ -1312,7 +1328,7 @@ busmap_sp <- as(busmap_grid, "Spatial")
 busmap_sp
 ```
 
-Then we will use the `spDist()` function of sp package to compute the Euclidean distance between the centriods of the hexagons. 
+Then we will use the `spDist()` function of sp package to compute the Euclidean distance between the centroids of the hexagons.
 
 ```{r}
 #| code-fold: true 
@@ -1325,9 +1341,9 @@ head(DIST, n=c(10,10))
 
 ```
 
-### Labelling Column and Row Headers of Distance Matrix
+### Labeling Column and Row Headers of Distance Matrix
 
-To label the column and row headers of the distance matrix DIST, we will first create a list sorted according to the distance matric by grid_id.
+To label the column and row headers of the distance matrix DIST, we will first create a list sorted according to the distance matrix by grid_id.
 
 ```{r}
 #| code-fold: true 
@@ -1454,7 +1470,7 @@ distpair$dest <- as.factor(distpair$dest)
 glimpse(distpair)
 ```
 
-Now, `left_join()` of dplyr will be used to flow_data dataframe and distPair dataframe. The output is called flow_data1. This will give us the number of trips and the distance between grids. The trips and distance variables will be needed when we build and calibrate our spatial interaction models in the subsequent sections. 
+Now, `left_join()` of dplyr will be used to flow_data dataframe and distPair dataframe. The output is called flow_data1. This will give us the number of trips and the distance between grids. The trips and distance variables will be needed when we build and calibrate our spatial interaction models in the subsequent sections.
 
 ```{r}
 #| code-fold: true 
@@ -1468,7 +1484,7 @@ glimpse(flow_data1)
 
 ## Preparing Origin and Destination Attributes
 
-We will now prepare the Origin and Destination attributes, which are the propulsive and attractive factors for the origins and destinations. These factors will be used to build and calibrate the Spatial Interaction Models. These factors can be used to explain why certain hexagons have more trips and even use to predict trips volumes. 
+We will now prepare the Origin and Destination attributes, which are the propulsive and attractive factors for the origins and destinations. These factors will be used to build and calibrate the Spatial Interaction Models. These factors can be used to explain why certain hexagons have more trips and even use to predict trips volumes.
 
 ### Importing the Factors
 
@@ -1495,6 +1511,8 @@ glimpse(flow_data2)
 ### Preparing Destination Attributes
 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 flow_data2 <- flow_data2 %>%
   left_join(var_grid, by = c(DESTIN_GRID = "grid_id")) %>%
   rename(DESTIN_BS_COUNT = BS_COUNT,
@@ -1507,7 +1525,7 @@ flow_data2 <- flow_data2 %>%
 glimpse(flow_data2)
 ```
 
-We will save flow_data2 in rds format. This data will be used to build and calibrate spatial interaction models in subsequent sections. 
+We will save flow_data2 in rds format. This data will be used to build and calibrate spatial interaction models in subsequent sections.
 
 ```{r}
 write_rds(flow_data2, "data/rds/SIM_data.rds")
@@ -1565,7 +1583,7 @@ ggplot(data = SIM_data,
 
 ```
 
-For Spatial Interation Model, we will be using log transformed variables so that the relationship resembles a linear relationship and to handle the skewed distributions. We will also be using a poisson regression model because the dependent variable (Trips) cannot be negative.
+For Spatial Interaction Model, we will be using log transformed variables so that the relationship resembles a linear relationship and to handle the skewed distributions. We will also be using a poisson regression model because the dependent variable (Trips) cannot be negative.
 
 Before we proceed to calibrate the spatial interaction models, we will write a function to calculate R-Squared value as shown below. The R-squared value measure how much variation of the trips can be accounted by the model.
 
@@ -1661,19 +1679,25 @@ summary(SIM_data)
 
 ### Origin (Production) Constrained Spatial Interaction Model
 
-An origin-constrained spatial interaction model estimates "where they went" using the information on how many people left a particular origin (i.e. origin grid_id in our case). This model can have variables that reflect characteristics of the destinations so it is useful in forecasting destination inflow totals that are unknown.
+An origin-constrained spatial interaction model estimates "where they went" using the information on how many people left a particular origin (i.e. origin grid in our case) (Haynes & Fotheringham, 1985) . This model would make use of explanatory variables that reflect characteristics of the destinations so it is useful in forecasting destination inflow totals that are unknown.
 
-In reality, origin-constrained spatial interaction model is useful for policy makers when they come up with new bus routes and bus stops, and estimating how much resource they need to commit during peak hours and non peak hours (e.g. number of double-deck/ single deck buses to deploy during peak and non peak hours respectively). Being able to estimate and project such resources is important because this could help the transport ministry and transport operators determine how many buses and bus drivers they need at any one time.
+In reality, origin-constrained spatial interaction model is useful for policy makers/ transport operators when they come up with new bus routes for new housing estates because they would be able to identify areas with high demand.
 
-The general equation for Origin-constrained Spatial Interaction Model is as follow.
+The general equation for origin-constrained Spatial Interaction Model is as follow.
 
 $$
 \lambda{i}{j}= exp(k + \mu{i} + \alpha\ln W{j} - \beta \ln d{i}{j})
-$$ 
+$$
 
-We use `glm()` of Base Stats to calibrate an origin-constrained spatial interaction model. the explanatory variables are the destination related variables (such as TDESTIN_BIZ_COUNT, TDESTIN_FINSERV_COUNT) and the distance between the origin and destination (i.e. DISTANCE).
+We use `glm()` of Base Stats to calibrate an origin-constrained spatial interaction model. the explanatory variables are the destination related variables (such as DESTIN_BIZ_COUNT, DESTIN_FINSERV_COUNT) and the distance between the origin and destination (i.e. DISTANCE).
+
+::: callout-note
+It is important to note that -1 is added in the equation after the distance variable. The -1 serves the purpose of removing the intercept that by default, glm will insert into the model.
+:::
 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 orcSIM_Poisson <- glm(formula = TRIPS ~ 
                 ORIGIN_GRID +
                 log(DESTIN_BS_COUNT) +
@@ -1690,25 +1714,21 @@ summary(orcSIM_Poisson)
 
 ```
 
-Based on the above output, all the destination related variables are significant because their p-values are less than 0.05. Based on the coefficients, the destination's MRT Exits seemed to have the biggest influence on the spatial interaction as compared to other variables because it has the biggest coefficient (0.680174) amongst the other variables. The destination's schools has the next highest coefficient of 0.330944. Distance has a negative coefficient of -1.474483. It means that as distance increased by log(l.474483), the interactions decreased. From the output, we observed that the destination HDB Residential Count has a positive coefficient of 0.128855 but the destination HDB Residential Dwelling units has a coefficient of -0.150316. It could mean that with HDB residential dwelling units increase, the number of interactions decrease (i.e. less commuter flows). We will calibrate the model in the next section by removing some variables.
+Based on the above output, all the destination related variables are significant because their p-values are less than 0.05. Based on the coefficients, the destination's MRT Exits seemed to have the biggest influence on the spatial interaction model as compared to other variables because it has the largest coefficient (4.585e-01). The destination's Financial Services has the next largest coefficient of 2.424e-01, followed by Schools, which has a coefficient of 2.340e-01. Distance has a coefficient of -1.530e+00, meaning that as log(distance) increased by -1.530e+00, the interactions decreased. From the output, we observed that the destination HDB dwelling has a coefficient of -1.556e-02. It could mean that with HDB residential dwelling units increase, the number of interactions decrease (i.e. less commuter flows), which make sense because commuters during Weekday Morning Peak Hour are generally travelling for school or work.
 
-We compute the R-squared of the Origin Constrained Spatial Interaction Model using the CalcRSquared function written earlier.
+We now compute the R-squared of the Origin Constrained Spatial Interaction Model using the CalcRSquared function written earlier.
 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 CalcRSquared(orcSIM_Poisson$data$TRIPS, orcSIM_Poisson$fitted.values)
 ```
 
-```{r}
-r2_mcfadden(orcSIM_Poisson)
-
-```
-
-
-The above output indicates that these variables explain for 62.65569% of the observed spatial interaction patterns.
+The above output indicates that these variables explain for \~ 39.5% of the observed spatial interaction patterns.
 
 ### Destination (Attraction) Constrained Spatial Interaction Model
 
-We will now develop a Destination-constrained Spatial Interaction Model so that we can compare it with the Origin-constrained Spatial Interaction Model. The Destination-constrained Spatial Interaction Model can be used to forecast total outflows from origins. Such a situation could arise, for example, in forecasting the effects of locating a new industrial park in a certain region of Singapore. The number of people to be employed and the businesses to set up are known, the destination-constrained spatial interaction model can be used to forecast the demand for housing in the region that will result from the new employment.
+We will now develop a Destination-constrained Spatial Interaction Model so that we can compare it with the Origin-constrained Spatial Interaction Model and the Doubly-constrained Spatial Interaction Model. The Destination-constrained Spatial Interaction Model can be used to forecast total outflows from origins (Haynes & Fotheringham, 1985). Such a situation could arise, for example, in forecasting the effects of locating a new industrial park in a certain region (Haynes & Fotheringham, 1985). The destination-constrained model is used to allocate workers to residential zones based on a given distribution of basic industry.
 
 The general equation for destination constrained spatial interaction model is as follow:
 
@@ -1717,6 +1737,9 @@ $$
 $$
 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
+
 decSIM_Poisson <- glm(formula = TRIPS ~ 
                 DESTIN_GRID + 
                   log(ORIGIN_BS_COUNT) +
@@ -1733,9 +1756,15 @@ summary(decSIM_Poisson)
 
 ```
 
+All the explanatory variables (ORIGIN_BS_COUNT,ORIGIN_BIZ_COUNT, ORIGIN_FINSERV_COUNT, ORIGIN_MRTEXIT_COUNT,ORIGIN_SCHOOLS_COUNT,ORIGIN_DWELLINGS) are significant because their p-values are less than 0.05. Amongst the explanatory variables, Busstop counts have the largest coefficient of 4.002e-01, followed by MRT Exit Counts (2.556e-01). On the other hand, business counts and schools have an inverse relationship with the spatial interaction flows as seen from their negative coefficient estimates. Since the destination(attraction) constrained model is used to forecast total outflows from origins, it means that hexagons with high counts of bus stops and MRT exits would receive a higher outflow.
+
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 CalcRSquared(decSIM_Poisson$data$TRIPS, decSIM_Poisson$fitted.values)
 ```
+
+From the above output, it means that these explanatory variables explained \~43% of the spatial interactions, which is higher than the origin-constrained spatial interaction model in the previous subsection.
 
 ### Doubly constrained Model
 
@@ -1746,6 +1775,8 @@ $$
 $$
 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 dbcSIM_Poisson <- glm(formula = TRIPS ~ 
                 ORIGIN_GRID + 
                 DESTIN_GRID +
@@ -1757,47 +1788,82 @@ summary(dbcSIM_Poisson)
 
 ```
 
+In the doubly constrained spatial interaction model, distance is the only factor. From the above output, the distance decay is -1.6063951. It means that with every unit increase in distance, the commuter flows would decrease.
+
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 CalcRSquared(dbcSIM_Poisson$data$TRIPS, dbcSIM_Poisson$fitted.values)
 
 ```
 
+As of now, the doubly constrained model has the highest R2 of 0.5745456. It means thatthe model accounts for about 57.5% of the variation of flows in the systems.
+
 ## Comparing Models
 
+Another useful model performance measure for continuous dependent variable is Root Mean Squared Error (RMSE), which is a standard way of measuring the error of a model in predicting quantitative data. In this sub-section, you will use `compare_performance()` of performance package to calculate RMSE.
+
+First, we will create a model_list using the following code chunk.
+
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 model_list <- list(originConstrained_base=orcSIM_Poisson,
                    destinationConstrained_base=decSIM_Poisson,
                    doublyConstrained_base=dbcSIM_Poisson)
 
 ```
 
-```{r}
+Then we will compute the RMSE of all models in the models_list using the following code chunk.
 
+```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 compare_performance(model_list,
                     metrics = "RMSE")
 
 ```
 
+The output above reveals that doubly constrained Spatial Interaction Model (SIM) is the best model among the three SIMs because it has the smallest RMSE value of 1170.165.
+
+### Visualing Fitted Values
+
+Now, we will visualise the observed values and fitted values.
+
+First we will extract the fitted values from Origin-constrained Model by using the code chunk below.
+
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 df <- as.data.frame(orcSIM_Poisson$fitted.values) %>%
   round(digits = 0)
 
 ```
 
+Next, we will append the fitted values into SIM_data data frame using the code chunk below.
+
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 SIM_data <- SIM_data %>%
   cbind(df) %>%
   rename(orcTRIPS = "orcSIM_Poisson$fitted.values")
 
 ```
 
+We repeat the abovementioned steps for destination-constrained SIM and double constrained SIM.
+
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 df2 <- as.data.frame(decSIM_Poisson$fitted.values) %>%
   round(digits = 0)
 
 ```
 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 SIM_data <- SIM_data %>%
   cbind(df2) %>%
   rename(decTRIPS = "decSIM_Poisson$fitted.values")
@@ -1805,19 +1871,27 @@ SIM_data <- SIM_data %>%
 ```
 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 df3 <- as.data.frame(dbcSIM_Poisson$fitted.values) %>%
   round(digits = 0)
 
 ```
 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 SIM_data <- SIM_data %>%
   cbind(df3) %>%
   rename(dbcTRIPS = "dbcSIM_Poisson$fitted.values")
 
 ```
 
+Next, three scatterplots will be created by using `geom_point()` and other relevant functions of ggplot2 package.
+
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 
 orc_p <- ggplot(data = SIM_data,
                 aes(x = orcTRIPS,
@@ -1847,26 +1921,37 @@ dbc_p <- ggplot(data = SIM_data,
 
 ```
 
-```{r}
+Now, we will put all the graphs into a single visual for better comparison by using the code chunk below.
 
+```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 ggarrange(orc_p, dec_p,dbc_p,
           ncol = 2,
           nrow = 2)
 ```
 
-### Further Calibration of the Models
+From the above chart, we notice that there are some possible outliers (as seen in the earlier sections too). However, not all outliers should be removed. If these exceptionally high numbers are the norm, then they should not be considered as outliers. In the subsequent section, we will attempt to remove Trips above 60,000 and see if it improves the model performance.
 
+### Further Calibration of the Models
 
 #### Remove outliers
 
-Filter out the 2 extreme trip values: 87864, 71996
+First we use the following code chunk to filter out trip values more than 60,000 (i.e. we retain only those less than 60,000 in the new dataframe `SIM_data1`). We will check the summary statistics using `summary()` to ensure that the maximum value is not higher than 60,000.
 
 ```{r}
 SIM_data1 <- SIM_data %>%
-  filter(TRIPS <60000)
+  filter(TRIPS < 60000)
 
 summary(SIM_data1$TRIPS)
 ```
+
+From the above output, we see that values that are 60,000 and above have been filtered out.
+
+We will now rerun the origin-constrained SIM, destination SIM and doubly constrained SIM using the following code chunk.
+
+::: panel-tabset
+## Origin-Constrained SIM
 
 ```{r}
 
@@ -1886,10 +1971,7 @@ summary(orcSIM_Poisson2)
 
 ```
 
-```{r}
-CalcRSquared(orcSIM_Poisson2$data$TRIPS, orcSIM_Poisson2$fitted.values)
-
-```
+## Destination-Constrained SIM
 
 ```{r}
 
@@ -1909,12 +1991,7 @@ summary(decSIM_Poisson2)
 
 ```
 
-
-
-```{r}
-CalcRSquared(decSIM_Poisson2$data$TRIPS, decSIM_Poisson2$fitted.values)
-
-```
+## Doubly-Constrained SIM
 
 ```{r}
 dbcSIM_Poisson2 <- glm(formula = TRIPS ~ 
@@ -1927,35 +2004,64 @@ dbcSIM_Poisson2 <- glm(formula = TRIPS ~
 summary(dbcSIM_Poisson2)
 
 ```
+:::
+
+From the above output, all the variables are still significant since they have a p-value of less than 0.05. While there are changes to the coefficient estimates across all 3 SIMs, removing outliers does not change the ranking of the explanatory variables' importance.
+
+We will now compare their R2 using the following code chunk.
+
+::: panel-tabset
+## Origin-Constrained SIM
+
+```{r}
+CalcRSquared(orcSIM_Poisson2$data$TRIPS, orcSIM_Poisson2$fitted.values)
+
+```
+
+## Destination-Constrained SIM
+
+```{r}
+CalcRSquared(decSIM_Poisson2$data$TRIPS, decSIM_Poisson2$fitted.values)
+
+```
+
+## Doubly-Constrained SIM
 
 ```{r}
 CalcRSquared(dbcSIM_Poisson2$data$TRIPS, dbcSIM_Poisson2$fitted.values)
 
 ```
+:::
+
+From the above output, we see that there are slight drop in the R2 for origin-constrained and doubly-constrained SIMs but the R2 for destination-constrained SIM improved. As part of future work, we can also explore the reasons (e.g. variables or certain flows) that lead to this. Nonetheless, doubly constrained still has the best R2 out of the 3 SIMs.
+
+We will now calculate their RMSE using the following code chunk.
 
 ```{r}
+#| code-fold: true 
+#| code-summary: "Show the code" 
 model_list2 <- list(originConstrained_ro=orcSIM_Poisson2,
                    destinationConstrained_ro=decSIM_Poisson2,
                    doublyConstrained_ro=dbcSIM_Poisson2)
 
-```
-
-```{r}
 compare_performance(model_list2,
                     metrics = "RMSE")
 
 ```
 
+From the above output, all 3 SIMs' RMSE decreased after removing outliers. Nonetheless, doubly-constrained SIM still has the lowest SIM.
 
-#### Final Model
+::: {.callout-tip title="Our Best Model (for now)"}
+Based on the above results, it seems that the doubly constrained model gives us the best R2 and RMSE (regardless if we remove outliers or not).
 
-
+Also from this exploration, it seems to indicate that the outliers that we remove might not really be "outliers" but they are indeed high trip volumes experienced during weekday morning peak hour period.
+:::
 
 ## Conclusion and Future Work
-In this exercise, we have constructed OD flows and calibrated Spatial Interaction Models. We found that the Doubly Constrained SIM gave us the highest R2 and the lowest RMSE. 
-SIMs assume that using distance as an explanatory variable will eradicate the spatial dependence among the sample of OD flows between pairs of locations but in reality, OD flows are influenced by factors other than distance. Hence, for future work, we can consider using Spatial Econometric Interaction Models introduced by James P. LeSage and R. Kelley Pace (2009) to find out the factors that contribute to the observed commuter flows. 
 
+In this exercise, we have constructed OD flows and calibrated Spatial Interaction Models. We found that the Doubly Constrained SIM without removing "outliers" gave us the highest R2 and a relatively low RMSE. It seems that the highest trip volumes during weekday morning peak hour period in Oct 2023 were due to people travelling relatively short distances to reach another location with an MRT station.
 
+SIMs assume that using distance as an explanatory variable will eradicate the spatial dependence among the sample of OD flows between pairs of locations but in reality, OD flows are influenced by factors other than distance. Hence, for future work, we can consider using Spatial Econometric Interaction Models introduced by James P. LeSage and R. Kelley Pace (2009) to find out the factors that contribute to the observed commuter flows.
 
 ## References
 
@@ -1963,6 +2069,6 @@ Farmer, C. and Oshan, T. (2017). Spatial interaction. The Geographic Information
 
 Haynes, K.E., & Fotheringham, A.S. (1985). Gravity and Spatial Interaction Models. Reprint. Edited by Grant Ian Thrall. WVU Research Repository, 2020.
 
-Kam, T. S. (2022a). Calibrating Spatial Interaction Models with R [Webbook]. In R for Geospatial Data Science and Analytics. https://r4gdsa.netlify.app/chap16
+Kam, T. S. (2022a). Calibrating Spatial Interaction Models with R \[Webbook\]. In R for Geospatial Data Science and Analytics. https://r4gdsa.netlify.app/chap16
 
-Kam, T. S. (2022b). Processing and Visualising Flow Data [Webbook]. In R for Geospatial Data Science and Analytics. https://r4gdsa.netlify.app/chap15
+Kam, T. S. (2022b). Processing and Visualising Flow Data \[Webbook\]. In R for Geospatial Data Science and Analytics. https://r4gdsa.netlify.app/chap15
